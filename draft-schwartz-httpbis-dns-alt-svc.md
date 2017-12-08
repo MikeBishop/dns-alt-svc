@@ -1,6 +1,6 @@
 ---
-title: STUN/TURN using PHP in Despair
-abbrev: STuPiD
+title: Finding HTTP Alternative Services via the Domain Name Service
+abbrev: Alt-Svc via DNS
 docname: draft-schwartz-httpbis-dns-alt-svc-latest
 date: {DATE}
 category: std
