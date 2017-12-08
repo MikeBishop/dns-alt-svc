@@ -1,6 +1,6 @@
-#  STUN/TURN using PHP in Despair
+#  Finding HTTP Alternative Services via the Domain Name Service
 
-This is the working area for the individual Internet-Draft, " STUN/TURN using PHP in Despair".
+This is the working area for the individual Internet-Draft, " Finding HTTP Alternative Services via the Domain Name Service".
 
 * [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc.html)
 * [Individual Draft](https://tools.ietf.org/html/draft-schwartz-httpbis-dns-alt-svc)
