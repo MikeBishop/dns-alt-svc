@@ -28,11 +28,9 @@ author:
 normative:
 
 informative:
-  I-D.nygren-service-bindings:
-  I-D.schwartz-dns-sni:
 
 --- abstract
-The HTTP Alternative Services {{!AltSvc=RFC7838}} mechanism allows an
+The HTTP Alternative Services mechanism allows an
 HTTP origin to be served from multiple network endpoints, and over
 multiple protocols.  However, the client must first contact the primary
 origin server, in order to learn of the Alternative Services.  This
@@ -45,7 +43,7 @@ both performance and privacy.
 
 # Introduction
 
-The HTTP Alternative Services standard {{!AltSvc}} defines
+The HTTP Alternative Services standard {{!AltSvc=RFC7838}} defines
 
 * an extensible data model for describing alternative network endpoints
   that are authoritative for an origin
@@ -68,16 +66,6 @@ Alt-Svc Field Value, in its standard text format, through
 the DNS.  If a client receives this information during DNS resolution,
 it can skip the initial connection and proceed directly to an
 alternative service.
-
-## Prerequisites
-
-To realize the greatest privacy benefits, this proposal is intended for
-use with a privacy-preserving DNS transport (like DNS over TLS
-{{!RFC7858}} or DNS over HTTPS {{!DOH=I-D.ietf-doh-dns-over-https}}),
-and with the "SNI" Alt-Svc Parameter
-{{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}.  However, performance
-improvements, and some modest privacy improvements, are possible without
-the use of those standards.
 
 # The ALTSVC record type
 
@@ -110,9 +98,9 @@ This data type can be represented as an Unknown RR as described in
 This construction is intended to be extensible in two ways.  First,
 any extensions that are made to the Alt-Svc format for transmission over
 HTTPS are also applicable here, unless expressly mentioned otherwise.
-Second, although "https" is the only scheme for which Alt-Svc is
-currently defined, including the scheme in the DNS name allows for
-ALTSVC to serve future schemes as well.
+Second, including the scheme in the DNS name allows for ALTSVC to serve
+schemes other than HTTPS, such as HTTP with Opportunistic Security
+{{!RFC8164}}) and any future schemes for which Alt-Svc may be defined.
 
 ## Comparison with alternatives
 
@@ -165,8 +153,8 @@ values to the client.  When publishing an RRSET with multiple ALTSVC
 records, the server operator MUST set the overall TTL to the minimum
 of the "max age" values (following Section 5.2 of {{!RFC2181}}).
 
-When receiving an ALTSVC record, clients MUST ignore the "ma" parameter
-if present.  Clients MAY synthesize a new "ma" parameter from the DNS
+When receiving an ALTSVC record, clients MAY synthesize a new "ma"
+parameter from the DNS
 TTL, in order to interoperate with Alt-Svc processing subsystems.
 
 ## Interaction with other standards
@@ -176,6 +164,14 @@ improve user privacy.  Server operators implementing this standard
 SHOULD also implement TLS 1.3 {{!I-D.ietf-tls-tls13}} and OCSP Stapling
 {{!RFC6066}}, both of which confer substantial performance and privacy
 benefits when used in combination with ALTSVC records.
+
+To realize the greatest privacy benefits, this proposal is intended for
+use with a privacy-preserving DNS transport (like DNS over TLS
+{{!RFC7858}} or DNS over HTTPS {{!DOH=I-D.ietf-doh-dns-over-https}}),
+and with the "SNI" Alt-Svc Parameter
+{{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}.  However, performance
+improvements, and some modest privacy improvements, are possible without
+the use of those standards.
 
 ## Granularity and lifetime control
 
@@ -201,6 +197,9 @@ present in that cache, then the client SHOULD NOT issue an ALTSVC DNS
 query.  Instead, the client SHOULD proceed with alternative service
 connection as usual.
 
+If the client has a cached Alt-Svc entry that is expiring, the
+client MAY perform an ALTSVC query to refresh the entry.
+
 ## Optimizing for performance
 
 Clients that are optimizing for performance (i.e. minimum connection
@@ -209,17 +208,23 @@ setup time) SHOULD implement the following connection sequence:
 1. Issue address (AAAA and/or A) queries, immediately followed by the
    ALTSVC query.
 1. If an ALTSVC response is received first, proceed with alternative
-   service connection and ignore the address responses.
+   service connection and ignore the address responses if they are no
+   longer relevant.
 1. Otherwise, initiate connection to the primary origin.
 1. As soon as an Alt-Svc field value is received, through the DNS or
-   over HTTP, proceed with alternative service connection and ignore
-   the other source if it arrives later.
+   over HTTP, proceed with alternative service connection and do not
+   abort this connection if an Alt-Svc field value is received from the
+   other source later.
 
 If the ALTSVC and address queries return approximately simultaneously,
 this process typically saves three roundtrips on a fresh connection
 that uses Alt-Svc: one each for TCP, TLS 1.3, and HTTP.  (On subsequent
 connections, the Alt-Svc information is expected to be cached, so this
 procedure does not apply.)
+
+If a client can cache Alt-Svc entries that were received over both HTTP
+and DNS, the client MAY prefer entries that were received over HTTP.
+These records may be more narrowly targeted for the specific client.
 
 As an additional optimization, when choosing among multiple Alt-Svc
 values, clients MAY prefer those that will not require an address
@@ -248,13 +253,14 @@ connection sequence:
 1. Otherwise, wait for the address queries and connect as usual.
 
 Note that this process is also expected to be faster than Alt-Svc over
-HTTP in most cases.
+HTTP in the case of HTTP Opportunistic Upgrade Probing (Section 2 of
+{{!RFC8164}}).
 
 # Security Considerations
 
 Alt-Svc field values are intended for distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative
-service is authentic for the origin (Section 2.1 of {{!AltSvc}}}).
+service is authoritative for the origin (Section 2.1 of {{!AltSvc}}).
 Therefore, DNSSEC signing and validation are NOT REQUIRED for publishing
 and using ALTSVC records.
 
