@@ -30,11 +30,11 @@ normative:
 informative:
 
 --- abstract
-The HTTP Alternative Services mechanism allows an
+The HTTP Alternative Services (Alt-Svc) mechanism allows an
 HTTP origin to be served from multiple network endpoints, and over
-multiple protocols.  However, the client must first contact the primary
-origin server, in order to learn of the Alternative Services.  This
-draft proposes a straightforward mapping of Alternative Services into
+multiple protocols.  However, the client must first contact the
+origin server, in order to learn of the alternative services.  This
+draft proposes a straightforward mapping of Alt-Svc into
 DNS, allowing clients to learn of these services before their first
 contact with the origin.  This arrangement offers potential benefits to
 both performance and privacy.
@@ -55,9 +55,9 @@ The HTTP Alternative Services standard {{!AltSvc=RFC7838}} defines
 Together, these components provide a toolkit that has proven useful and
 effective for informing a client of alternative services for an origin.
 However, making use of an alternative service requires contacting the
-primary origin first.  This creates an obvious performance cost: users
+origin server first.  This creates an obvious performance cost: users
 wait for a full HTTP connection initiation (multiple roundtrips) before
-learning of an alternative service and starting all over again.  The
+learning of an alternative service that is preferred by the origin.  The
 first connection also publicly reveals the user's intended destination
 to all entities along the network path.
 
@@ -67,15 +67,23 @@ the DNS.  If a client receives this information during DNS resolution,
 it can skip the initial connection and proceed directly to an
 alternative service.
 
+## Terminology
+For consistency with {{!AltSvc}}, we adopt the following definitions
+* An "origin" is an information source as in {{!RFC6454}}.
+* The "origin server" is the server that the client would reach when
+  accessing the origin in the absence of Alt-Svc.
+* An "alternative service" is a different server that can serve the
+  origin.
+
 # The ALTSVC record type
 
 The ALTSVC DNS resource record (RR) type (RRTYPE ???) is used to
-associate an Alternative Service field value with an Origin.
-Abstractly, the Origin consists of a Scheme (typically "https"), a Host,
-and a port (typically "443").
+associate an Alternative Service Field Value with an origin.
+Abstractly, the origin consists of a scheme (typically "https"), a host
+name, and a port (typically "443").
 
-In the case of the ALTSVC RR, the Origin is represented by prefixing the
-scheme and port with "_", then concatenating them with the Host,
+In the case of the ALTSVC RR, the origin is represented by prefixing the
+scheme and port with "_", then concatenating them with the host,
 resulting in a domain name like "_https._443.www.example.com.".
 
 The RDATA portion of an ALTSVC resource record contains an Alt-Svc
@@ -104,7 +112,7 @@ schemes other than HTTPS, such as HTTP with Opportunistic Security
 
 ## Comparison with alternatives
 
-The ALTSVC record type closely resembles several existing record types.
+The ALTSVC record type closely resembles some existing record types.
 
 ### Differences from the SRV RRTYPE
 
@@ -210,9 +218,9 @@ setup time) SHOULD implement the following connection sequence:
 1. If an ALTSVC response is received first, proceed with alternative
    service connection and ignore the address responses if they are no
    longer relevant.
-1. Otherwise, initiate connection to the primary origin.
+1. Otherwise, initiate connection to the origin server.
 1. As soon as an Alt-Svc field value is received, through the DNS or
-   over HTTP, proceed with alternative service connection and do not
+   over HTTP, proceed with alternative service connection.  Do not
    abort this connection if an Alt-Svc field value is received from the
    other source later.
 
@@ -229,7 +237,7 @@ These records may be more narrowly targeted for the specific client.
 As an additional optimization, when choosing among multiple Alt-Svc
 values, clients MAY prefer those that will not require an address
 query, either because the corresponding address record is
-already in cache or because the hostname is an IP address.
+already in cache or because the host is an IP address.
 
 Note that this procedure does not rely on recursive resolvers handling
 the ALTSVC record type correctly.  If ALTSVC queries receive spurious
@@ -258,7 +266,7 @@ HTTP in the case of HTTP Opportunistic Upgrade Probing (Section 2 of
 
 # Security Considerations
 
-Alt-Svc field values are intended for distribution over untrusted
+Alt-Svc Field Values are intended for distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative
 service is authoritative for the origin (Section 2.1 of {{!AltSvc}}).
 Therefore, DNSSEC signing and validation are NOT REQUIRED for publishing
