@@ -69,6 +69,7 @@ alternative service.
 
 ## Terminology
 For consistency with {{!AltSvc}}, we adopt the following definitions
+
 * An "origin" is an information source as in {{!RFC6454}}.
 * The "origin server" is the server that the client would reach when
   accessing the origin in the absence of Alt-Svc.
@@ -114,7 +115,7 @@ any extensions that are made to the Alt-Svc format for transmission over
 HTTPS are also applicable here, unless expressly mentioned otherwise.
 Second, including the scheme in the DNS name allows for ALTSVC to serve
 schemes other than HTTPS, such as HTTP with Opportunistic Security
-{{?RFC8164}}) and any future schemes for which Alt-Svc may be defined.
+{{?RFC8164}} and any future schemes for which Alt-Svc may be defined.
 
 ## Comparison with alternatives
 
