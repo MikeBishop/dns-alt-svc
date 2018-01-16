@@ -75,6 +75,12 @@ For consistency with {{!AltSvc}}, we adopt the following definitions
 * An "alternative service" is a different server that can serve the
   origin.
 
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+"MAY", and "OPTIONAL" in this document are to be interpreted as
+described in BCP 14 {{!RFC2119}} {{!RFC8174}} when, and only when, they
+appear in all capitals, as shown here.
+
 # The ALTSVC record type
 
 The ALTSVC DNS resource record (RR) type (RRTYPE ???) is used to
@@ -108,7 +114,7 @@ any extensions that are made to the Alt-Svc format for transmission over
 HTTPS are also applicable here, unless expressly mentioned otherwise.
 Second, including the scheme in the DNS name allows for ALTSVC to serve
 schemes other than HTTPS, such as HTTP with Opportunistic Security
-{{!RFC8164}}) and any future schemes for which Alt-Svc may be defined.
+{{?RFC8164}}) and any future schemes for which Alt-Svc may be defined.
 
 ## Comparison with alternatives
 
@@ -137,7 +143,7 @@ However, there are several differences:
 The ALTSVC record uses an identical format to a TXT record, and could
 be implemented as such.  However, we define a new record type for
 clarity, and to respect the use of TXT for human-readable notes as
-recommended in {{!RFC5507}}.
+recommended in {{?RFC5507}}.
 
 # Differences from Alt-Svc as transmitted over HTTP
 
@@ -190,7 +196,7 @@ Field Value.  Therefore, this standard is not suitable for servers that
 require single-client granularity in Alt-Svc.  Server operators that
 want to serve different Alt-Svc Field Values to different geographic
 or network regions SHOULD configure their authoritative DNS server to
-respect the EDNS0 Client Subnet extension {{!RFC7871}}.
+respect the EDNS0 Client Subnet extension {{?RFC7871}}.
 
 Some DNS caching systems incorrectly extend the lifetime of DNS
 records beyond the stated TTL.  Server operators MUST NOT rely on
@@ -262,14 +268,14 @@ connection sequence:
 
 Note that this process is also expected to be faster than Alt-Svc over
 HTTP in the case of HTTP Opportunistic Upgrade Probing (Section 2 of
-{{!RFC8164}}).
+{{?RFC8164}}).
 
 # Security Considerations
 
 Alt-Svc Field Values are intended for distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative
 service is authoritative for the origin (Section 2.1 of {{!AltSvc}}).
-Therefore, DNSSEC signing and validation are NOT REQUIRED for publishing
+Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using ALTSVC records.
 
 # IANA Considerations
