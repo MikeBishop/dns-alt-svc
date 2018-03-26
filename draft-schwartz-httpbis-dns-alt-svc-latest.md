@@ -90,8 +90,8 @@ Abstractly, the origin consists of a scheme (typically "https"), a host
 name, and a port (typically "443").
 
 In the case of the ALTSVC RR, the origin is represented by prefixing the
-scheme and port with "_", then concatenating them with the host,
-resulting in a domain name like "_https._443.www.example.com.".
+port and scheme with "_", then concatenating them with the host,
+resulting in a domain name like "_443._https.www.example.com.".
 
 The RDATA portion of an ALTSVC resource record contains an Alt-Svc
 Field Value, exactly as defined in Section 4 of {{!AltSvc}}.
@@ -103,12 +103,12 @@ intends to include an HTTP response header like
 
 They would also publish an ALTSVC DNS record like
 
- _https._443.www.example.com. 60S IN ALTSVC "h2=\\":8000\\""
+ _443._https.www.example.com. 60S IN ALTSVC "h2=\\":8000\\""
 
 This data type can be represented as an Unknown RR as described in
 {{!RFC3597}}:
 
- _https._443.www.example.com. 60S IN TYPE??? \\# 10 68323D223A3830303022
+ _443._https.www.example.com. 60S IN TYPE??? \\# 10 68323D223A3830303022
 
 This construction is intended to be extensible in two ways.  First,
 any extensions that are made to the Alt-Svc format for transmission over
