@@ -2,9 +2,9 @@
 
 This is the working area for the individual Internet-Draft, " Finding HTTP Alternative Services via the Domain Name Service".
 
-* [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc.html)
-* [Individual Draft](https://tools.ietf.org/html/draft-schwartz-httpbis-dns-alt-svc)
-* [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc.diff)
+* [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc-latest.html)
+* [Individual Draft](https://tools.ietf.org/html/draft-schwartz-httpbis-dns-alt-svc-latest)
+* [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc-latest.diff)
 
 ## Building the Draft
 
