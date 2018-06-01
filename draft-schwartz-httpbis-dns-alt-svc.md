@@ -93,6 +93,12 @@ In the case of the ALTSVC RR, the origin is represented by prefixing the
 port and scheme with "_", then concatenating them with the host,
 resulting in a domain name like "_443._https.www.example.com.".
 
+The IANA DNS Underscore Global Scoped Entry Registry
+{{!Attrleaf=I-D.ietf-dnsop-attrleaf}} MUST have an entry under the ALTSVC RRType
+for this scheme.  The scheme SHOULD have an entry in the IANA URI Schemes
+Registry {{!RFC7595}}.  The scheme SHOULD be one for which Alt-Svc is defined
+(currently "http" or "https").
+
 The RDATA portion of an ALTSVC resource record contains an Alt-Svc
 Field Value, exactly as defined in Section 4 of {{!AltSvc}}.
 
@@ -281,6 +287,20 @@ and using ALTSVC records.
 
 # IANA Considerations
 
-This draft requires assignment of a new DNS RRTYPE value.
+Per {{?RFC6895}}, please add the following entry to the data type
+range of the Resource Record (RR) TYPEs registry:
+
+| TYPE   | Meaning       | Reference       |
+| ------ | ------------- | --------------- |
+| ALTSVC | Alt-Svc Value | (This document) |
+
+Per {{?Attrleaf}}, please add the following entries to the DNS Underscore
+Global Scoped Entry Registry:
+
+| RR TYPE | _NODE NAME | Meaning           | Reference       |
+| ------- | ---------- | ----------------- | --------------- |
+| ALTSVC  | _https     | Alt-Svc for HTTPS | (This document) |
+| ALTSVC  | _http      | Alt-Svc for HTTP  | (This document) |
+
 --- back
 
