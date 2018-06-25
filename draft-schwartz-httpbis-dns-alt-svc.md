@@ -177,6 +177,9 @@ of the "max age" values (following Section 5.2 of {{!RFC2181}}).
 When receiving an ALTSVC record, clients MAY synthesize a new "ma"
 parameter from the DNS
 TTL, in order to interoperate with Alt-Svc processing subsystems.
+When receiving an RRSET containing multiple ALTSVC records, clients
+SHOULD apply a random shuffle to the records before using them, to
+enable randomized load-balancing.
 
 ## Interaction with other standards
 
