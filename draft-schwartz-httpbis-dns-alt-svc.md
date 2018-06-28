@@ -189,8 +189,8 @@ interpretation of RRSETs, which are regarded as unordered collections.
 
 After shuffling the RRSET, the client SHOULD concatenate all the values
 in the RRSET, separated by commas.  (This is semantically equivalent to
-receiving multiple Alt-Svc HTTP response headers, according to Section 4.2
-of {{?HTTP=RFC2616}}).
+receiving multiple Alt-Svc HTTP response headers, according to Section 3.2.2
+of {{?HTTP=RFC7230}}).
 
 ## Interaction with other standards
 
