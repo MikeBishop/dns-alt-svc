@@ -168,15 +168,29 @@ an Alt-Svc Field Value.  Instead, server operators SHOULD encode the
 expiration time in the DNS TTL, and MUST NOT set a TTL longer than the
 intended "max age".
 
-Server operators MAY publish multiple ALTSVC records as an RRSET, with
-semantics equivalent to other mechanisms of providing multiple Alt-Svc
-values to the client.  When publishing an RRSET with multiple ALTSVC
+When receiving an ALTSVC record, clients MAY synthesize a new "ma"
+parameter from the DNS TTL, in order to interoperate with Alt-Svc processing
+subsystems.
+
+## Multiple records and values
+
+Server operators MAY publish multiple ALTSVC records as an RRSET.  When
+publishing an RRSET with multiple ALTSVC
 records, the server operator MUST set the overall TTL to the minimum
 of the "max age" values (following Section 5.2 of {{!RFC2181}}).
+Each RR can contain multiple alt-values separated by commas, as described
+in Section 3 of {{!AltSvc}}.  As specified there, "the order of values
+relects the server's preference".
 
-When receiving an ALTSVC record, clients MAY synthesize a new "ma"
-parameter from the DNS
-TTL, in order to interoperate with Alt-Svc processing subsystems.
+When receiving an RRSET containing multiple ALTSVC records, clients
+SHOULD apply a random shuffle to the records before using them, to
+ensure randomized load-balancing.  This is consistent with DNS rules for
+interpretation of RRSETs, which are regarded as unordered collections.
+
+After shuffling the RRSET, the client SHOULD concatenate all the values
+in the RRSET, separated by commas.  (This is semantically equivalent to
+receiving multiple Alt-Svc HTTP response headers, according to Section 3.2.2
+of {{?HTTP=RFC7230}}).
 
 ## Interaction with other standards
 
