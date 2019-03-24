@@ -82,6 +82,10 @@ NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
 described in BCP 14 {{!RFC2119}} {{!RFC8174}} when, and only when, they
 appear in all capitals, as shown here.
 
+The key words "MUST (BUT WE KNOW YOU WON'T)", "SHOULD CONSIDER", "REALLY SHOULD
+NOT", "OUGHT TO", "WOULD PROBABLY", "MAY WISH TO", "COULD", "POSSIBLE", and
+"MIGHT" in this document are to be interpreted as described in {{!RFC6919}}.
+
 # The ALTSVC record type
 
 The ALTSVC DNS resource record (RR) type (RRTYPE ???) is used to
