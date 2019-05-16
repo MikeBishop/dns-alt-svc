@@ -480,7 +480,10 @@ record for "https://example.com", "http://example.com", and
 If an HTTPSSVC record is present for an "http" origin, the client
 SHOULD switch the URI scheme from "http" to "https".  Clients should
 treat this as the equivalent of receiving an HTTP "302 Found" redirect
-that retains the path but switches the scheme.
+that retains the host and path but switches the scheme and port.
+If the "http" URL uses port 80 or does not specify a port number, then the
+"https" URL MUST NOT specify a port number.  Otherwise, the "https" URL
+MUST specify the port number listed in the SvcFieldValue's alt-authority.
 
 Because HTTPSSVC is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
@@ -488,7 +491,7 @@ had received a 302 redirect over cleartext HTTP.
 
 When attempting to resolve a scheme-free destination into a URI,
 an HTTP client SHOULD attempt to resolve an HTTPSSVC record for both
-"http", and "https" schemes.  (This requires two lookups only if the
+"http" and "https" schemes.  (This requires two lookups only if the
 destination contains an explicit port number.)  If either lookup finds
 an HTTPSSVC RR, the client SHOULD set the scheme to "https".
 
