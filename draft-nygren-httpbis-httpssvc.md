@@ -382,7 +382,7 @@ and receiving an HTTPSSVC record is intended to be equivalent to
 receiving this field value over HTTPS.  However, there are some small
 differences in the intended client and server behavior.
 
-## Omitting Max Age
+## Omitting Max Age and Persist
 
 When publishing an HTTPSSVC record in DNS, server operators MUST omit the
 "ma" parameter, which encodes the "max age" (i.e. expiration time) of
@@ -393,6 +393,14 @@ intended "max age".
 When receiving an HTTPSSVC record, clients MAY synthesize a new "ma"
 parameter from the DNS TTL, in order to interoperate with Alt-Svc processing
 subsystems.
+
+When publishing an HTTPSSVC record, server operators MUST omit the
+"persist" parameter, which indicates whether the client should use
+this record on other network paths.  When receiving an HTTPSSVC record,
+clients MUST discard any records that contain a "persist" flag.
+Disabling persistence is important to prevent an adversary on one
+network from implanting a forged DNS record that allows them to
+track users after they leave that network.
 
 ## Multiple records and preference ordering
 
