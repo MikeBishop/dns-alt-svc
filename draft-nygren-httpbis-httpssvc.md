@@ -721,13 +721,19 @@ address records at the zone apex for legacy clients.
 Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
 cover Alt-Svc and ESNIKeys use-cases.  This approach also does not
 require any changes or special handling on either authoritative or
-master servers, beyond optionally returing in-bailiwick additional records.
+master servers, beyond optionally returning in-bailiwick additional records.
 
 Like that proposal, this addresses the zone apex CNAME challenge
 for clients that implement this.
 
 However with this HTTPSSVC proposal it remains necessary to continue
 to include address records at the zone apex for legacy clients.
+If deployment of this standard is successful, the number of legacy clients
+will fall over time.  As the number of legacy clients declines, the operational
+effort required to serve these users without the benefit of HTTPSSVC indirection
+should fall.  Server operators can easily observe how much traffic reaches this
+legacy endpoint, and may remove the apex's address records if the observed legacy
+traffic has fallen to negligible levels.
 
 
 ### Differences from the proposed ESNIKEYS record
