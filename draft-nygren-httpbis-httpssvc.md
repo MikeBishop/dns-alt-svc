@@ -196,9 +196,6 @@ that can be used within SvcFieldValue:
   for use in encrypting the actual origin hostname
   in the TLS handshake.
 
-* hts: An indicator that the http scheme requests should temporarily
-  be redirected to https for this origin hostname.
-
 
 
 ## Terminology
@@ -457,6 +454,37 @@ TODO: Write more details on the recommended resolution algorithm.
 This section does NOT yet cover the SvcRecordType=0 case well yet.
 
 
+## HTTP Strict Transport Security
+
+By publishing an HTTPSSVC record that covers an "http" origin, the server
+operator indicates that all useful HTTP resources on that origin are
+reachable over HTTPS, similar to HTTP Strict Transport Security
+{{!HSTS=RFC6797}}.  When an HTTPSSVC record is present for an origin,
+all "http" scheme requests for that origin SHOULD logically be redirected
+to "https".
+
+Prior to making an "http" scheme request, the client SHOULD perform a lookup
+to determine if an HTTPSSVC record is available for that origin.  Note that
+an HTTPSSVC record at an unprefixed name like "example.com." is the applicable
+record for "https://example.com", "http://example.com", and
+"http://example.com:80", but not "http://example.com:8080".
+
+If an HTTPSSVC record is present for an "http" origin, the client
+SHOULD switch the URI scheme from "http" to "https".  Clients should
+treat this as the equivalent of receiving an HTTP "302 Found" redirect
+that retains the path but switches the scheme.
+
+Because HTTPSSVC is received over an often insecure channel (DNS),
+clients MUST NOT place any more trust in this signal than if they
+had received a 302 redirect over cleartext HTTP.
+
+When attempting to resolve a scheme-free destination into a URI,
+an HTTP client SHOULD attempt to resolve an HTTPSSVC record for both
+"http", and "https" schemes.  (This requires two lookups only if the
+destination contains an explicit port number.)  If either lookup finds
+an HTTPSSVC RR, the client SHOULD set the scheme to "https".
+
+
 ## Cache interaction
 
 If the client has an Alt-Svc cache, and a usable Alt-Svc value is
@@ -578,32 +606,6 @@ This parameter MAY also be sent in Alt-Svc HTTP response
 headers and HTTP/2 ALTSVC frames.
 
 
-## Alt-Svc parameter for HTTP to HTTPS upgrade
-
-An Alt-Svc "hts" parameter is defined for specifying
-HTTPS Transport Security.  When present, http scheme
-requests SHOULD logically be redirected to https.
-
-Prior to making "http" scheme requests, privacy-sensitive clients
-SHOULD see if an "https" scheme HTTPSSVC record is available for the
-corresponding origin.
-
-If an HTTPSSVC record is present containing a "hts=1" parameter, the
-client should should switch the URI scheme from http to https.
-Clients should treat this as the equivalent of receiving an HTTP "302
-Found" redirect that retains the path but switches the scheme.
-
-When this parameter is received over an often insecure channel (DNS),
-clients MUST NOT place any more trust in this signal than if they
-had received a 302 redirect over cleartext HTTP.
-
-When attempting to resolve URI-free hostnames into a URI,
-clients SHOULD first attempt to resolve an HTTPSSVC record.
-If an HTTPSSVC RR is available with "hts=1", clients SHOULD
-use a default scheme of "https".
-
-
-
 ## Interaction with other standards
 
 The purpose of this standard is to reduce connection latency and
@@ -664,8 +666,6 @@ Parameter Registry:
 |                   | of Alt-Svc records   |                 |
 | sni               | SNI value to send    | (This document) |
 | esnikey           | Encrypted SNI key    | (This document) |
-| hts               | HTTP to HTTPS        | (This document) |
-|                   | redirect             |                 |
 
 
 # Acknowledgements and Related Proposals
@@ -759,13 +759,6 @@ Some known issues or topics for discussion are listed below.
 Naming is hard.  The "HTTPSSVC" is proposed as a placeholder.
 Other names for this record might include ALTSVC,
 HTTPS, HTTPSSRV, B, or something else.
-
-### Handling http scheme
-
-Handling of the "http" scheme is not yet well-specified.
-It may be that we should only support HTTP scheme
-use-cases by requiring "hts=1" (and thus requiring
-upgrades to HTTPS for uses of this record).
 
 ### Applicability to other schemes
 
