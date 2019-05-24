@@ -192,7 +192,7 @@ that can be used within SvcFieldValue:
 * sni: An alternative cleartext SNI value to send when
   establishing a TLS connection.
 
-* esnikey: The encrypted ESNIKEY structure from {{!ESNI}}
+* esnikey: The ESNIKeys structure from Section 4.1 of {{!ESNI}}
   for use in encrypting the actual origin hostname
   in the TLS handshake.
 
@@ -571,7 +571,7 @@ headers and HTTP/2 ALTSVC frames.
 
 An Alt-Svc "esnikeys" parameter is defined for specifying
 ESNI keys corresponding to an alternative service.
-The value of the parameter is an ESNIKEYS record {{!ESNI}}
+The value of the parameter is an ESNIKeys structure {{!ESNI}}
 encoded in {{!base64=RFC4648}}.
 
 This parameter MAY also be sent in Alt-Svc HTTP response
