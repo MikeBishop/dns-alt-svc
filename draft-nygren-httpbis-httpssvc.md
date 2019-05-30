@@ -481,6 +481,14 @@ Because HTTPSSVC is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 302 redirect over cleartext HTTP.
 
+If the HTTPSSVC query results in a SERVFAIL error, the client SHOULD abandon
+the connection attempt and display an error message.  A SERVFAIL error can
+occur if the domain is DNSSEC-signed, the recursive resolver is
+DNSSEC-validating, and an active attacker between the recursive resolver
+and the authoritative resolver is attempting to prevent the upgrade to
+HTTPS.  Similarly, if the client validates DNSSEC, it SHOULD abandon the
+connection attempt if the HTTPSSVC RR fails to validate.
+
 
 ## Cache interaction
 
