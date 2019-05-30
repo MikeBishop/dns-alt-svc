@@ -226,7 +226,7 @@ appear in all capitals, as shown here.
 # The HTTPSSVC record type
 
 The HTTPSSVC DNS resource record (RR) type (RRTYPE ???)
-is used to locate endpoints that can service an origin.
+is used to locate endpoints that can service an "https" origin.
 The presentation format of the record is:
 
  RRName TTL Class HTTPSSVC SvcRecordType SvcDomainName SvcFieldValue
@@ -262,24 +262,15 @@ and clients MUST ignore the contents of non-empty SvcFieldValue fields.
 In the case of the HTTPSSVC RR, an origin is translated into the RRName
 in the following manner:
 
-1. If the origin scheme is "https" or "http" and the port is the
-   default port for the protocol given by the scheme (i.e., "443" or "80",
-   respectively), then the RRName is equal to the origin host name.
+1. The origin scheme MUST be "https".  If the port is unspecified or "443",
+   then the RRName is equal to the origin host name.
 
-2. For other origin schemes, as well as when the port is not
-   the default port for the protocol given the scheme,
-   the RRName is represented by prefixing the
+2. If the port is not 443, the RRName is represented by prefixing the
    port and scheme with "_", then concatenating them with the host,
-   resulting in a domain name like "_443._https.www.example.com.".
+   resulting in a domain name like "_832._https.www.example.com.".
 
 3. When a prior CNAME or HTTPSSVC record has aliased to
    an HTTPSSVC record, RRName shall be the name of the alias target.
-
-For case #2, the IANA DNS Underscore Global Scoped Entry Registry
-{{!Attrleaf=I-D.ietf-dnsop-attrleaf}} MUST have an entry under the HTTPSSVC RRType
-for this scheme.  The scheme SHOULD have an entry in the IANA URI Schemes
-Registry {{!RFC7595}}.  The scheme SHOULD be one for which Alt-Svc is defined
-(currently "http" or "https").
 
 Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
@@ -464,7 +455,7 @@ This section does NOT yet cover the SvcRecordType=0 case well yet.
 
 ## HTTP Strict Transport Security
 
-By publishing an HTTPSSVC record that covers an "http" origin, the server
+By publishing an HTTPSSVC record, the server
 operator indicates that all useful HTTP resources on that origin are
 reachable over HTTPS, similar to HTTP Strict Transport Security
 {{!HSTS=RFC6797}}.  When an HTTPSSVC record is present for an origin,
@@ -472,25 +463,23 @@ all "http" scheme requests for that origin SHOULD logically be redirected
 to "https".
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
-to determine if an HTTPSSVC record is available for that origin.  Note that
-an HTTPSSVC record at an unprefixed name like "example.com." is the applicable
-record for "https://example.com", "http://example.com", and
-"http://example.com:80", but not "http://example.com:8080".
+to determine if an HTTPSSVC record is available for that origin.  To do so,
+the client SHOULD construct a corresponding "https" URL as follows:
 
-If an HTTPSSVC record is present for an "http" origin, the client
-SHOULD switch the URI scheme from "http" to "https".  Clients should
-treat this as the equivalent of receiving an HTTP "302 Found" redirect
-that retains the path but switches the scheme.
+1. Replace the "http" scheme with "https".
 
+2. If the "http" URL explicitly specifies port 80, specify port 443.
+
+3. Do not alter any other aspect of the URL.
+
+This construction is equivalent to {{HSTS}} Section 8.3, point 5.
+
+If an HTTPSSVC record is present for this "https" URL, the client
+should treat this as the equivalent of receiving an HTTP "302 Found"
+redirect to the "https" URL.
 Because HTTPSSVC is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 302 redirect over cleartext HTTP.
-
-When attempting to resolve a scheme-free destination into a URI,
-an HTTP client SHOULD attempt to resolve an HTTPSSVC record for both
-"http", and "https" schemes.  (This requires two lookups only if the
-destination contains an explicit port number.)  If either lookup finds
-an HTTPSSVC RR, the client SHOULD set the scheme to "https".
 
 
 ## Cache interaction
@@ -629,6 +618,12 @@ and with the "SNI" Alt-Svc Parameter
 {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}.  However, performance
 improvements, and some modest privacy improvements, are possible without
 the use of those standards.
+
+This RRType could be extended to support schemes other than "https".
+Any such scheme MUST have an entry under the HTTPSSVC RRType in the IANA
+DNS Underscore Global Scoped Entry Registry {{!Attrleaf=I-D.ietf-dnsop-attrleaf}}
+The scheme SHOULD have an entry in the IANA URI Schemes Registry {{!RFC7595}}.
+The scheme SHOULD be one for which Alt-Svc is defined.
 
 
 
