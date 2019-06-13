@@ -505,7 +505,6 @@ Authoritative DNS servers SHOULD return A, AAAA, and HTTPSSVC records
 (as well as any relevant CNAME records) in the Additional Section for
 any in-bailiwick SvcDomainNames.
 
-
 # Performance optimizations
 
 For optimal performance (i.e. minimum connection setup time), clients
@@ -514,31 +513,30 @@ simultaneously, and SHOULD implement a client-side DNS cache.
 With these optimizations in place, and conforming DNS servers,
 using HTTPSSVC does not add network latency to connection setup.
 
-Using HTTPSSVC with HTTP/3 saves a roundtrip during connection setup,
-compared to HTTP over TLS 1.3 over TCP.  Performance-sensitive
-server operators SHOULD offer HTTP/3 in their HTTPSSVC records.
-
 A nonconforming recursive resolver might return an HTTPSSVC response with
-a nonempty SvcDomainName, without the corresponding address queries.  If
+a nonempty SvcDomainName, without the corresponding address records.  If
 all the HTTPSSVC RRs in the response have nonempty SvcDomainName values,
 and the client does not have address records for any of these values in
 its DNS cache, the client SHOULD perform an additional address query for
-the SvcDomainName.
+the selected SvcDomainName.
 
-The additional DNS query introduces a delay that can be longer or shorter
-than one round trip to the origin.  For simplicity, we assume that these
-two delays will be roughly similar on average, i.e. a 1 RTT delay.
+The additional DNS query in this case introduces a delay.  To avoid
+causing a delay for clients using a nonconforming recursive resolver,
+domain owners SHOULD choose the SvcDomainName to be a name in the
+origin hostname's CNAME chain if possible.  This will ensure that the required
+address records are already present in the client's DNS cache.
 
-Using HTTP/3 with HTTPSSVC saves 1 RTT, so we do not expect a net additional
-delay when HTTP/3 is offered.  Accordingly, all conformant clients MUST
-resolve the SvcDomainName if the selected HTTPSSVC RR offers HTTP/3, but
-highly performance-sensitive clients MAY skip this name resolution (and
-proceed as if no usable HTTPSSVC records were received) if there are no
-suitable records that offer HTTP/3.
+Highly performance-sensitive clients MAY implement the following special-
+case shortcut to avoid increased connection time: if (1) all of the
+HTTPSSVC records returned have SvcRecordType = 0, (2) none of their
+SvcDomainNames are in the DNS cache, and (3) the address queries for the
+origin domain return usable IP addresses, then the client MAY ignore the
+HTTPSSVC records and connect directly to the origin domain.
 
-To reach performance-sensitive clients with non-conforming recursive
-resolvers, server operators who wish to maximize use of HTTPSSVC SHOULD
-publish at least one RR with the HTTP/3 protocol or an empty SvcDomainName.
+Server operators can therefore expect that publishing HTTPSSVC records with
+SvcRecordType = 0 should not cause an additional DNS query for
+performance-sensitive clients.  Server operators who wish to prevent this
+optimization should use SvcRecordType = 1.
 
 
 # Extensions to enhance privacy
