@@ -602,6 +602,14 @@ encoded in {{!base64=RFC4648}}.
 This parameter MAY also be sent in Alt-Svc HTTP response
 headers and HTTP/2 ALTSVC frames.
 
+The Alt-Svc specification states that "the client MAY fall back to using
+the origin" in case of connection failure {{!AltSvc}}.  This behavior is
+not suitable for ESNI, because fallback would negate the privacy benefits of
+ESNI.
+
+Accordingly, any connection attempt that uses ESNI MUST NOT fall back to a
+connection without ESNI.
+
 
 ## Interaction with other standards
 
