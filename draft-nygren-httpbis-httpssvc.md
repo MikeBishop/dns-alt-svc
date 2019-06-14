@@ -492,63 +492,6 @@ connection as usual.
 If the client has a cached Alt-Svc entry that is expiring, the
 client MAY perform an HTTPSSVC query to refresh the entry.
 
-## Optimizing for performance
-
-Clients that are optimizing for performance (i.e. minimum connection
-setup time) SHOULD implement the following connection sequence:
-
-1. Issue address (AAAA and/or A) queries, immediately followed by the
-   HTTPSSVC query.
-1. If an HTTPSSVC response is received first, proceed with alternative
-   service connection and ignore the address responses if they are no
-   longer relevant.
-1. Otherwise, initiate connection to the origin server.
-1. As soon as an Alt-Svc field value is received, through the DNS or
-   over HTTP, proceed with alternative service connection.  Do not
-   abort this connection if an Alt-Svc field value is received from the
-   other source later.
-
-If the HTTPSSVC and address queries return approximately simultaneously,
-this process typically saves three roundtrips on a fresh connection
-that uses Alt-Svc: one each for TCP, TLS 1.3, and HTTP.  (On subsequent
-connections, the Alt-Svc information is expected to be cached, so this
-procedure does not apply.)
-
-If a client can cache Alt-Svc entries that were received over both HTTP
-and DNS, the client MAY prefer entries that were received over HTTP.
-These records may be more narrowly targeted for the specific client.
-
-As an additional optimization, when choosing among multiple Alt-Svc
-values, clients MAY prefer those that will not require an address
-query, either because the corresponding address record is
-already in cache or because the host is an IP address.
-
-Note that this procedure does not rely on recursive resolvers handling
-the HTTPSSVC record type correctly.  If HTTPSSVC queries receive spurious
-NXDOMAIN responses, or even no response at all, connections will proceed
-as usual without any delay.
-
-## Optimizing for privacy
-
-Clients that are optimizing for privacy SHOULD implement {{!AltSvcSNI}}
-and DNS over a secure transport (e.g. {{!RFC7858}} or {{!DOH}}).
-Use of a secure transport is important not only for privacy protection,
-but also to ensure that queries for the new HTTPSSVC RRTYPE are handled
-correctly.  Additionally, these clients SHOULD implement the following
-connection sequence:
-
-1. Issue the HTTPSSVC DNS query first, immediately followed by the
-   address queries.
-1. Wait for the HTTPSSVC record response.
-1. If the response is nonempty, proceed with alternative service
-   connection and ignore the address query responses.
-1. Otherwise, wait for the address queries and connect as usual.
-
-Note that this process is also expected to be faster than Alt-Svc over
-HTTP in the case of HTTP Opportunistic Upgrade Probing (Section 2 of
-{{?RFC8164}}).
-
-
 # DNS Server Behaviors
 
 Recursive DNS servers SHOULD resolve SvcDomainName records and include
@@ -561,6 +504,39 @@ include A and AAAA records.
 Authoritative DNS servers SHOULD return A, AAAA, and HTTPSSVC records
 (as well as any relevant CNAME records) in the Additional Section for
 any in-bailiwick SvcDomainNames.
+
+# Performance optimizations
+
+For optimal performance (i.e. minimum connection setup time), clients
+SHOULD issue address (AAAA and/or A) and HTTPSSVC queries
+simultaneously, and SHOULD implement a client-side DNS cache.
+With these optimizations in place, and conforming DNS servers,
+using HTTPSSVC does not add network latency to connection setup.
+
+A nonconforming recursive resolver might return an HTTPSSVC response with
+a nonempty SvcDomainName, without the corresponding address records.  If
+all the HTTPSSVC RRs in the response have nonempty SvcDomainName values,
+and the client does not have address records for any of these values in
+its DNS cache, the client SHOULD perform an additional address query for
+the selected SvcDomainName.
+
+The additional DNS query in this case introduces a delay.  To avoid
+causing a delay for clients using a nonconforming recursive resolver,
+domain owners SHOULD choose the SvcDomainName to be a name in the
+origin hostname's CNAME chain if possible.  This will ensure that the required
+address records are already present in the client's DNS cache.
+
+Highly performance-sensitive clients MAY implement the following special-
+case shortcut to avoid increased connection time: if (1) all of the
+HTTPSSVC records returned have SvcRecordType = 0, (2) none of their
+SvcDomainNames are in the DNS cache, and (3) the address queries for the
+origin domain return usable IP addresses, then the client MAY ignore the
+HTTPSSVC records and connect directly to the origin domain.
+
+Server operators can therefore expect that publishing HTTPSSVC records with
+SvcRecordType = 0 should not cause an additional DNS query for
+performance-sensitive clients.  Server operators who wish to prevent this
+optimization should use SvcRecordType = 1.
 
 
 # Extensions to enhance privacy
