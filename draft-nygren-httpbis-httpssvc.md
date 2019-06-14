@@ -306,7 +306,7 @@ For example, if an operator of https://example.com wanted to
 point HTTPS requests to a service operating at svc.example.net,
 they would publish a record such as:
 
- example.com. 3600 IN HTTPSSVC 1 svc.example.net.
+ example.com. 3600 IN HTTPSSVC 0 svc.example.net.
 
 The SvcDomainName MUST point to a domain name that contains
 another HTTPSSVC record and/or address (AAAA and/or A) records.
