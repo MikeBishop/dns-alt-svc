@@ -434,10 +434,7 @@ Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPSSVC DNS
 record, groups of clients will necessarily receive the same Alt-Svc
 Field Value.  Therefore, this standard is not suitable for servers that
-require single-client granularity in Alt-Svc.  Server operators that
-want to serve different Alt-Svc Field Values to different geographic
-or network regions SHOULD configure their authoritative DNS server to
-respect the EDNS0 Client Subnet extension {{?RFC7871}}.
+require single-client granularity in Alt-Svc.
 
 Some DNS caching systems incorrectly extend the lifetime of DNS
 records beyond the stated TTL.  Server operators MUST NOT rely on
