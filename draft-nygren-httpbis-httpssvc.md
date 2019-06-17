@@ -75,14 +75,16 @@ and lookups required to learn this additional information.
 As an introductory example, a set of example HTTPSSVC and associated
 A+AAAA records might be:
 
- www.example.com.  2H  IN CNAME   svc.example.net.
- example.com.      2H  IN HTTPSVC 0 svc.example.net.
- svc.example.net.  2H  IN HTTPSVC 1 svc2.example.net. "hq=\\":8002\\" esnikey=\\"...\\""
- svc.example.net.  2H  IN HTTPSVC 1 svc3.example.net. "h2=\\":8003\\" esnikey=\\"...\\""
- svc2.example.net. 300 IN A       192.0.2.2
- svc2.example.net. 300 IN AAAA    2001:db8::2
- svc3.example.net. 300 IN A       192.0.2.3
- svc3.example.net. 300 IN AAAA    2001:db8::3
+    www.example.com.  2H  IN CNAME   svc.example.net.
+    example.com.      2H  IN HTTPSVC 0 svc.example.net.
+    svc.example.net.  2H  IN HTTPSVC 1 svc2.example.net. "hq=\":8002\" \
+                                       esnikeys=\"...\""
+    svc.example.net.  2H  IN HTTPSVC 1 svc3.example.net. "h2=\":8003\" \
+                                       esnikeys=\"...\""
+    svc2.example.net. 300 IN A       192.0.2.2
+    svc2.example.net. 300 IN AAAA    2001:db8::2
+    svc3.example.net. 300 IN A       192.0.2.3
+    svc3.example.net. 300 IN AAAA    2001:db8::3
 
 In the preceeding example, both of the "example.com" and
 "www.example.com" origin names are aliased to use service endpoints
@@ -185,14 +187,14 @@ alternative service.
 This document also defines additional Alt-Svc parameters
 that can be used within SvcFieldValue:
 
-* pri: The value of this parameter is a numeric priority for
+* pri ({{pri}}): The value of this parameter is a numeric priority for
   ordering alternatives (with lower values preferable).  This is
   needed as RR set entries are unordered.
 
-* sni: An alternative cleartext SNI value to send when
+* sni ({{sni}}): An alternative cleartext SNI value to send when
   establishing a TLS connection.
 
-* esnikey: The ESNIKeys structure from Section 4.1 of {{!ESNI}}
+* esnikeys ({{esnikeys}}): The ESNIKeys structure from Section 4.1 of {{!ESNI}}
   for use in encrypting the actual origin hostname
   in the TLS handshake.
 
@@ -306,7 +308,7 @@ For example, if an operator of https://example.com wanted to
 point HTTPS requests to a service operating at svc.example.net,
 they would publish a record such as:
 
- example.com. 3600 IN HTTPSSVC 0 svc.example.net.
+    example.com. 3600 IN HTTPSSVC 0 svc.example.net.
 
 The SvcDomainName MUST point to a domain name that contains
 another HTTPSSVC record and/or address (AAAA and/or A) records.
@@ -336,18 +338,18 @@ but with the uri-host moved to the SvcDomainName field.
 For example, if the operator of https://www.example.com
 intends to include an HTTP response header like
 
- Alt-Svc: hq="svc.example.net:8003"; ma=3600, \
-          h2="svc.example.net:8002"; ma=3600
+    Alt-Svc: hq="svc.example.net:8003"; ma=3600, \
+             h2="svc.example.net:8002"; ma=3600
 
 They would also publish an HTTPSSVC DNS RRSet like
 
- www.example.com. 3600 IN HTTPSSVC 1 svc.example.net. "hq=\\":8003\\" pri=0"
-                          HTTPSSVC 1 svc.example.net. "h2=\\":8002\\" pri=1"
+    www.example.com. 3600 IN HTTPSSVC 1 svc.example.net. "hq=\":8003\" pri=0"
+                             HTTPSSVC 1 svc.example.net. "h2=\":8002\" pri=1"
 
 This data type can be represented as an Unknown RR as described in
 {{!RFC3597}}:
 
- www.example.com. 3600 IN TYPE??? \\# TBD:WRITEME
+    www.example.com. 3600 IN TYPE??? \\# TBD:WRITEME
 
 This construction is intended to be extensible in two ways.  First,
 any extensions that are made to the Alt-Svc format for transmission
@@ -390,7 +392,7 @@ Disabling persistence is important to prevent an adversary on one
 network from implanting a forged DNS record that allows them to
 track users after they leave that network.
 
-## Multiple records and preference ordering
+## Multiple records and preference ordering {#pri}
 
 Server operators MAY publish multiple HTTPSSVC records as an RRSET.  When
 publishing an RRSET with multiple HTTPSSVC
@@ -541,7 +543,7 @@ optimization should use SvcRecordType = 1.
 
 # Extensions to enhance privacy
 
-## Alt-Svc parameter for cleartext SNI value
+## Alt-Svc parameter for cleartext SNI value {#sni}
 
 An Alt-Svc "sni" parameter is defined for specifying
 the cleartext SNI value to be sent when connecting to this
@@ -550,7 +552,7 @@ send this SNI value when connecting to the alternative.
 
 For example:
 
- sni="_wildcard.example.com"
+    sni="_wildcard.example.com"
 
 would indicate that "_wildcard.example.com" should be sent
 when connecting to the corresponding alternative service.
@@ -568,7 +570,7 @@ This parameter MAY also be sent in Alt-Svc HTTP response
 headers and HTTP/2 ALTSVC frames.
 
 
-## Alt-Svc parameter for ESNI keys
+## Alt-Svc parameter for ESNI keys {#esnikeys}
 
 An Alt-Svc "esnikeys" parameter is defined for specifying
 ESNI keys corresponding to an alternative service.
@@ -644,7 +646,7 @@ Parameter Registry:
 | pri               | Relative priority    | (This document) |
 |                   | of Alt-Svc records   |                 |
 | sni               | SNI value to send    | (This document) |
-| esnikey           | Encrypted SNI key    | (This document) |
+| esnikeys          | Encrypted SNI keys   | (This document) |
 
 
 # Acknowledgements and Related Proposals
@@ -655,10 +657,9 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
 
-# Appendix
+--- back
 
-
-## Comparison with alternatives
+# Comparison with alternatives
 
 The HTTPSSVC record type closely resembles some existing record types
 and proposals.  A complaint with all of the alternatives is that
@@ -667,7 +668,7 @@ The hope here is that by providing an extensible solution that solves
 multiple problems we will overcome the inertia and have a path
 to achieve client implementation.
 
-### Differences from the SRV RRTYPE
+## Differences from the SRV RRTYPE
 
 An SRV record {{?RFC2782}} can perform a similar function to the HTTPSSVC record,
 informing a client to look in a different location for a service.
@@ -685,7 +686,7 @@ However, there are several differences:
   Alt-Svc information in a subsequent connection, so it does not confer
   a performance advantage.
 
-### Differences from the proposed HTTP record
+## Differences from the proposed HTTP record
 
 Unlike {{?I-D.draft-bellis-dnsop-http-record-00}}, this approach is
 extensible to cover Alt-Svc and ESNIKeys use-cases.  Like that
@@ -695,7 +696,7 @@ Like that proposal it remains necessary to continue to include
 address records at the zone apex for legacy clients.
 
 
-### Differences from the proposed ANAME record
+## Differences from the proposed ANAME record
 
 Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
 cover Alt-Svc and ESNIKeys use-cases.  This approach also does not
@@ -715,7 +716,7 @@ legacy endpoint, and may remove the apex's address records if the observed legac
 traffic has fallen to negligible levels.
 
 
-### Differences from the proposed ESNIKEYS record
+## Differences from the proposed ESNIKEYS record
 
 Unlike {{!ESNI}}, this approach is extensible and covers
 the Alt-Svc case as well as addresses the zone apex CNAME challenge.
@@ -727,41 +728,36 @@ Unlike ESNIKEYS, this is focused on the specific case of HTTPS,
 although this approach could be extended for other protocols.
 
 
-## Design Considerations and Open Issues
+# Design Considerations and Open Issues
 
 This draft is intended to be a work-in-progress for discussion.
 Many details are expected to change with subsequent refinement.
 Some known issues or topics for discussion are listed below.
 
-### Record Name
+## Record Name
 
 Naming is hard.  The "HTTPSSVC" is proposed as a placeholder.
 Other names for this record might include ALTSVC,
 HTTPS, HTTPSSRV, B, or something else.
 
-### Applicability to other schemes
+## Applicability to other schemes
 
 The focus of this record is on optimizing the common case of the
 "https" scheme.  It is worth discussing whether this is a valid
 assumption or if a more general solution is applicable.  Past efforts
 to over-generalize have not met with broad success.
 
-### Wire Format
+## Wire Format
 
 The length of SvcFieldValue is redundant.  Should we eliminate this?
 
 Advice from experts in DNS wire format best practices would be greatly
 appreciated to refine the proposed details, overall.
 
-### Extensibility of SvcRecordType
+## Extensibility of SvcRecordType
 
 Only values of 0 and 1 are allowed for SvcRecordType.  Should we give
 more thought to potential future values?  The current version tries to
 leave this open by indicating that resource records with unknown
 SvcRecordType values should be ignored (and perhaps should be switched
 to MUST be ignored)?
-
-
-
---- back
-
