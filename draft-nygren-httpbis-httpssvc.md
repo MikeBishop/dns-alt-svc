@@ -257,19 +257,18 @@ When SvcRecordType is 0, the length of SvcFieldValue SHOULD be 0
 and clients MUST ignore the contents of non-empty SvcFieldValue fields.
 
 
-## RRNames
+## RRNames {#rrnames}
 
 In the case of the HTTPSSVC RR, an origin is translated into the RRName
 in the following manner:
 
-1. The origin scheme MUST be "https".  If the port is unspecified or "443",
-   then the RRName is equal to the origin host name.
-
-2. If the port is not 443, the RRName is represented by prefixing the
+1. If the scheme is "https" and the port is 443,
+   then the RRName is equal to the origin host name.  Otherwise the
+   RRName is represented by prefixing the
    port and scheme with "_", then concatenating them with the host,
    resulting in a domain name like "_832._https.www.example.com.".
 
-3. When a prior CNAME or HTTPSSVC record has aliased to
+2. When a prior CNAME or HTTPSSVC record has aliased to
    an HTTPSSVC record, RRName shall be the name of the alias target.
 
 Note that none of these forms alter the HTTPS origin or authority.
@@ -355,7 +354,7 @@ over HTTPS are also applicable here, unless expressly mentioned
 otherwise.
 
 Second, by defining a way to map non-HTTPS schemes and non-default
-ports we provide a way for the HTTPSSVC to be used for them as needed.
+ports ({{rrnames}}), we provide a way for the HTTPSSVC to be used for them as needed.
 However, by using the origin name for the RRName for scheme https and
 port 443 we allow HTTPSSVC records to be included at the end of CNAME
 chains for existing site implementations without requiring changes in
@@ -630,7 +629,6 @@ Global Scoped Entry Registry:
 | RR TYPE   | _NODE NAME | Meaning           | Reference       |
 | --------- | ---------- | ----------------- | --------------- |
 | HTTPSSVC  | _https     | Alt-Svc for HTTPS | (This document) |
-| HTTPSSVC  | _http      | Alt-Svc for HTTP  | (This document) |
 
 
 Per {{?AltSvc}}, please add the following entries to the HTTP Alt-Svc
