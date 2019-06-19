@@ -589,11 +589,9 @@ benefits when used in combination with HTTPSSVC records.
 
 To realize the greatest privacy benefits, this proposal is intended for
 use with a privacy-preserving DNS transport (like DNS over TLS
-{{!RFC7858}} or DNS over HTTPS {{!DOH=I-D.ietf-doh-dns-over-https}}),
-and with the "SNI" Alt-Svc Parameter
-{{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}.  However, performance
-improvements, and some modest privacy improvements, are possible without
-the use of those standards.
+{{!RFC7858}} or DNS over HTTPS {{!DOH=I-D.ietf-doh-dns-over-https}}).
+However, performance improvements, and some modest privacy improvements, 
+are possible without the use of those standards.
 
 This RRType could be extended to support schemes other than "https".
 Any such scheme MUST have an entry under the HTTPSSVC RRType in the IANA
@@ -613,8 +611,6 @@ and using HTTPSSVC records.
 
 TBD: expand this section in more detail.  In particular:
 
-* Any additional tracking risks introduced by the sni= parameter.
-  (Perhaps incorporating text from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}).
 * ...
 
 
@@ -642,7 +638,6 @@ Parameter Registry:
 | ----------------- | -------------------- | --------------- |
 | pri               | Relative priority    | (This document) |
 |                   | of Alt-Svc records   |                 |
-| sni               | SNI value to send    | (This document) |
 | esnikeys          | Encrypted SNI keys   | (This document) |
 
 
@@ -724,6 +719,16 @@ the ESNIKEYS multi-CDN challenges in a general case.
 Unlike ESNIKEYS, this is focused on the specific case of HTTPS,
 although this approach could be extended for other protocols.
 
+## SNI Alt-Svc parameter
+
+Defining an Alt-Svc sni= parameter 
+(such as from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}) would 
+have provided some benefits to clients and servers not implementing ESNI, 
+such as for specifying that "_wildcard.example.com" could be sent as an SNI
+value rather than the full name.  There is nothing precluding HTTPSSVC from
+being used with an sni= parameter if one were to be defined, but it
+is not included here to reduce scope, complexity, and additional potential
+security and tracking risks.
 
 # Design Considerations and Open Issues
 
