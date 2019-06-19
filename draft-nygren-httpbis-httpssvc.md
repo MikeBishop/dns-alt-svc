@@ -282,9 +282,9 @@ hostnames based on the origin host.
 The SvcRecordType field is a numeric value defined to be either "0" or
 "1". Within an HTTPSSVC RRSet, all RRs must have the same value for
 SvcRecordType.  Clients and recursive servers MUST ignore HTTPSSVC
-resource records with other SvcRecordType values, as well as
-RRSets where both "0" and "1" values for SvcRecordType are present in
-the same RRSet.
+resource records with other SvcRecordType values. If an RRSet contains
+a record with type "0", the client MUST ignore any records in the set
+with type "1".
 
 When SvcRecordType is "0", the HTTPSSVC is defined to be in "alias form".
 
@@ -524,9 +524,9 @@ origin hostname's CNAME chain if possible.  This will ensure that the required
 address records are already present in the client's DNS cache.
 
 Highly performance-sensitive clients MAY implement the following special-
-case shortcut to avoid increased connection time: if (1) all of the
-HTTPSSVC records returned have SvcRecordType = 0, (2) none of their
-SvcDomainNames are in the DNS cache, and (3) the address queries for the
+case shortcut to avoid increased connection time: if (1) one of the
+HTTPSSVC records returned has SvcRecordType = 0, (2) its SvcDomainName
+is not in the DNS cache, and (3) the address queries for the
 origin domain return usable IP addresses, then the client MAY ignore the
 HTTPSSVC records and connect directly to the origin domain.
 
