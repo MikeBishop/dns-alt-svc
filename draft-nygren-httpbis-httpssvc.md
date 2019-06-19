@@ -323,6 +323,12 @@ records.
 The SvcFieldValue in this form SHOULD be an empty string and
 clients MUST ignore its contents.
 
+As legacy clients will not know to use this record, service
+operators will likely need to retain fallback AAAA and A records 
+alongside this HTTPSSVC record, although in a common case 
+the target of the HTTPSSVC record might have better performance
+so would be preferable for clients implementing this specification 
+to use.
 
 ## HTTPSSVC records: alternative service form
 
