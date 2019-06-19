@@ -400,14 +400,16 @@ of the "max age" values (following Section 5.2 of {{!RFC2181}}).
 Each RR MUST contain exactly one alt-value, as described
 in Section 3 of {{!AltSvc}}.
 
-As RRs within an RRSET are explictly unordered collections, a new
+As RRs within an RRSET are explicitly unordered collections, a new
 "pri" alt-svc parameter is introduced to indicate priority.  The value
-of the "pri" parameter is a non-negative integer between 0 and 65535.
+of the "pri" parameter is an integer between 1 and 32767.  Clients MUST
+reject any alt-value with a specified priority outside of this range.
 Alt-Svc alt-values with a smaller pri value should be given preference
 over alt-values with a larger pri value.
 
-TBD: what should default pri values be for Alt-Svc records
-received via DNS and HTTP when pri is unspecified?
+Alt-values received via HTTPS with unspecified priority are considered
+to have priority 0 (i.e. most preferred).  Alt-values received via DNS
+with unspecified priority are assigned priority 32767 (i.e. least preferred).
 
 When receiving an RRSET containing multiple HTTPSSVC records with the
 same "pri" value, clients SHOULD apply a random shuffle within a
