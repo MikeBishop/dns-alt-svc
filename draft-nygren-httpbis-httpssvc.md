@@ -378,17 +378,17 @@ an Alt-Svc Field Value.  Instead, server operators SHOULD encode the
 expiration time in the DNS TTL, and MUST NOT set a TTL longer than the
 intended "max age".
 
-When receiving an HTTPSSVC record, clients MAY synthesize a new "ma"
-parameter from the DNS TTL, in order to interoperate with Alt-Svc processing
-subsystems.
+When receiving an HTTPSSVC record, clients SHOULD synthesize a new "ma"
+parameter from the DNS TTL if the resulting alt-value is being passed to
+a subsystem that might employ caching.
 
 When publishing an HTTPSSVC record, server operators MUST omit the
 "persist" parameter, which indicates whether the client should use
 this record on other network paths.  When receiving an HTTPSSVC record,
 clients MUST discard any records that contain a "persist" flag.
-Disabling persistence is important to prevent an adversary on one
+Disabling persistence is important to prevent a local adversary in one
 network from implanting a forged DNS record that allows them to
-track users after they leave that network.
+track users or hinder their connections after they leave that network.
 
 ## Multiple records and preference ordering
 
