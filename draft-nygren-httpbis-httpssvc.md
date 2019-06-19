@@ -393,8 +393,8 @@ track users or hinder their connections after they leave that network.
 
 ## Multiple records and preference ordering {#pri}
 
-Server operators MAY publish multiple HTTPSSVC records as an RRSET.  When
-publishing an RRSET with multiple HTTPSSVC
+Server operators MAY publish multiple SvcRecordType "1" HTTPSSVC 
+records as an RRSET.  When publishing an RRSET with multiple HTTPSSVC
 records, the server operator MUST set the overall TTL to the minimum
 of the "max age" values (following Section 5.2 of {{!RFC2181}}).
 
