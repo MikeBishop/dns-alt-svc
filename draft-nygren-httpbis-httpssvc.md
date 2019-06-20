@@ -524,14 +524,18 @@ The additional DNS query in this case introduces a delay.  To avoid
 causing a delay for clients using a nonconforming recursive resolver,
 domain owners SHOULD choose the SvcDomainName to be a name in the
 origin hostname's CNAME chain if possible.  This will ensure that the required
-address records are already present in the client's DNS cache.
+address records are already present in the client's DNS cache as part of the
+responses to the address queries that were issued in parallel.
 
 Highly performance-sensitive clients MAY implement the following special-
 case shortcut to avoid increased connection time: if (1) one of the
 HTTPSSVC records returned has SvcRecordType = 0, (2) its SvcDomainName
 is not in the DNS cache, and (3) the address queries for the
 origin domain return usable IP addresses, then the client MAY ignore the
-HTTPSSVC records and connect directly to the origin domain.
+HTTPSSVC records and connect directly to the origin domain.  When the
+SvcDomainNames and any needed HTTPSSVC records are available, the client
+SHOULD make subsequent requests over connections specified by the HTTPSSVC
+records.
 
 Server operators can therefore expect that publishing HTTPSSVC records with
 SvcRecordType = 0 should not cause an additional DNS query for
