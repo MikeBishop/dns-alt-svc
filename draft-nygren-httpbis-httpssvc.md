@@ -619,10 +619,27 @@ headers and HTTP/2 ALTSVC frames.
 An Alt-Svc "esnikeys" parameter is defined for specifying
 ESNI keys corresponding to an alternative service.
 The value of the parameter is an ESNIKeys structure {{!ESNI}}
-encoded in {{!base64=RFC4648}}.
+encoded in {{!base64=RFC4648}} or the empty string.  ESNI-aware
+clients SHOULD prefer alt-values with nonempty esnikeys.
 
 This parameter MAY also be sent in Alt-Svc HTTP response
 headers and HTTP/2 ALTSVC frames.
+
+The Alt-Svc specification states that "the client MAY fall back to using
+the origin" in case of connection failure {{!AltSvc}}.  This behavior is
+not suitable for ESNI, because fallback would negate the privacy benefits of
+ESNI.
+
+Accordingly, any connection attempt that uses ESNI MUST fall back only to
+another alt-value that also has the esnikeys parameter.  If the parameter's
+value is the empty string, the client SHOULD connect as it would in the
+absence of any ESNIKeys information.
+
+For example, suppose a server operator has two alternatives.  Alternative A
+is reliably accessible but does not support ESNI.  Alternative B supports
+ESNI but is not reliably accessible.  The server operator could include a
+full esnikeys value in Alternative B, and mark Alternative A with esnikeys=""
+to indicate that fallback from B to A is allowed.
 
 
 ## Interaction with other standards
