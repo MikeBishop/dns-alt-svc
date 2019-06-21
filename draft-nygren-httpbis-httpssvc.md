@@ -50,6 +50,18 @@ it allows for clients to learn of alternative services before their first
 contact with the origin.  This arrangement offers potential benefits to
 both performance and privacy.
 
+TO BE REMOVED: This proposal is inspired by and based on recent DNS 
+usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as
+long standing desires to have SRV or a functional equivalent 
+implemented for HTTP).   These proposals each provide an important 
+function but are potentially incompatible with each other, such as 
+when an origin is load-balanced across multiple hosting providers (multi-CDN).  
+Furthermore, these each add potential cases for adding additional record 
+lookups in-addition to AAAA/A lookups. This design attempts to provide a unified 
+framework that encompasses the key functionality of these proposals,
+as well as providing some extensibility for addressing similar
+future challenges.
+
 --- middle
 
 # Introduction
