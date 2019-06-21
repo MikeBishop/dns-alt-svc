@@ -459,12 +459,13 @@ received over HTTPS to those received via DNS.
 
 When attempting to resolve a name HOST, clients should follow in-order:
 
-1. Issue parallel AAAA, A, and HTTPSSVC queries for the name HOST.
+1. Issue parallel AAAA/A and HTTPSSVC queries for the name HOST.
    The answers for these may or may not include CNAME pointers
    before reaching one or more of these records.
    
 2. If an HTTPSSVC record of SvcRecordType "0" is returned for HOST,
-   clients should loop back to step 1 replacing HOST with SvcDomainName.
+   clients should loop back to step 1 replacing HOST with SvcDomainName,
+   subject to loop detection heuristics.
 
 3. If one or more HTTPSSVC record of SvcRecordType "1" is returned for HOST,
    clients should synthesize equivalent Alt-Svc records based
@@ -474,12 +475,13 @@ When attempting to resolve a name HOST, clients should follow in-order:
 
 4. If only AAAA and/or A records are present for HOST (and no HTTPSSVC), 
    clients should make a connection to one of the IP addresses
-   contained in these records.
+   contained in these records and proceed normally.
 
 When selecting between AAAA and A records to use, clients may
 use an approach such as {{!HappyEyeballsV2=RFC8305}}
 
-Some possible optimizations are discussed in {{optimizations}}.
+Some possible optimizations are discussed in {{optimizations}}
+to reduce latency impact in comparison to ordinary AAAA/A lookups.
 
 ## HTTP Strict Transport Security
 
