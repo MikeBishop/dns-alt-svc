@@ -238,7 +238,7 @@ SvcDomainName is a domain name, and SvcFieldValue is a string
 present when SvcRecordType is 1.
 
 The algorithm for resolving HTTPSSVC records and associated
-address records is specified in TBD:WriteMe.
+address records is specified in {{resolution}}.
 
 
 ## HTTPSSVC RDATA Wire Format
@@ -455,9 +455,31 @@ received over HTTPS to those received via DNS.
 
 # Client behaviors
 
-TODO: Write more details on the recommended resolution algorithm.
-This section does NOT yet cover the SvcRecordType=0 case well yet.
+## Client resolution {#resolution}
 
+When attempting to resolve a name HOST, clients should follow in-order:
+
+1. Issue parallel AAAA, A, and HTTPSSVC queries for the name HOST.
+   The answers for these may or may not include CNAME pointers
+   before reaching one or more of these records.
+   
+2. If an HTTPSSVC record of SvcRecordType "0" is returned for HOST,
+   clients should loop back to step 1 replacing HOST with SvcDomainName.
+
+3. If one or more HTTPSSVC record of SvcRecordType "1" is returned for HOST,
+   clients should synthesize equivalent Alt-Svc records based
+   on the SvcDomainName and SvcFieldValue.  If one of these Alt-Svc
+   records is selected to be used in a connection, the client will
+   need to resolve AAAA and/or A records for SvcDomainName.
+
+4. If only AAAA and/or A records are present for HOST (and no HTTPSSVC), 
+   clients should make a connection to one of the IP addresses
+   contained in these records.
+
+When selecting between AAAA and A records to use, clients may
+use an approach such as {{!HappyEyeballsV2=RFC8305}}
+
+Some possible optimizations are discussed in {{optimizations}}.
 
 ## HTTP Strict Transport Security
 
@@ -511,7 +533,7 @@ Authoritative DNS servers SHOULD return A, AAAA, and HTTPSSVC records
 (as well as any relevant CNAME records) in the Additional Section for
 any in-bailiwick SvcDomainNames.
 
-# Performance optimizations
+# Performance optimizations {#optimizations}
 
 For optimal performance (i.e. minimum connection setup time), clients
 SHOULD issue address (AAAA and/or A) and HTTPSSVC queries
