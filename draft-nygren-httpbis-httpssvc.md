@@ -43,7 +43,9 @@ hostname to be served from multiple network services, each with
 associated parameters (such as transport protocol and keying material
 for encrypting TLS SNI).  It also provides a solution for the
 inability of the DNS to allow a CNAME to be placed at the apex
-of a domain name.
+of a domain name.  Finally, it provides a way to indicate that the origin
+supports HTTPS without having to resort to redirects, allowing 
+clients to remove HTTP from the bootstrapping process.
 
 By allowing this information to be bootstrapped in the DNS,
 it allows for clients to learn of alternative services before their first
@@ -673,7 +675,9 @@ Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using HTTPSSVC records.
 
 TBD: expand this section in more detail.  In particular:
-
+* Just as with {{!AltSvc}}, clients must validate the TLS server certificate 
+  against hostname associated with the origin.  Clients MUST NOT 
+  use the SvcDomainName as any part of the server TLS certificate validation.
 * ...
 
 
@@ -710,6 +714,9 @@ There have been a wide range of proposed solutions over the years to
 the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
+
+Thank you to Ian Swett, Ralf Weber, Jon Reed, and others for their 
+feedback and suggestions on this draft.
 
 
 --- back
