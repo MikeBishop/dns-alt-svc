@@ -43,7 +43,7 @@ hostname to be served from multiple network services, each with
 associated parameters (such as transport protocol and keying material
 for encrypting TLS SNI).  It also provides a solution for the
 inability of the DNS to allow a CNAME to be placed at the apex
-of a domain name.  It also provides a way to indicate that hostname
+of a domain name.  Finally, it provides a way to indicate that the origin
 supports HTTPS without having to resort to redirects, allowing 
 clients to remove HTTP from the bootstrapping process.
 
