@@ -204,9 +204,6 @@ alternative service.
 This document also defines additional Alt-Svc parameters
 that can be used within SvcFieldValue:
 
-* sni ({{sni}}): An alternative cleartext SNI value to send when
-  establishing a TLS connection.
-
 * esnikeys ({{esnikeys}}): The ESNIKeys structure from Section 4.1 of {{!ESNI}}
   for use in encrypting the actual origin hostname
   in the TLS handshake.
@@ -600,32 +597,6 @@ optimization should use SvcRecordType = 1.
 
 
 # Extensions to enhance privacy
-
-## Alt-Svc parameter for cleartext SNI value {#sni}
-
-An Alt-Svc "sni" parameter is defined for specifying
-the cleartext SNI value to be sent when connecting to this
-alternative service.  When present, clients SHOULD
-send this SNI value when connecting to the alternative.
-
-For example:
-
-    sni="_wildcard.example.com"
-
-would indicate that "_wildcard.example.com" should be sent
-when connecting to the corresponding alternative service.
-For a large set of origin names covered by a wildcard cert,
-this can help hide which specific origin name is needed.
-
-Because service operators control the HTTPSSVC record,
-this allows them to specify what information they need
-from the SNI value.
-
-Servers MUST still be prepared for clients to continue to send
-an SNI value of the origin hostname.
-
-This parameter MAY also be sent in Alt-Svc HTTP response
-headers and HTTP/2 ALTSVC frames.
 
 
 ## Alt-Svc parameter for ESNI keys {#esnikeys}
