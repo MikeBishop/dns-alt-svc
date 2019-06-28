@@ -260,12 +260,14 @@ The RDATA for the HTTPSSVC RR consists of:
 * a 1 octet flag field for SvcRecordType, interpreted
   as an unsigned numeric value (0 to 255, with only values
   "0" and "1" defined here)
+* a 1 octet length field for the SvcDomainName.  If SvcRecordType is
+  "1", a length of 0 indicates that uri-host is omitted.  Otherwise,
+  this value MUST NOT be 0.
+* the uncompressed SvcDomainName of the specified length, represented as
+  a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
 * a 2 octet field for SvcFieldPriority as an integer in network byte
   order.  If SvcRecordType is zero, this MUST be 0.
-* a 1 octet length field for the SvcDomainName
 * a 2 octet length field for the SvcFieldValue
-* the uncompressed SvcDomainName byte string
-  of the specified length (up to 253 characters)
 * the SvcFieldValue byte string of the specified
   length (up to 65536 characters)
 
