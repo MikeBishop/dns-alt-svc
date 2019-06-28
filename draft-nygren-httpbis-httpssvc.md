@@ -843,3 +843,19 @@ more thought to potential future values?  The current version tries to
 leave this open by indicating that resource records with unknown
 SvcRecordType values should be ignored (and perhaps should be switched
 to MUST be ignored)?
+
+## Where to include Priority
+
+The SvcFieldPriority could alternately be included as a pri= Alt-Svc attribute.
+It wouldn't be applicable for Alt-Svc returned via HTTP, but it is also 
+not necessarily needed by DNS servers.  It is also not used when SvcRecordType=0.
+A related question is whether to omit it from the textual representation
+when SvcRecordType=0.  Regardless, having a series of sequential numeric
+values in the textual representation has risk of user error, especially
+as MX, SRV, and others all have their own variations here.
+
+## Whether to include Weight
+
+Some other similar mechanisms such as SRV have a weight in-addition
+to priority.  That is excluded here for simplicity.  It could always be
+added as an optional Alt-Svc attribute.
