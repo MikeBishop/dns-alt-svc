@@ -90,10 +90,10 @@ As an introductory example, a set of example HTTPSSVC and associated
 A+AAAA records might be:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
-    example.com.      2H  IN HTTPSVC 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSVC 1 svc2.example.net. "hq=\":8002\" \
+    example.com.      2H  IN HTTPSVC 0 0 svc.example.net.
+    svc.example.net.  2H  IN HTTPSVC 1 2 svc2.example.net. "hq=\":8002\" \
                                        esnikeys=\"...\""
-    svc.example.net.  2H  IN HTTPSVC 1 svc3.example.net. "h2=\":8003\" \
+    svc.example.net.  2H  IN HTTPSVC 1 3 svc3.example.net. "h2=\":8003\" \
                                        esnikeys=\"...\""
     svc2.example.net. 300 IN A       192.0.2.2
     svc2.example.net. 300 IN AAAA    2001:db8::2
@@ -146,12 +146,15 @@ additional DNS RR in a way that:
 This subsection briefly describes the HTTPSVC RR in
 a non-normative manner.
 
-The HTTPSSVC RR has three primary fields:
+The HTTPSSVC RR has four primary fields:
 
 1. SvcRecordType: A numeric flag indicating how to interpret the
    subsequent fields.  When "0", it indicates that the RR contains an
    alias.  When "1", it indicates that the RR contains an alternative service
    definition.
+2. SvcFieldPriority: The priority of this record (relative to others,
+   with lower values preferred).  Applicable when SvcRecordType is "1",
+   and otherwise has value "0".  (Described in {{pri}}.)
 2. SvcDomainName: The domain name of either the alias target (when
    SvcRecordType is "0") or the uri-host domain name of the alternative service
    endpoint (when SvcRecordType is "1").
@@ -241,12 +244,13 @@ The HTTPSSVC DNS resource record (RR) type (RRTYPE ???)
 is used to locate endpoints that can service an "https" origin.
 The presentation format of the record is:
 
- RRName TTL Class HTTPSSVC SvcRecordType SvcDomainName \
-                        SvcFieldPriority SvcFieldValue
+ RRName TTL Class HTTPSSVC SvcRecordType SvcFieldPriority \
+                         SvcDomainName SvcFieldValue
 
 where SvcRecordType is a numeric value of either 0 or 1,
-SvcDomainName is a domain name, SvcFieldPriority is a number in the
-range 0-65535, and SvcFieldValue is a string
+SvcFieldPriority is a number in the range 0-65535,
+SvcDomainName is a domain name, 
+and SvcFieldValue is a string
 present when SvcRecordType is 1.
 
 The algorithm for resolving HTTPSSVC records and associated
@@ -260,13 +264,13 @@ The RDATA for the HTTPSSVC RR consists of:
 * a 1 octet flag field for SvcRecordType, interpreted
   as an unsigned numeric value (0 to 255, with only values
   "0" and "1" defined here)
+* a 2 octet field for SvcFieldPriority as an integer in network 
+  byte order. If SvcRecordType is zero, this MUST be 0.
 * a 1 octet length field for the SvcDomainName.  If SvcRecordType is
   "1", a length of 0 indicates that uri-host is omitted.  Otherwise,
   this value MUST NOT be 0.
 * the uncompressed SvcDomainName of the specified length, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
-* a 2 octet field for SvcFieldPriority as an integer in network byte
-  order.  If SvcRecordType is zero, this MUST be 0.
 * a 2 octet length field for the SvcFieldValue
 * the SvcFieldValue byte string of the specified
   length (up to 65536 characters)
@@ -323,7 +327,7 @@ For example, if an operator of https://example.com wanted to
 point HTTPS requests to a service operating at svc.example.net,
 they would publish a record such as:
 
-    example.com. 3600 IN HTTPSSVC 0 svc.example.net.
+    example.com. 3600 IN HTTPSSVC 0 0 svc.example.net.
 
 The SvcDomainName MUST point to a domain name that contains
 another HTTPSSVC record and/or address (AAAA and/or A) records.
@@ -364,8 +368,8 @@ intends to include an HTTP response header like
 
 They would also publish an HTTPSSVC DNS RRSet like
 
-    www.example.com. 3600 IN HTTPSSVC 1 svc.example.net. 0 "hq=\":8003\""
-                             HTTPSSVC 1 svc.example.net. 1 "h2=\":8002\""
+    www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "hq=\":8003\""
+                             HTTPSSVC 1 3 svc.example.net. "h2=\":8002\""
 
 This data type can be represented as an Unknown RR as described in
 {{!RFC3597}}:
@@ -711,8 +715,6 @@ Parameter Registry:
 
 | Alt-Svc Parameter | Meaning              | Reference       |
 | ----------------- | -------------------- | --------------- |
-| pri               | Relative priority    | (This document) |
-|                   | of Alt-Svc records   |                 |
 | esnikeys          | Encrypted SNI keys   | (This document) |
 
 
