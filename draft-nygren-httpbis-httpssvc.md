@@ -201,10 +201,6 @@ alternative service.
 This document also defines additional Alt-Svc parameters
 that can be used within SvcFieldValue:
 
-* pri ({{pri}}): The value of this parameter is a numeric priority for
-  ordering alternatives (with lower values preferable).  This is
-  needed as RR set entries are unordered.
-
 * sni ({{sni}}): An alternative cleartext SNI value to send when
   establishing a TLS connection.
 
@@ -245,10 +241,12 @@ The HTTPSSVC DNS resource record (RR) type (RRTYPE ???)
 is used to locate endpoints that can service an "https" origin.
 The presentation format of the record is:
 
- RRName TTL Class HTTPSSVC SvcRecordType SvcDomainName SvcFieldValue
+ RRName TTL Class HTTPSSVC SvcRecordType SvcDomainName \
+                        SvcFieldPriority SvcFieldValue
 
 where SvcRecordType is a numeric value of either 0 or 1,
-SvcDomainName is a domain name, and SvcFieldValue is a string
+SvcDomainName is a domain name, SvcFieldPriority is a number in the
+range 0-65535, and SvcFieldValue is a string
 present when SvcRecordType is 1.
 
 The algorithm for resolving HTTPSSVC records and associated
@@ -265,9 +263,11 @@ The RDATA for the HTTPSSVC RR consists of:
 * a 1 octet length field for the SvcDomainName.  If SvcRecordType is
   "1", a length of 0 indicates that uri-host is omitted.  Otherwise,
   this value MUST NOT be 0.
-* a 2 octet length field for the SvcFieldValue
 * the uncompressed SvcDomainName of the specified length, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
+* a 2 octet field for SvcFieldPriority as an integer in network byte
+  order.  If SvcRecordType is zero, this MUST be 0.
+* a 2 octet length field for the SvcFieldValue
 * the SvcFieldValue byte string of the specified
   length (up to 65536 characters)
 
@@ -364,8 +364,8 @@ intends to include an HTTP response header like
 
 They would also publish an HTTPSSVC DNS RRSet like
 
-    www.example.com. 3600 IN HTTPSSVC 1 svc.example.net. "hq=\":8003\" pri=0"
-                             HTTPSSVC 1 svc.example.net. "h2=\":8002\" pri=1"
+    www.example.com. 3600 IN HTTPSSVC 1 svc.example.net. 0 "hq=\":8003\""
+                             HTTPSSVC 1 svc.example.net. 1 "h2=\":8002\""
 
 This data type can be represented as an Unknown RR as described in
 {{!RFC3597}}:
@@ -416,26 +416,23 @@ track users or hinder their connections after they leave that network.
 ## Multiple records and preference ordering {#pri}
 
 Server operators MAY publish multiple SvcRecordType "1" HTTPSSVC 
-records as an RRSET.  When publishing an RRSET with multiple HTTPSSVC
-records, the server operator MUST set the overall TTL to the minimum
+records as an RRSET.  When converting a collection of alt-values
+into an HTTPSSVC RRSET, the server operator MUST set the
+overall TTL to a value no larger than the minimum
 of the "max age" values (following Section 5.2 of {{!RFC2181}}).
 
 Each RR MUST contain exactly one alt-value, as described
 in Section 3 of {{!AltSvc}}.
 
-As RRs within an RRSET are explicitly unordered collections, a new
-"pri" alt-svc parameter is introduced to indicate priority.  The value
-of the "pri" parameter is an integer between 1 and 32767.  Clients MUST
-reject any alt-value with a specified priority outside of this range.
-Alt-Svc alt-values with a smaller pri value should be given preference
-over alt-values with a larger pri value.
+As RRs within an RRSET are explicitly unordered collections, the
+SvcFieldPriority value is introduced to indicate priority.
+HTTPSSVC RRs with a smaller SvcFieldPriority value SHOULD be given
+preference over RRs with a larger SvcFieldPriority value.
 
-Alt-values received via HTTPS with unspecified priority are considered
-to have priority 0 (i.e. most preferred).  Alt-values received via DNS
-with unspecified priority are assigned priority 32767 (i.e. least preferred).
+Alt-values received via HTTPS are preferred over any Alt-value received via DNS.
 
 When receiving an RRSET containing multiple HTTPSSVC records with the
-same "pri" value, clients SHOULD apply a random shuffle within a
+same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure randomized
 load-balancing.
 
@@ -444,8 +441,8 @@ load-balancing.
 For a client to construct the equivalent of an Alt-Svc HTTP response header:
 
 1. For each RR, the SvcDomainName MUST be inserted as the uri-host.
-2. The RRs SHOULD be ordered by "pri" values, with shuffling
-   for equal "pri" values.  Clients MAY choose to further
+2. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
+   for equal SvcFieldPriority values.  Clients MAY choose to further
    prioritize records where address records are immediately
    available for the record's SvcDomainName.
 3. The client SHOULD concatenate the thus-transformed-and-ordered SvcFieldValues
@@ -458,15 +455,12 @@ For a client to construct the equivalent of an Alt-Svc HTTP response header:
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPSSVC DNS
 record, groups of clients will necessarily receive the same Alt-Svc
-Field Value.  Therefore, this standard is not suitable for servers that
+Field Value.  Therefore, this standard is not suitable for uses that
 require single-client granularity in Alt-Svc.
 
 Some DNS caching systems incorrectly extend the lifetime of DNS
 records beyond the stated TTL.  Server operators MUST NOT rely on
 HTTPSSVC records expiring on time, and MAY shorten the TTL to compensate.
-
-Clients SHOULD (MAY?) prefer alternative service records
-received over HTTPS to those received via DNS.
 
 
 # Client behaviors
