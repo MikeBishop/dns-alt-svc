@@ -44,7 +44,7 @@ associated parameters (such as transport protocol and keying material
 for encrypting TLS SNI).  It also provides a solution for the
 inability of the DNS to allow a CNAME to be placed at the apex
 of a domain name.  Finally, it provides a way to indicate that the origin
-supports HTTPS without having to resort to redirects, allowing 
+supports HTTPS without having to resort to redirects, allowing
 clients to remove HTTP from the bootstrapping process.
 
 By allowing this information to be bootstrapped in the DNS,
@@ -52,14 +52,14 @@ it allows for clients to learn of alternative services before their first
 contact with the origin.  This arrangement offers potential benefits to
 both performance and privacy.
 
-TO BE REMOVED: This proposal is inspired by and based on recent DNS 
+TO BE REMOVED: This proposal is inspired by and based on recent DNS
 usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as
-long standing desires to have SRV or a functional equivalent 
-implemented for HTTP).   These proposals each provide an important 
-function but are potentially incompatible with each other, such as 
-when an origin is load-balanced across multiple hosting providers (multi-CDN).  
-Furthermore, these each add potential cases for adding additional record 
-lookups in-addition to AAAA/A lookups. This design attempts to provide a unified 
+long standing desires to have SRV or a functional equivalent
+implemented for HTTP).   These proposals each provide an important
+function but are potentially incompatible with each other, such as
+when an origin is load-balanced across multiple hosting providers (multi-CDN).
+Furthermore, these each add potential cases for adding additional record
+lookups in-addition to AAAA/A lookups. This design attempts to provide a unified
 framework that encompasses the key functionality of these proposals,
 as well as providing some extensibility for addressing similar
 future challenges.
@@ -245,7 +245,7 @@ The presentation format of the record is:
 
 where SvcRecordType is a numeric value of either "0" or "1",
 SvcFieldPriority is a number in the range 0-65535,
-SvcDomainName is a domain name, 
+SvcDomainName is a domain name,
 and SvcFieldValue is a string
 present when SvcRecordType is "1".
 
@@ -260,7 +260,7 @@ The RDATA for the HTTPSSVC RR consists of:
 * a 1 octet flag field for SvcRecordType, interpreted
   as an unsigned numeric value (0 to 255, with only values
   "0" and "1" defined here)
-* a 2 octet field for SvcFieldPriority as an integer in network 
+* a 2 octet field for SvcFieldPriority as an integer in network
   byte order. If SvcRecordType is "0", SvcFieldPriority MUST be 0.
 * a 1 octet length field for the SvcDomainName.  If SvcRecordType is
   "1", a length of 0 indicates that uri-host is omitted.  Otherwise,
@@ -340,8 +340,8 @@ The SvcFieldValue in this form SHOULD be an empty string and
 clients MUST ignore its contents.
 
 As legacy clients will not know to use this record, service
-operators will likely need to retain fallback AAAA and A records 
-alongside this HTTPSSVC record, although in a common case 
+operators will likely need to retain fallback AAAA and A records
+alongside this HTTPSSVC record, although in a common case
 the target of the HTTPSSVC record might have better performance, and
 therefore would be preferable for clients implementing this specification
 to use.
@@ -415,7 +415,7 @@ track users or hinder their connections after they leave that network.
 
 ## Multiple records and preference ordering {#pri}
 
-Server operators MAY publish multiple SvcRecordType "1" HTTPSSVC 
+Server operators MAY publish multiple SvcRecordType "1" HTTPSSVC
 records as an RRSET.  When converting a collection of alt-values
 into an HTTPSSVC RRSET, the server operator MUST set the
 overall TTL to a value no larger than the minimum
@@ -472,7 +472,7 @@ When attempting to resolve a name HOST, clients should follow in-order:
 1. Issue parallel AAAA/A and HTTPSSVC queries for the name HOST.
    The answers for these may or may not include CNAME pointers
    before reaching one or more of these records.
-   
+
 2. If an HTTPSSVC record of SvcRecordType "0" is returned for HOST,
    clients should loop back to step 1 replacing HOST with SvcDomainName,
    subject to loop detection heuristics.
@@ -637,7 +637,7 @@ benefits when used in combination with HTTPSSVC records.
 To realize the greatest privacy benefits, this proposal is intended for
 use with a privacy-preserving DNS transport (like DNS over TLS
 {{!RFC7858}} or DNS over HTTPS {{!RFC8484}}).
-However, performance improvements, and some modest privacy improvements, 
+However, performance improvements, and some modest privacy improvements,
 are possible without the use of those standards.
 
 This RRType could be extended to support schemes other than "https".
@@ -657,8 +657,8 @@ Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using HTTPSSVC records.
 
 TBD: expand this section in more detail.  In particular:
-* Just as with {{!AltSvc}}, clients must validate the TLS server certificate 
-  against hostname associated with the origin.  Clients MUST NOT 
+* Just as with {{!AltSvc}}, clients must validate the TLS server certificate
+  against hostname associated with the origin.  Clients MUST NOT
   use the SvcDomainName as any part of the server TLS certificate validation.
 * ...
 
@@ -695,7 +695,7 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
-Thank you to Ian Swett, Ralf Weber, Jon Reed, and others for their 
+Thank you to Ian Swett, Ralf Weber, Jon Reed, and others for their
 feedback and suggestions on this draft.
 
 
@@ -772,9 +772,9 @@ It also allows specifying ESNI keys for a specific port, not an entire host.
 
 ## SNI Alt-Svc parameter
 
-Defining an Alt-Svc sni= parameter 
-(such as from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}) would 
-have provided some benefits to clients and servers not implementing ESNI, 
+Defining an Alt-Svc sni= parameter
+(such as from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}) would
+have provided some benefits to clients and servers not implementing ESNI,
 such as for specifying that "_wildcard.example.com" could be sent as an SNI
 value rather than the full name.  There is nothing precluding HTTPSSVC from
 being used with an sni= parameter if one were to be defined, but it
@@ -818,7 +818,7 @@ to MUST be ignored)?
 ## Where to include Priority
 
 The SvcFieldPriority could alternately be included as a pri= Alt-Svc attribute.
-It wouldn't be applicable for Alt-Svc returned via HTTP, but it is also 
+It wouldn't be applicable for Alt-Svc returned via HTTP, but it is also
 not necessarily needed by DNS servers.  It is also not used when SvcRecordType=0.
 A related question is whether to omit it from the textual representation
 when SvcRecordType=0.  Regardless, having a series of sequential numeric
