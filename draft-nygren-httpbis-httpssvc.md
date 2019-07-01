@@ -44,7 +44,7 @@ associated parameters (such as transport protocol and keying material
 for encrypting TLS SNI).  It also provides a solution for the
 inability of the DNS to allow a CNAME to be placed at the apex
 of a domain name.  Finally, it provides a way to indicate that the origin
-supports HTTPS without having to resort to redirects, allowing 
+supports HTTPS without having to resort to redirects, allowing
 clients to remove HTTP from the bootstrapping process.
 
 By allowing this information to be bootstrapped in the DNS,
@@ -52,14 +52,14 @@ it allows for clients to learn of alternative services before their first
 contact with the origin.  This arrangement offers potential benefits to
 both performance and privacy.
 
-TO BE REMOVED: This proposal is inspired by and based on recent DNS 
+TO BE REMOVED: This proposal is inspired by and based on recent DNS
 usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as
-long standing desires to have SRV or a functional equivalent 
-implemented for HTTP).   These proposals each provide an important 
-function but are potentially incompatible with each other, such as 
-when an origin is load-balanced across multiple hosting providers (multi-CDN).  
-Furthermore, these each add potential cases for adding additional record 
-lookups in-addition to AAAA/A lookups. This design attempts to provide a unified 
+long standing desires to have SRV or a functional equivalent
+implemented for HTTP).   These proposals each provide an important
+function but are potentially incompatible with each other, such as
+when an origin is load-balanced across multiple hosting providers (multi-CDN).
+Furthermore, these each add potential cases for adding additional record
+lookups in-addition to AAAA/A lookups. This design attempts to provide a unified
 framework that encompasses the key functionality of these proposals,
 as well as providing some extensibility for addressing similar
 future challenges.
@@ -80,7 +80,7 @@ records for the origin hostname.  This is adequate when clients default
 to TCP port 443, do not support Encrypted SNI {{!ESNI=I-D.ietf-tls-esni}},
 and where the origin service operator does not have a desire
 to put an CNAME at a zone apex (such as for "https://example.com").
-Handle situations beyond this within the DNS requires learning additional
+Handling situations beyond this within the DNS requires learning additional
 information, and it is highly desirable to minimize the number of round-trip
 and lookups required to learn this additional information.
 
@@ -91,16 +91,16 @@ A+AAAA records might be:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
     example.com.      2H  IN HTTPSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSVC 1 2 svc2.example.net. "hq=\":8002\" \
+    svc.example.net.  2H  IN HTTPSVC 1 2 svc3.example.net. "hq=\":8003\" \
                                        esnikeys=\"...\""
-    svc.example.net.  2H  IN HTTPSVC 1 3 svc3.example.net. "h2=\":8003\" \
+    svc.example.net.  2H  IN HTTPSVC 1 3 svc2.example.net. "h2=\":8002\" \
                                        esnikeys=\"...\""
     svc2.example.net. 300 IN A       192.0.2.2
     svc2.example.net. 300 IN AAAA    2001:db8::2
     svc3.example.net. 300 IN A       192.0.2.3
     svc3.example.net. 300 IN AAAA    2001:db8::3
 
-In the preceeding example, both of the "example.com" and
+In the preceding example, both of the "example.com" and
 "www.example.com" origin names are aliased to use service endpoints
 offered as "svc.example.net" (with "www.example.com" continuing to use
 a CNAME alias).  HTTP/2 is available on a cluster of machines located
@@ -155,15 +155,15 @@ The HTTPSSVC RR has four primary fields:
 2. SvcFieldPriority: The priority of this record (relative to others,
    with lower values preferred).  Applicable when SvcRecordType is "1",
    and otherwise has value "0".  (Described in {{pri}}.)
-2. SvcDomainName: The domain name of either the alias target (when
+3. SvcDomainName: The domain name of either the alias target (when
    SvcRecordType is "0") or the uri-host domain name of the alternative service
    endpoint (when SvcRecordType is "1").
-3. SvcFieldValue: An Alternative Service field value describing the
+4. SvcFieldValue: An Alternative Service field value describing the
    alternative service endpoint for the domain name specified in
    SvcDomainName (only when SvcRecordType is "1" and otherwise empty).
 
-DNS recursive resolvers may perform subsequent record resolution (for
-HTTPSSVC, A, and AAAA records) and may return them in the Additional Section
+Cooperating DNS recursive resolvers will perform subsequent record resolution (for
+HTTPSSVC, A, and AAAA records) and return them in the Additional Section
 of the response.  Clients must either use responses included
 in the additional section returned by the recursive resolver
 or perform necessary HTTPSSVC, A, and AAAA record resolutions.
@@ -194,14 +194,14 @@ The SvcFieldValue includes the Alt-Svc Field Value through
 the DNS.  This is in its standard text format, with the uri-host
 portion of the alt-authority component
 moved into the SvcDomainName field of the HTTPSSVC RR.
-Client receiving this information during DNS resolution
+A client receiving this information during DNS resolution
 can skip the initial connection and proceed directly to an
 alternative service.
 
 
 ## Additional Alt-Svc parameters
 
-This document also defines additional Alt-Svc parameters
+This document also defines one additional Alt-Svc parameter
 that can be used within SvcFieldValue:
 
 * esnikeys ({{esnikeys}}): The ESNIKeys structure from Section 4.1 of {{!ESNI}}
@@ -223,7 +223,6 @@ For consistency with {{!AltSvc}}, we adopt the following definitions:
 Abstractly, the origin consists of a scheme (typically "https"), a host
 name, and a port (typically "443").
 
-
 Additional DNS terminology intends to be consistent
 with {{?DNSTerm=RFC8499}}.
 
@@ -244,11 +243,11 @@ The presentation format of the record is:
  RRName TTL Class HTTPSSVC SvcRecordType SvcFieldPriority \
                          SvcDomainName SvcFieldValue
 
-where SvcRecordType is a numeric value of either 0 or 1,
+where SvcRecordType is a numeric value of either "0" or "1",
 SvcFieldPriority is a number in the range 0-65535,
-SvcDomainName is a domain name, 
+SvcDomainName is a domain name,
 and SvcFieldValue is a string
-present when SvcRecordType is 1.
+present when SvcRecordType is "1".
 
 The algorithm for resolving HTTPSSVC records and associated
 address records is specified in {{resolution}}.
@@ -261,8 +260,8 @@ The RDATA for the HTTPSSVC RR consists of:
 * a 1 octet flag field for SvcRecordType, interpreted
   as an unsigned numeric value (0 to 255, with only values
   "0" and "1" defined here)
-* a 2 octet field for SvcFieldPriority as an integer in network 
-  byte order. If SvcRecordType is zero, this MUST be 0.
+* a 2 octet field for SvcFieldPriority as an integer in network
+  byte order. If SvcRecordType is "0", SvcFieldPriority MUST be 0.
 * a 1 octet length field for the SvcDomainName.  If SvcRecordType is
   "1", a length of 0 indicates that uri-host is omitted.  Otherwise,
   this value MUST NOT be 0.
@@ -272,7 +271,7 @@ The RDATA for the HTTPSSVC RR consists of:
 * the SvcFieldValue byte string of the specified
   length (up to 65536 characters)
 
-When SvcRecordType is 0, the length of SvcFieldValue SHOULD be 0
+When SvcRecordType is "0", the length of SvcFieldValue SHOULD be 0
 and clients MUST ignore the contents of non-empty SvcFieldValue fields.
 
 
@@ -284,7 +283,7 @@ in the following manner:
 1. If the scheme is "https" and the port is 443,
    then the RRName is equal to the origin host name.  Otherwise the
    RRName is represented by prefixing the
-   port and scheme with "_", then concatenating them with the host,
+   port and scheme with "_", then concatenating them with the host name,
    resulting in a domain name like "_832._https.www.example.com.".
 
 2. When a prior CNAME or HTTPSSVC record has aliased to
@@ -329,7 +328,7 @@ they would publish a record such as:
 The SvcDomainName MUST point to a domain name that contains
 another HTTPSSVC record and/or address (AAAA and/or A) records.
 
-Note that the RRName or the SvcDomainName MAY themselves be CNAMEs.
+Note that the RRName and the SvcDomainName MAY themselves be CNAMEs.
 Clients and recursive resolvers MUST follow CNAMEs as normal.
 
 Due to the risk of loops, clients and recursive resolvers MUST
@@ -341,15 +340,15 @@ The SvcFieldValue in this form SHOULD be an empty string and
 clients MUST ignore its contents.
 
 As legacy clients will not know to use this record, service
-operators will likely need to retain fallback AAAA and A records 
-alongside this HTTPSSVC record, although in a common case 
-the target of the HTTPSSVC record might have better performance
-so would be preferable for clients implementing this specification 
+operators will likely need to retain fallback AAAA and A records
+alongside this HTTPSSVC record, although in a common case
+the target of the HTTPSSVC record might have better performance, and
+therefore would be preferable for clients implementing this specification
 to use.
 
 ## HTTPSSVC records: alternative service form
 
-When SvcRecordType is 1, the combination of SvcDomainName and
+When SvcRecordType is "1", the combination of SvcDomainName and
 SvcFieldValue within each resource record associates an Alternative
 Service Field Value with an origin.
 
@@ -363,7 +362,7 @@ intends to include an HTTP response header like
     Alt-Svc: hq="svc.example.net:8003"; ma=3600, \
              h2="svc.example.net:8002"; ma=3600
 
-They would also publish an HTTPSSVC DNS RRSet like
+they could also publish an HTTPSSVC DNS RRSet like
 
     www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "hq=\":8003\""
                              HTTPSSVC 1 3 svc.example.net. "h2=\":8002\""
@@ -416,7 +415,7 @@ track users or hinder their connections after they leave that network.
 
 ## Multiple records and preference ordering {#pri}
 
-Server operators MAY publish multiple SvcRecordType "1" HTTPSSVC 
+Server operators MAY publish multiple SvcRecordType "1" HTTPSSVC
 records as an RRSET.  When converting a collection of alt-values
 into an HTTPSSVC RRSET, the server operator MUST set the
 overall TTL to a value no larger than the minimum
@@ -444,8 +443,8 @@ For a client to construct the equivalent of an Alt-Svc HTTP response header:
 1. For each RR, the SvcDomainName MUST be inserted as the uri-host.
 2. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
    for equal SvcFieldPriority values.  Clients MAY choose to further
-   prioritize records where address records are immediately
-   available for the record's SvcDomainName.
+   prioritize alt-values where address records are immediately
+   available for the alt-value's SvcDomainName.
 3. The client SHOULD concatenate the thus-transformed-and-ordered SvcFieldValues
    in the RRSET, separated by commas.  (This is semantically equivalent to
    receiving multiple Alt-Svc HTTP response headers, according to Section 3.2.2
@@ -473,18 +472,18 @@ When attempting to resolve a name HOST, clients should follow in-order:
 1. Issue parallel AAAA/A and HTTPSSVC queries for the name HOST.
    The answers for these may or may not include CNAME pointers
    before reaching one or more of these records.
-   
+
 2. If an HTTPSSVC record of SvcRecordType "0" is returned for HOST,
    clients should loop back to step 1 replacing HOST with SvcDomainName,
    subject to loop detection heuristics.
 
 3. If one or more HTTPSSVC record of SvcRecordType "1" is returned for HOST,
-   clients should synthesize equivalent Alt-Svc records based
-   on the SvcDomainName and SvcFieldValue.  If one of these Alt-Svc
-   records is selected to be used in a connection, the client will
+   clients should synthesize equivalent Alt-Svc Field Values based
+   on the SvcDomainName and SvcFieldValue.  If one of these alt-values
+   is selected to be used in a connection, the client will
    need to resolve AAAA and/or A records for SvcDomainName.
 
-4. If only AAAA and/or A records are present for HOST (and no HTTPSSVC), 
+4. If only AAAA and/or A records are present for HOST (and no HTTPSSVC),
    clients should make a connection to one of the IP addresses
    contained in these records and proceed normally.
 
@@ -513,7 +512,7 @@ the client SHOULD construct a corresponding "https" URL as follows:
 
 3. Do not alter any other aspect of the URL.
 
-This construction is equivalent to {{HSTS}} Section 8.3, point 5.
+This construction is equivalent to Section 8.3 of {{HSTS}} , point 5.
 
 If an HTTPSSVC record is present for this "https" URL, the client
 should treat this as the equivalent of receiving an HTTP "302 Found"
@@ -549,9 +548,9 @@ client MAY perform an HTTPSSVC query to refresh the entry.
 
 Recursive DNS servers SHOULD resolve SvcDomainName records and include
 them in the Additional Section (along with any relevant CNAME
-records).  For SvcRecordType=0, recursive DNS servers should attempt
+records).  For SvcRecordType=0, recursive DNS servers SHOULD attempt
 to resolve and include A, AAAA, and HTTPSSVC records.  For
-SvcRecordType=1, recursive DNS servers should attempt to resolve and
+SvcRecordType=1, recursive DNS servers SHOULD attempt to resolve and
 include A and AAAA records.
 
 Authoritative DNS servers SHOULD return A, AAAA, and HTTPSSVC records
@@ -582,7 +581,7 @@ responses to the address queries that were issued in parallel.
 
 Highly performance-sensitive clients MAY implement the following special-
 case shortcut to avoid increased connection time: if (1) one of the
-HTTPSSVC records returned has SvcRecordType = 0, (2) its SvcDomainName
+HTTPSSVC records returned has SvcRecordType=0, (2) its SvcDomainName
 is not in the DNS cache, and (3) the address queries for the
 origin domain return usable IP addresses, then the client MAY ignore the
 HTTPSSVC records and connect directly to the origin domain.  When the
@@ -591,9 +590,9 @@ SHOULD make subsequent requests over connections specified by the HTTPSSVC
 records.
 
 Server operators can therefore expect that publishing HTTPSSVC records with
-SvcRecordType = 0 should not cause an additional DNS query for
+SvcRecordType=0 should not cause an additional DNS query for
 performance-sensitive clients.  Server operators who wish to prevent this
-optimization should use SvcRecordType = 1.
+optimization should use SvcRecordType=1.
 
 
 # Extensions to enhance privacy
@@ -604,7 +603,7 @@ optimization should use SvcRecordType = 1.
 An Alt-Svc "esnikeys" parameter is defined for specifying
 ESNI keys corresponding to an alternative service.
 The value of the parameter is an ESNIKeys structure {{!ESNI}}
-encoded in {{!base64=RFC4648}} or the empty string.  ESNI-aware
+encoded in {{!base64=RFC4648}}, or the empty string.  ESNI-aware
 clients SHOULD prefer alt-values with nonempty esnikeys.
 
 This parameter MAY also be sent in Alt-Svc HTTP response
@@ -637,8 +636,8 @@ benefits when used in combination with HTTPSSVC records.
 
 To realize the greatest privacy benefits, this proposal is intended for
 use with a privacy-preserving DNS transport (like DNS over TLS
-{{!RFC7858}} or DNS over HTTPS {{!DOH=I-D.ietf-doh-dns-over-https}}).
-However, performance improvements, and some modest privacy improvements, 
+{{!RFC7858}} or DNS over HTTPS {{!RFC8484}}).
+However, performance improvements, and some modest privacy improvements,
 are possible without the use of those standards.
 
 This RRType could be extended to support schemes other than "https".
@@ -658,8 +657,8 @@ Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using HTTPSSVC records.
 
 TBD: expand this section in more detail.  In particular:
-* Just as with {{!AltSvc}}, clients must validate the TLS server certificate 
-  against hostname associated with the origin.  Clients MUST NOT 
+* Just as with {{!AltSvc}}, clients must validate the TLS server certificate
+  against hostname associated with the origin.  Clients MUST NOT
   use the SvcDomainName as any part of the server TLS certificate validation.
 * ...
 
@@ -696,7 +695,7 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
-Thank you to Ian Swett, Ralf Weber, Jon Reed, and others for their 
+Thank you to Ian Swett, Ralf Weber, Jon Reed, and others for their
 feedback and suggestions on this draft.
 
 
@@ -723,8 +722,8 @@ However, there are several differences:
   protocols, whereas Alt-Svc can signal such an upgrade (e.g. to
   HTTP/2).
 * SRV records are not extensible, whereas Alt-Svc and thus HTTPSSVC can be extended with
-  new parameters.  For example, this is what allows the privacy
-  improvements related to SNI selection in {{!AltSvcSNI}} and {{!ESNI}}.
+  new parameters.  For example, this is what allows the incorporation of
+  ESNI keys in HTTPSSVC.
 * Using SRV records would not allow a client to skip processing of the
   Alt-Svc information in a subsequent connection, so it does not confer
   a performance advantage.
@@ -759,22 +758,23 @@ legacy endpoint, and may remove the apex's address records if the observed legac
 traffic has fallen to negligible levels.
 
 
-## Differences from the proposed ESNIKEYS record
+## Differences from the proposed ESNI record
 
 Unlike {{!ESNI}}, this approach is extensible and covers
 the Alt-Svc case as well as addresses the zone apex CNAME challenge.
 
 By using the Alt-Svc model we also provide a way to solve
-the ESNIKEYS multi-CDN challenges in a general case.
+the ESNI multi-CDN challenges in a general case.
 
-Unlike ESNIKEYS, this is focused on the specific case of HTTPS,
+Unlike ESNI, this is focused on the specific case of HTTPS,
 although this approach could be extended for other protocols.
+It also allows specifying ESNI keys for a specific port, not an entire host.
 
 ## SNI Alt-Svc parameter
 
-Defining an Alt-Svc sni= parameter 
-(such as from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}) would 
-have provided some benefits to clients and servers not implementing ESNI, 
+Defining an Alt-Svc sni= parameter
+(such as from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}) would
+have provided some benefits to clients and servers not implementing ESNI,
 such as for specifying that "_wildcard.example.com" could be sent as an SNI
 value rather than the full name.  There is nothing precluding HTTPSSVC from
 being used with an sni= parameter if one were to be defined, but it
@@ -809,7 +809,7 @@ appreciated to refine the proposed details, overall.
 
 ## Extensibility of SvcRecordType
 
-Only values of 0 and 1 are allowed for SvcRecordType.  Should we give
+Only values of "0" and "1" are allowed for SvcRecordType.  Should we give
 more thought to potential future values?  The current version tries to
 leave this open by indicating that resource records with unknown
 SvcRecordType values should be ignored (and perhaps should be switched
@@ -818,7 +818,7 @@ to MUST be ignored)?
 ## Where to include Priority
 
 The SvcFieldPriority could alternately be included as a pri= Alt-Svc attribute.
-It wouldn't be applicable for Alt-Svc returned via HTTP, but it is also 
+It wouldn't be applicable for Alt-Svc returned via HTTP, but it is also
 not necessarily needed by DNS servers.  It is also not used when SvcRecordType=0.
 A related question is whether to omit it from the textual representation
 when SvcRecordType=0.  Regardless, having a series of sequential numeric
