@@ -1,5 +1,5 @@
 ---
-title: HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSVC)
+title: HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSSVC)
 abbrev: HTTPSSVC RR for DNS
 docname: draft-nygren-httpbis-httpssvc-latest
 date: {DATE}
@@ -90,10 +90,10 @@ As an introductory example, a set of example HTTPSSVC and associated
 A+AAAA records might be:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
-    example.com.      2H  IN HTTPSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSVC 1 2 svc3.example.net. "hq=\":8003\" \
+    example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
+    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "hq=\":8003\" \
                                        esnikeys=\"...\""
-    svc.example.net.  2H  IN HTTPSVC 1 3 svc2.example.net. "h2=\":8002\" \
+    svc.example.net.  2H  IN HTTPSSVC 1 3 svc2.example.net. "h2=\":8002\" \
                                        esnikeys=\"...\""
     svc2.example.net. 300 IN A       192.0.2.2
     svc2.example.net. 300 IN AAAA    2001:db8::2
@@ -143,7 +143,7 @@ additional DNS RR in a way that:
 
 ## Overview of the HTTPSSVC RR
 
-This subsection briefly describes the HTTPSVC RR in
+This subsection briefly describes the HTTPSSVC RR in
 a non-normative manner.
 
 The HTTPSSVC RR has four primary fields:
@@ -167,8 +167,8 @@ HTTPSSVC, A, and AAAA records) and return them in the Additional Section
 of the response.  Clients must either use responses included
 in the additional section returned by the recursive resolver
 or perform necessary HTTPSSVC, A, and AAAA record resolutions.
-DNS authoritative servers may attach in-bailiwick HTTPSVC, A, AAAA, and CNAME
-records in the Additional Section to responses for an HTTPSVC query.
+DNS authoritative servers may attach in-bailiwick HTTPSSVC, A, AAAA, and CNAME
+records in the Additional Section to responses for an HTTPSSVC query.
 
 When SvcRecordType is "1", the HTTPSSVC RR extends the concept
 introduced in the HTTP Alternative Services proposed standard
@@ -317,7 +317,7 @@ SvcDomainName.  HTTPSSVC RRSets MUST only have a single resource
 record in this form.  If multiple are present, clients or recursive
 resolvers SHOULD pick one non-determinstically.
 
-The common use-case for this form of the HTTPSVC record is as an
+The common use-case for this form of the HTTPSSVC record is as an
 alternative to CNAMEs at the zone apex where they are not allowed.
 For example, if an operator of https://example.com wanted to
 point HTTPS requests to a service operating at svc.example.net,
