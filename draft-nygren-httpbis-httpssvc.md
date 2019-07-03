@@ -630,7 +630,7 @@ to indicate that fallback from B to A is allowed.
 
 The purpose of this standard is to reduce connection latency and
 improve user privacy.  Server operators implementing this standard
-SHOULD also implement TLS 1.3 {{!I-D.ietf-tls-tls13}} and OCSP Stapling
+SHOULD also implement TLS 1.3 {{!RFC8446}} and OCSP Stapling
 {{!RFC6066}}, both of which confer substantial performance and privacy
 benefits when used in combination with HTTPSSVC records.
 
