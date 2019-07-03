@@ -515,11 +515,11 @@ the client SHOULD construct a corresponding "https" URL as follows:
 This construction is equivalent to Section 8.3 of {{HSTS}} , point 5.
 
 If an HTTPSSVC record is present for this "https" URL, the client
-should treat this as the equivalent of receiving an HTTP "302 Found"
-redirect to the "https" URL.
+should treat this as the equivalent of receiving an HTTP "307 
+Temporary Redirect" redirect to the "https" URL.
 Because HTTPSSVC is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
-had received a 302 redirect over cleartext HTTP.
+had received a 307 redirect over cleartext HTTP.
 
 If the HTTPSSVC query results in a SERVFAIL error, and the connection
 between the client and the recursive resolver is cryptographically protected
@@ -695,8 +695,8 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
-Thank you to Ian Swett, Ralf Weber, Jon Reed, and others for their
-feedback and suggestions on this draft.
+Thank you to Ian Swett, Ralf Weber, Jon Reed, Ilari Liusvaara,
+and others for their feedback and suggestions on this draft.
 
 
 --- back
