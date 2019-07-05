@@ -262,16 +262,13 @@ The RDATA for the HTTPSSVC RR consists of:
   "0" and "1" defined here)
 * a 2 octet field for SvcFieldPriority as an integer in network
   byte order. If SvcRecordType is "0", SvcFieldPriority MUST be 0.
-* a 1 octet length field for the SvcDomainName.  If SvcRecordType is
-  "1", a length of 0 indicates that uri-host is omitted.  Otherwise,
-  this value MUST NOT be 0.
-* the uncompressed SvcDomainName of the specified length, represented as
+* the uncompressed SvcDomainName, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
-* a 2 octet length field for the SvcFieldValue
-* the SvcFieldValue byte string of the specified
-  length (up to 65536 characters)
+* the SvcFieldValue byte string, consuming the remainder of the record
+  (so smaller than 65535 octets and constrained by the RRDATA
+  and DNS message sizes).
 
-When SvcRecordType is "0", the length of SvcFieldValue SHOULD be 0
+When SvcRecordType is "0", the SvcFieldValue SHOULD be empty ("")
 and clients MUST ignore the contents of non-empty SvcFieldValue fields.
 
 
@@ -441,6 +438,8 @@ load-balancing.
 For a client to construct the equivalent of an Alt-Svc HTTP response header:
 
 1. For each RR, the SvcDomainName MUST be inserted as the uri-host.
+   If SvcDomainName is empty ("") then the RRNAME for the HTTPSSVC
+   record MUST be inserted as the uri-host.
 2. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
    for equal SvcFieldPriority values.  Clients MAY choose to further
    prioritize alt-values where address records are immediately
@@ -802,8 +801,6 @@ to over-generalize have not met with broad success.
 
 ## Wire Format
 
-The length of SvcFieldValue is redundant.  Should we eliminate this?
-
 Advice from experts in DNS wire format best practices would be greatly
 appreciated to refine the proposed details, overall.
 
@@ -830,3 +827,27 @@ as MX, SRV, and others all have their own variations here.
 Some other similar mechanisms such as SRV have a weight in-addition
 to priority.  That is excluded here for simplicity.  It could always be
 added as an optional Alt-Svc attribute.
+
+## Special cases for SvcDomainName
+
+When SvcRecordType=1, there are some special cases to handle
+for SvcDomainName:
+* How to indicate it should be equivalent to the RRNAME?
+* How to indicate it should be equivalent to the hostname?
+* What happens if it has the value "."?  SRV and MX have this
+  mean "no service available.
+
+
+# Change history
+
+* draft-nygren-httpbis-httpssvc-02
+    * Remove the redundant length fields from the wire format.
+    * Define an empty SvcDomainName for SvcRecordType=1 
+      as being the HTTPSSVC RRNAME.
+
+* draft-nygren-httpbis-httpssvc-01
+    * Fixes of record name.  Replace references to "HTTPSVC" with "HTTPSSVC".
+    
+* draft-nygren-httpbis-httpssvc-00
+    * Initial version
+    
