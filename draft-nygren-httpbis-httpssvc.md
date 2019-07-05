@@ -99,7 +99,7 @@ A+AAAA records might be:
     svc2.example.net. 300 IN AAAA    2001:db8::2
     svc3.example.net. 300 IN A       192.0.2.3
     svc3.example.net. 300 IN AAAA    2001:db8::3
-
+    
 In the preceding example, both of the "example.com" and
 "www.example.com" origin names are aliased to use service endpoints
 offered as "svc.example.net" (with "www.example.com" continuing to use
@@ -111,6 +111,7 @@ and "www.example.com" to be encrypted in the handshake with these
 service endpoints.  When connecting, clients will continue to treat
 the authoritative origins as "https://example.com" and
 "https://www.example.com", respectively.
+
 
 ## Goals of the HTTPSSVC RR
 
@@ -284,7 +285,7 @@ in the following manner:
    then the RRName is equal to the origin host name.  Otherwise the
    RRName is represented by prefixing the
    port and scheme with "_", then concatenating them with the host name,
-   resulting in a domain name like "_832._https.www.example.com.".
+   resulting in a domain name like "_8443._https.www.example.com.".
 
 2. When a prior CNAME or HTTPSSVC record has aliased to
    an HTTPSSVC record, RRName shall be the name of the alias target.
@@ -293,6 +294,15 @@ Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
 hostnames based on the origin host.
 
+As an example for schemes and ports other than "https" and port 443:
+
+    _8443._wss.api.example.com. 2H IN HTTPSSVC 0 0 svc4.example.net.
+    svc4.example.net.  2H  IN HTTPSSVC 1 3 svc4.example.net. "h2=\":8004\" \
+                                       esnikeys=\"...\""
+
+would indicate that "wss://api.example.com:8443" is aliased
+to use HTTP/2 service endpoints offered as "svc4.example.net" 
+on port 8004.
 
 ## SvcRecordType
 
@@ -695,8 +705,9 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
-Thank you to Ian Swett, Ralf Weber, Jon Reed, and others for their
-feedback and suggestions on this draft.
+Thank you to Ian Swett, Ralf Weber, Jon Reed, 
+Martin Thompson
+and others for their feedback and suggestions on this draft.
 
 
 --- back
