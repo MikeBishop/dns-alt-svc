@@ -438,10 +438,10 @@ load-balancing.
 For a client to construct the equivalent of an Alt-Svc HTTP response header:
 
 1. For each RR, the SvcDomainName MUST be inserted as the uri-host.
-   If SvcDomainName is empty ("") then the RRNAME for the final HTTPSSVC
+   If SvcDomainName is has the value "." then the RRNAME for the final HTTPSSVC
    record MUST be inserted as the uri-host.  (In the case of a CNAME 
    or a HTTPSSVC SvcRecordType "0" record pointing to an HTTPSSVC record
-   with SvcRecordType "1" and SvcDomainName "" then it is 
+   with SvcRecordType "1" and SvcDomainName "." then it is 
    RRNAME for the terminal HTTPSSVC record that must be inserted as the uri-host.)
 2. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
    for equal SvcFieldPriority values.  Clients MAY choose to further
@@ -831,21 +831,12 @@ Some other similar mechanisms such as SRV have a weight in-addition
 to priority.  That is excluded here for simplicity.  It could always be
 added as an optional Alt-Svc attribute.
 
-## Special cases for SvcDomainName
-
-When SvcRecordType=1, there are some special cases to handle
-for SvcDomainName:
-* How to indicate it should be equivalent to the RRNAME?
-* How to indicate it should be equivalent to the hostname?
-* What happens if it has the value "."?  SRV and MX have this
-  mean "no service available.
-
 
 # Change history
 
 * draft-nygren-httpbis-httpssvc-02
     * Remove the redundant length fields from the wire format.
-    * Define an empty SvcDomainName for SvcRecordType=1 
+    * Define aSvcDomainName of "." for SvcRecordType=1 
       as being the HTTPSSVC RRNAME.
 
 * draft-nygren-httpbis-httpssvc-01
