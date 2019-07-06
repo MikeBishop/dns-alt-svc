@@ -703,6 +703,26 @@ feedback and suggestions on this draft.
 
 --- back
 
+# Additional examples
+
+## Equivalence to Alt-Svc records
+
+The following:
+
+    www.example.com.  2H  IN CNAME   svc.example.net.
+    example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
+    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "hq=\":8003\"; \
+                                       esnikeys=\"ABC...\""
+    svc.example.net.  2H  IN HTTPSSVC 1 3 . "h2=\":8002\"; \
+                                       esnikeys=\"123...\""
+
+is equivalent to the Alt-Svc record:
+
+    Alt-Svc: hq="svc3.example.net:8003"; esnikeys="ABC..."; ma=7200, \
+             h2="svc.example.net:8002"; esnikeys="123..."; ma=7200
+
+for the origins of both "https://www.example.com" and "https://example.com".
+
 # Comparison with alternatives
 
 The HTTPSSVC record type closely resembles some existing record types
