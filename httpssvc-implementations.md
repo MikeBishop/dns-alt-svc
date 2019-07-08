@@ -12,7 +12,7 @@ should not be used for production purposes.
 
 [Private Type implementation for BIND9](https://gitlab.isc.org/isc-projects/bind9/merge_requests/2135)
 
-Author: Mark Andrews <marka@isc.org> 
-Version: Implements -01 but also anticipated -02 changes under an ifdef
-TYPENN: 65479
+* Author: Mark Andrews \<marka@isc.org\> 
+* Version: Implements -01 but also anticipated -02 changes under an ifdef
+* TYPENN: 65479
 
