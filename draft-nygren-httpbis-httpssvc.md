@@ -527,11 +527,11 @@ the client SHOULD construct a corresponding "https" URL as follows:
 This construction is equivalent to Section 8.3 of {{HSTS}} , point 5.
 
 If an HTTPSSVC record is present for this "https" URL, the client
-should treat this as the equivalent of receiving an HTTP "302 Found"
-redirect to the "https" URL.
+should treat this as the equivalent of receiving an HTTP "307 
+Temporary Redirect" redirect to the "https" URL.
 Because HTTPSSVC is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
-had received a 302 redirect over cleartext HTTP.
+had received a 307 redirect over cleartext HTTP.
 
 If the HTTPSSVC query results in a SERVFAIL error, and the connection
 between the client and the recursive resolver is cryptographically protected
@@ -642,7 +642,7 @@ to indicate that fallback from B to A is allowed.
 
 The purpose of this standard is to reduce connection latency and
 improve user privacy.  Server operators implementing this standard
-SHOULD also implement TLS 1.3 {{!I-D.ietf-tls-tls13}} and OCSP Stapling
+SHOULD also implement TLS 1.3 {{!RFC8446}} and OCSP Stapling
 {{!RFC6066}}, both of which confer substantial performance and privacy
 benefits when used in combination with HTTPSSVC records.
 
@@ -865,9 +865,13 @@ added as an optional Alt-Svc attribute.
 
 # Change history
 
+* draft-nygren-httpbis-httpssvc-03
+    * Change redirect type for HSTS-style behavior 
+      from 302 to 307 to reduce ambiguities.
+    
 * draft-nygren-httpbis-httpssvc-02
     * Remove the redundant length fields from the wire format.
-    * Define aSvcDomainName of "." for SvcRecordType=1 
+    * Define a SvcDomainName of "." for SvcRecordType=1 
       as being the HTTPSSVC RRNAME.
     * Replace "hq" with "h3".
 
