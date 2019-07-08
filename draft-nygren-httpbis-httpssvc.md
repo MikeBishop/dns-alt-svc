@@ -91,7 +91,7 @@ A+AAAA records might be:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
     example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "hq=\":8003\"; \
+    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
                                        esnikeys=\"...\""
     svc.example.net.  2H  IN HTTPSSVC 1 3 svc2.example.net. "h2=\":8002\"; \
                                        esnikeys=\"...\""
@@ -263,16 +263,13 @@ The RDATA for the HTTPSSVC RR consists of:
   "0" and "1" defined here)
 * a 2 octet field for SvcFieldPriority as an integer in network
   byte order. If SvcRecordType is "0", SvcFieldPriority MUST be 0.
-* a 1 octet length field for the SvcDomainName.  If SvcRecordType is
-  "1", a length of 0 indicates that uri-host is omitted.  Otherwise,
-  this value MUST NOT be 0.
-* the uncompressed SvcDomainName of the specified length, represented as
+* the uncompressed SvcDomainName, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
-* a 2 octet length field for the SvcFieldValue
-* the SvcFieldValue byte string of the specified
-  length (up to 65536 characters)
+* the SvcFieldValue byte string, consuming the remainder of the record
+  (so smaller than 65535 octets and constrained by the RRDATA
+  and DNS message sizes).
 
-When SvcRecordType is "0", the length of SvcFieldValue SHOULD be 0
+When SvcRecordType is "0", the SvcFieldValue SHOULD be empty ("")
 and clients MUST ignore the contents of non-empty SvcFieldValue fields.
 
 
@@ -369,12 +366,12 @@ but with the uri-host moved to the SvcDomainName field.
 For example, if the operator of https://www.example.com
 intends to include an HTTP response header like
 
-    Alt-Svc: hq="svc.example.net:8003"; ma=3600, \
+    Alt-Svc: h3="svc.example.net:8003"; ma=3600, \
              h2="svc.example.net:8002"; ma=3600
 
 they could also publish an HTTPSSVC DNS RRSet like
 
-    www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "hq=\":8003\""
+    www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "h3=\":8003\""
                              HTTPSSVC 1 3 svc.example.net. "h2=\":8002\""
 
 This data type can be represented as an Unknown RR as described in
@@ -451,6 +448,11 @@ load-balancing.
 For a client to construct the equivalent of an Alt-Svc HTTP response header:
 
 1. For each RR, the SvcDomainName MUST be inserted as the uri-host.
+   If SvcDomainName is has the value "." then the RRNAME for the final HTTPSSVC
+   record MUST be inserted as the uri-host.  (In the case of a CNAME 
+   or a HTTPSSVC SvcRecordType "0" record pointing to an HTTPSSVC record
+   with SvcRecordType "1" and SvcDomainName "." then it is the
+   RRNAME for the terminal HTTPSSVC record that must be inserted as the uri-host.)
 2. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
    for equal SvcFieldPriority values.  Clients MAY choose to further
    prioritize alt-values where address records are immediately
@@ -706,11 +708,31 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
 Thank you to Ian Swett, Ralf Weber, Jon Reed, 
-Martin Thompson
+Martin Thompson, Lucas Pardue, Ilari Liusvaara,
 and others for their feedback and suggestions on this draft.
 
 
 --- back
+
+# Additional examples
+
+## Equivalence to Alt-Svc records
+
+The following:
+
+    www.example.com.  2H  IN CNAME   svc.example.net.
+    example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
+    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
+                                       esnikeys=\"ABC...\""
+    svc.example.net.  2H  IN HTTPSSVC 1 3 . "h2=\":8002\"; \
+                                       esnikeys=\"123...\""
+
+is equivalent to the Alt-Svc record:
+
+    Alt-Svc: h3="svc3.example.net:8003"; esnikeys="ABC..."; ma=7200, \
+             h2="svc.example.net:8002"; esnikeys="123..."; ma=7200
+
+for the origins of both "https://www.example.com" and "https://example.com".
 
 # Comparison with alternatives
 
@@ -813,8 +835,6 @@ to over-generalize have not met with broad success.
 
 ## Wire Format
 
-The length of SvcFieldValue is redundant.  Should we eliminate this?
-
 Advice from experts in DNS wire format best practices would be greatly
 appreciated to refine the proposed details, overall.
 
@@ -841,3 +861,19 @@ as MX, SRV, and others all have their own variations here.
 Some other similar mechanisms such as SRV have a weight in-addition
 to priority.  That is excluded here for simplicity.  It could always be
 added as an optional Alt-Svc attribute.
+
+
+# Change history
+
+* draft-nygren-httpbis-httpssvc-02
+    * Remove the redundant length fields from the wire format.
+    * Define aSvcDomainName of "." for SvcRecordType=1 
+      as being the HTTPSSVC RRNAME.
+    * Replace "hq" with "h3".
+
+* draft-nygren-httpbis-httpssvc-01
+    * Fixes of record name.  Replace references to "HTTPSVC" with "HTTPSSVC".
+    
+* draft-nygren-httpbis-httpssvc-00
+    * Initial version
+    
