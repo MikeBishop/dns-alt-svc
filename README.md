@@ -7,7 +7,7 @@ This is the working area for the individual Internet-Drafts "HTTPSSVC service lo
 draft-nygren-httpbis-httpssvc
 
 * [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-httpbis-httpssvc-latest.html)
-* [Individual Draft](https://tools.ietf.org/html/draft-nygren-httpbis-httpssvc-latest)
+* [Individual Draft](https://datatracker.ietf.org/doc/draft-nygren-httpbis-httpssvc/)
 * [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-httpbis-httpssvc-latest.diff)
 
 See also [here for a list of prototype implementations](httpssvc-implementations.md).
