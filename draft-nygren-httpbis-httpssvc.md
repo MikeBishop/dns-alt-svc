@@ -707,7 +707,7 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
-Thank you to Ian Swett, Ralf Weber, Jon Reed, 
+Thank you to Ian Swett, Ralf Weber, Jon Reed, Ilari Liusvaara,
 Martin Thompson
 and others for their feedback and suggestions on this draft.
 
