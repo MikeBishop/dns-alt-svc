@@ -91,7 +91,7 @@ A+AAAA records might be:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
     example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "hq=\":8003\" \
+    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\" \
                                        esnikeys=\"...\""
     svc.example.net.  2H  IN HTTPSSVC 1 3 svc2.example.net. "h2=\":8002\" \
                                        esnikeys=\"...\""
@@ -366,12 +366,12 @@ but with the uri-host moved to the SvcDomainName field.
 For example, if the operator of https://www.example.com
 intends to include an HTTP response header like
 
-    Alt-Svc: hq="svc.example.net:8003"; ma=3600, \
+    Alt-Svc: h3="svc.example.net:8003"; ma=3600, \
              h2="svc.example.net:8002"; ma=3600
 
 they could also publish an HTTPSSVC DNS RRSet like
 
-    www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "hq=\":8003\""
+    www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "h3=\":8003\""
                              HTTPSSVC 1 3 svc.example.net. "h2=\":8002\""
 
 This data type can be represented as an Unknown RR as described in
@@ -707,8 +707,8 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
-Thank you to Ian Swett, Ralf Weber, Jon Reed, Ilari Liusvaara,
-Martin Thompson
+Thank you to Ian Swett, Ralf Weber, Jon Reed, 
+Martin Thompson, Lucas Pardue, Ilari Liusvaara,
 and others for their feedback and suggestions on this draft.
 
 
@@ -722,14 +722,14 @@ The following:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
     example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "hq=\":8003\"; \
+    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
                                        esnikeys=\"ABC...\""
     svc.example.net.  2H  IN HTTPSSVC 1 3 . "h2=\":8002\"; \
                                        esnikeys=\"123...\""
 
 is equivalent to the Alt-Svc record:
 
-    Alt-Svc: hq="svc3.example.net:8003"; esnikeys="ABC..."; ma=7200, \
+    Alt-Svc: h3="svc3.example.net:8003"; esnikeys="ABC..."; ma=7200, \
              h2="svc.example.net:8002"; esnikeys="123..."; ma=7200
 
 for the origins of both "https://www.example.com" and "https://example.com".
@@ -869,6 +869,7 @@ added as an optional Alt-Svc attribute.
     * Remove the redundant length fields from the wire format.
     * Define aSvcDomainName of "." for SvcRecordType=1 
       as being the HTTPSSVC RRNAME.
+    * Replace "hq" with "h3".
 
 * draft-nygren-httpbis-httpssvc-01
     * Fixes of record name.  Replace references to "HTTPSVC" with "HTTPSSVC".
