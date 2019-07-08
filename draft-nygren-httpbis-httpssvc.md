@@ -91,9 +91,9 @@ A+AAAA records might be:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
     example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\" \
+    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
                                        esnikeys=\"...\""
-    svc.example.net.  2H  IN HTTPSSVC 1 3 svc2.example.net. "h2=\":8002\" \
+    svc.example.net.  2H  IN HTTPSSVC 1 3 svc2.example.net. "h2=\":8002\"; \
                                        esnikeys=\"...\""
     svc2.example.net. 300 IN A       192.0.2.2
     svc2.example.net. 300 IN AAAA    2001:db8::2
@@ -294,7 +294,7 @@ hostnames based on the origin host.
 As an example for schemes and ports other than "https" and port 443:
 
     _8443._wss.api.example.com. 2H IN HTTPSSVC 0 0 svc4.example.net.
-    svc4.example.net.  2H  IN HTTPSSVC 1 3 svc4.example.net. "h2=\":8004\" \
+    svc4.example.net.  2H  IN HTTPSSVC 1 3 svc4.example.net. "h2=\":8004\"; \
                                        esnikeys=\"...\""
 
 would indicate that "wss://api.example.com:8443" is aliased
