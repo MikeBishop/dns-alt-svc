@@ -441,7 +441,7 @@ For a client to construct the equivalent of an Alt-Svc HTTP response header:
    If SvcDomainName is has the value "." then the RRNAME for the final HTTPSSVC
    record MUST be inserted as the uri-host.  (In the case of a CNAME 
    or a HTTPSSVC SvcRecordType "0" record pointing to an HTTPSSVC record
-   with SvcRecordType "1" and SvcDomainName "." then it is 
+   with SvcRecordType "1" and SvcDomainName "." then it is the
    RRNAME for the terminal HTTPSSVC record that must be inserted as the uri-host.)
 2. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
    for equal SvcFieldPriority values.  Clients MAY choose to further
