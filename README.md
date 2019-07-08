@@ -1,6 +1,20 @@
-#  Finding HTTP Alternative Services via the Domain Name Service
+#  HTTPSSVC and ALTSVC DNS records
 
-This is the working area for the individual Internet-Draft, " Finding HTTP Alternative Services via the Domain Name Service".
+This is the working area for the individual Internet-Drafts "HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSVC)" and "Finding HTTP Alternative Services via the Domain Name Service".
+
+## HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSVC)
+
+draft-nygren-httpbis-httpssvc
+
+* [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-httpbis-httpssvc-latest.html)
+* [Individual Draft](https://tools.ietf.org/html/draft-nygren-httpbis-httpssvc-latest)
+* [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-httpbis-httpssvc-latest.diff)
+
+See also [here for a list of prototype implementations](httpssvc-implementations.md).
+
+## Finding HTTP Alternative Services via the Domain Name Service
+
+draft-schwartz-httpbis-dns-alt-svc
 
 * [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc-latest.html)
 * [Individual Draft](https://tools.ietf.org/html/draft-schwartz-httpbis-dns-alt-svc-latest)
