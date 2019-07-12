@@ -1,5 +1,5 @@
 ---
-title: HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSSVC)
+title: HTTPS service location and parameter specification via the DNS (DNS HTTPSSVC)
 abbrev: HTTPSSVC RR for DNS
 docname: draft-nygren-httpbis-httpssvc-latest
 date: {DATE}
