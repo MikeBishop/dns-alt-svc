@@ -1,7 +1,7 @@
 ---
-title: HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSSVC)
-abbrev: HTTPSSVC RR for DNS
-docname: draft-nygren-httpbis-httpssvc-latest
+title: Service binding and parameter specification via the DNS (DNS SVCB)
+abbrev: SVCB RR for DNS
+docname: draft-nygren-dnsop-svcb-latest
 date: {DATE}
 category: std
 
@@ -36,9 +36,9 @@ informative:
 
 --- abstract
 
-This document specifies an "HTTPSSVC" DNS resource record type to
+This document specifies an "SVCB" DNS resource record type to
 facilitate the lookup of information needed to make connections for
-HTTPS URIs.  The HTTPSSVC DNS RR mechanism allows an HTTPS origin
+HTTPS URIs.  The SVCB DNS RR mechanism allows an HTTPS origin
 hostname to be served from multiple network services, each with
 associated parameters (such as transport protocol and keying material
 for encrypting TLS SNI).  It also provides a solution for the
@@ -68,7 +68,7 @@ future challenges.
 
 # Introduction
 
-The HTTPSSVC RR is intended to address a number of challenges
+The SVCB RR is intended to address a number of challenges
 facing HTTPS clients and services, while also providing an extensible
 model to handle similar use-cases without forcing clients to perform
 additional DNS lookups and without forcing them to first make connections
@@ -86,14 +86,14 @@ and lookups required to learn this additional information.
 
 ## Introductory Example
 
-As an introductory example, a set of example HTTPSSVC and associated
+As an introductory example, a set of example SVCB and associated
 A+AAAA records might be:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
-    example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
+    example.com.      2H  IN SVCB 0 0 svc.example.net.
+    svc.example.net.  2H  IN SVCB 1 2 svc3.example.net. "h3=\":8003\"; \
                                        esnikeys=\"...\""
-    svc.example.net.  2H  IN HTTPSSVC 1 3 svc2.example.net. "h2=\":8002\"; \
+    svc.example.net.  2H  IN SVCB 1 3 svc2.example.net. "h2=\":8002\"; \
                                        esnikeys=\"...\""
     svc2.example.net. 300 IN A       192.0.2.2
     svc2.example.net. 300 IN AAAA    2001:db8::2
@@ -113,7 +113,7 @@ the authoritative origins as "https://example.com" and
 "https://www.example.com", respectively.
 
 
-## Goals of the HTTPSSVC RR
+## Goals of the SVCB RR
 
 The goal of the HTTSSVC RR is to allow clients to resolve a single
 additional DNS RR in a way that:
@@ -142,12 +142,12 @@ additional DNS RR in a way that:
   (as is the case for zone apex names)
 
 
-## Overview of the HTTPSSVC RR
+## Overview of the SVCB RR
 
-This subsection briefly describes the HTTPSSVC RR in
+This subsection briefly describes the SVCB RR in
 a non-normative manner.
 
-The HTTPSSVC RR has four primary fields:
+The SVCB RR has four primary fields:
 
 1. SvcRecordType: A numeric flag indicating how to interpret the
    subsequent fields.  When "0", it indicates that the RR contains an
@@ -164,14 +164,14 @@ The HTTPSSVC RR has four primary fields:
    SvcDomainName (only when SvcRecordType is "1" and otherwise empty).
 
 Cooperating DNS recursive resolvers will perform subsequent record resolution (for
-HTTPSSVC, A, and AAAA records) and return them in the Additional Section
+SVCB, A, and AAAA records) and return them in the Additional Section
 of the response.  Clients must either use responses included
 in the additional section returned by the recursive resolver
-or perform necessary HTTPSSVC, A, and AAAA record resolutions.
-DNS authoritative servers may attach in-bailiwick HTTPSSVC, A, AAAA, and CNAME
-records in the Additional Section to responses for an HTTPSSVC query.
+or perform necessary SVCB, A, and AAAA record resolutions.
+DNS authoritative servers may attach in-bailiwick SVCB, A, AAAA, and CNAME
+records in the Additional Section to responses for an SVCB query.
 
-When SvcRecordType is "1", the HTTPSSVC RR extends the concept
+When SvcRecordType is "1", the SVCB RR extends the concept
 introduced in the HTTP Alternative Services proposed standard
 {{!AltSvc=RFC7838}}.  Alt-Svc defines:
 
@@ -194,7 +194,7 @@ to all entities along the network path.
 The SvcFieldValue includes the Alt-Svc Field Value through
 the DNS.  This is in its standard text format, with the uri-host
 portion of the alt-authority component
-moved into the SvcDomainName field of the HTTPSSVC RR.
+moved into the SvcDomainName field of the SVCB RR.
 A client receiving this information during DNS resolution
 can skip the initial connection and proceed directly to an
 alternative service.
@@ -235,13 +235,13 @@ appear in all capitals, as shown here.
 
 
 
-# The HTTPSSVC record type
+# The SVCB record type
 
-The HTTPSSVC DNS resource record (RR) type (RRTYPE ???)
+The SVCB DNS resource record (RR) type (RRTYPE ???)
 is used to locate endpoints that can service an "https" origin.
 The presentation format of the record is:
 
- RRName TTL Class HTTPSSVC SvcRecordType SvcFieldPriority \
+ RRName TTL Class SVCB SvcRecordType SvcFieldPriority \
                          SvcDomainName SvcFieldValue
 
 where SvcRecordType is a numeric value of either "0" or "1",
@@ -250,13 +250,13 @@ SvcDomainName is a domain name,
 and SvcFieldValue is a string
 present when SvcRecordType is "1".
 
-The algorithm for resolving HTTPSSVC records and associated
+The algorithm for resolving SVCB records and associated
 address records is specified in {{resolution}}.
 
 
-## HTTPSSVC RDATA Wire Format
+## SVCB RDATA Wire Format
 
-The RDATA for the HTTPSSVC RR consists of:
+The RDATA for the SVCB RR consists of:
 
 * a 1 octet flag field for SvcRecordType, interpreted
   as an unsigned numeric value (0 to 255, with only values
@@ -275,7 +275,7 @@ and clients MUST ignore the contents of non-empty SvcFieldValue fields.
 
 ## RRNames {#rrnames}
 
-In the case of the HTTPSSVC RR, an origin is translated into the RRName
+In the case of the SVCB RR, an origin is translated into the RRName
 in the following manner:
 
 1. If the scheme is "https" and the port is 443,
@@ -284,8 +284,8 @@ in the following manner:
    port and scheme with "_", then concatenating them with the host name,
    resulting in a domain name like "_8443._https.www.example.com.".
 
-2. When a prior CNAME or HTTPSSVC record has aliased to
-   an HTTPSSVC record, RRName shall be the name of the alias target.
+2. When a prior CNAME or SVCB record has aliased to
+   an SVCB record, RRName shall be the name of the alias target.
 
 Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
@@ -293,8 +293,8 @@ hostnames based on the origin host.
 
 As an example for schemes and ports other than "https" and port 443:
 
-    _8443._wss.api.example.com. 2H IN HTTPSSVC 0 0 svc4.example.net.
-    svc4.example.net.  2H  IN HTTPSSVC 1 3 svc4.example.net. "h2=\":8004\"; \
+    _8443._wss.api.example.com. 2H IN SVCB 0 0 svc4.example.net.
+    svc4.example.net.  2H  IN SVCB 1 3 svc4.example.net. "h2=\":8004\"; \
                                        esnikeys=\"...\""
 
 would indicate that "wss://api.example.com:8443" is aliased
@@ -304,42 +304,42 @@ on port 8004.
 ## SvcRecordType
 
 The SvcRecordType field is a numeric value defined to be either "0" or
-"1". Within an HTTPSSVC RRSet, all RRs must have the same value for
-SvcRecordType.  Clients and recursive servers MUST ignore HTTPSSVC
+"1". Within an SVCB RRSet, all RRs must have the same value for
+SvcRecordType.  Clients and recursive servers MUST ignore SVCB
 resource records with other SvcRecordType values. If an RRSet contains
 a record with type "0", the client MUST ignore any records in the set
 with type "1".
 
-When SvcRecordType is "0", the HTTPSSVC is defined to be in "alias form".
+When SvcRecordType is "0", the SVCB is defined to be in "alias form".
 
-When SvcRecordType is "1", the HTTPSSVC is defined to
+When SvcRecordType is "1", the SVCB is defined to
 be in "alternative service form".
 
 
-## HTTPSSVC records: alias form
+## SVCB records: alias form
 
-When SvcRecordType is "0", the HTTPSSVC record is to be treated
+When SvcRecordType is "0", the SVCB record is to be treated
 similar to a CNAME alias pointing to the domain name specified in
-SvcDomainName.  HTTPSSVC RRSets MUST only have a single resource
+SvcDomainName.  SVCB RRSets MUST only have a single resource
 record in this form.  If multiple are present, clients or recursive
 resolvers SHOULD pick one non-determinstically.
 
-The common use-case for this form of the HTTPSSVC record is as an
+The common use-case for this form of the SVCB record is as an
 alternative to CNAMEs at the zone apex where they are not allowed.
 For example, if an operator of https://example.com wanted to
 point HTTPS requests to a service operating at svc.example.net,
 they would publish a record such as:
 
-    example.com. 3600 IN HTTPSSVC 0 0 svc.example.net.
+    example.com. 3600 IN SVCB 0 0 svc.example.net.
 
 The SvcDomainName MUST point to a domain name that contains
-another HTTPSSVC record and/or address (AAAA and/or A) records.
+another SVCB record and/or address (AAAA and/or A) records.
 
 Note that the RRName and the SvcDomainName MAY themselves be CNAMEs.
 Clients and recursive resolvers MUST follow CNAMEs as normal.
 
 Due to the risk of loops, clients and recursive resolvers MUST
-implement loop detection.  Chains of consecutive HTTPSSVC and CNAME
+implement loop detection.  Chains of consecutive SVCB and CNAME
 records SHOULD be limited to (8?) prior to reaching terminal address
 records.
 
@@ -348,18 +348,18 @@ clients MUST ignore its contents.
 
 As legacy clients will not know to use this record, service
 operators will likely need to retain fallback AAAA and A records
-alongside this HTTPSSVC record, although in a common case
-the target of the HTTPSSVC record might have better performance, and
+alongside this SVCB record, although in a common case
+the target of the SVCB record might have better performance, and
 therefore would be preferable for clients implementing this specification
 to use.
 
-## HTTPSSVC records: alternative service form
+## SVCB records: alternative service form
 
 When SvcRecordType is "1", the combination of SvcDomainName and
 SvcFieldValue within each resource record associates an Alternative
 Service Field Value with an origin.
 
-The SvcFieldValue of the HTTPSSVC resource record contains an Alt-Svc
+The SvcFieldValue of the SVCB resource record contains an Alt-Svc
 Field Value, exactly as defined in Section 4 of {{!AltSvc}},
 but with the uri-host moved to the SvcDomainName field.
 
@@ -369,10 +369,10 @@ intends to include an HTTP response header like
     Alt-Svc: h3="svc.example.net:8003"; ma=3600, \
              h2="svc.example.net:8002"; ma=3600
 
-they could also publish an HTTPSSVC DNS RRSet like
+they could also publish an SVCB DNS RRSet like
 
-    www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "h3=\":8003\""
-                             HTTPSSVC 1 3 svc.example.net. "h2=\":8002\""
+    www.example.com. 3600 IN SVCB 1 2 svc.example.net. "h3=\":8003\""
+                             SVCB 1 3 svc.example.net. "h2=\":8002\""
 
 This data type can be represented as an Unknown RR as described in
 {{!RFC3597}}:
@@ -385,36 +385,36 @@ over HTTPS are also applicable here, unless expressly mentioned
 otherwise.
 
 Second, by defining a way to map non-HTTPS schemes and non-default
-ports ({{rrnames}}), we provide a way for the HTTPSSVC to be used for them as needed.
+ports ({{rrnames}}), we provide a way for the SVCB to be used for them as needed.
 However, by using the origin name for the RRName for scheme https and
-port 443 we allow HTTPSSVC records to be included at the end of CNAME
+port 443 we allow SVCB records to be included at the end of CNAME
 chains for existing site implementations without requiring changes in
 the zone containing the origin.
 
 
 # Differences from Alt-Svc as transmitted over HTTP
 
-Publishing an alternative services form HTTPSSVC record in DNS is
+Publishing an alternative services form SVCB record in DNS is
 intended to be equivalent to transmitting this field value over HTTPS,
-and receiving an HTTPSSVC record is intended to be equivalent to
+and receiving an SVCB record is intended to be equivalent to
 receiving this field value over HTTPS.  However, there are some small
 differences in the intended client and server behavior.
 
 ## Omitting Max Age and Persist
 
-When publishing an HTTPSSVC record in DNS, server operators MUST omit the
+When publishing an SVCB record in DNS, server operators MUST omit the
 "ma" parameter, which encodes the "max age" (i.e. expiration time) of
 an Alt-Svc Field Value.  Instead, server operators SHOULD encode the
 expiration time in the DNS TTL, and MUST NOT set a TTL longer than the
 intended "max age".
 
-When receiving an HTTPSSVC record, clients SHOULD synthesize a new "ma"
+When receiving an SVCB record, clients SHOULD synthesize a new "ma"
 parameter from the DNS TTL if the resulting alt-value is being passed to
 a subsystem that might employ caching.
 
-When publishing an HTTPSSVC record, server operators MUST omit the
+When publishing an SVCB record, server operators MUST omit the
 "persist" parameter, which indicates whether the client should use
-this record on other network paths.  When receiving an HTTPSSVC record,
+this record on other network paths.  When receiving an SVCB record,
 clients MUST discard any records that contain a "persist" flag.
 Disabling persistence is important to prevent a local adversary in one
 network from implanting a forged DNS record that allows them to
@@ -422,9 +422,9 @@ track users or hinder their connections after they leave that network.
 
 ## Multiple records and preference ordering {#pri}
 
-Server operators MAY publish multiple SvcRecordType "1" HTTPSSVC
+Server operators MAY publish multiple SvcRecordType "1" SVCB
 records as an RRSET.  When converting a collection of alt-values
-into an HTTPSSVC RRSET, the server operator MUST set the
+into an SVCB RRSET, the server operator MUST set the
 overall TTL to a value no larger than the minimum
 of the "max age" values (following Section 5.2 of {{!RFC2181}}).
 
@@ -433,12 +433,12 @@ in Section 3 of {{!AltSvc}}.
 
 As RRs within an RRSET are explicitly unordered collections, the
 SvcFieldPriority value is introduced to indicate priority.
-HTTPSSVC RRs with a smaller SvcFieldPriority value SHOULD be given
+SVCB RRs with a smaller SvcFieldPriority value SHOULD be given
 preference over RRs with a larger SvcFieldPriority value.
 
 Alt-values received via HTTPS are preferred over any Alt-value received via DNS.
 
-When receiving an RRSET containing multiple HTTPSSVC records with the
+When receiving an RRSET containing multiple SVCB records with the
 same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure randomized
 load-balancing.
@@ -448,11 +448,11 @@ load-balancing.
 For a client to construct the equivalent of an Alt-Svc HTTP response header:
 
 1. For each RR, the SvcDomainName MUST be inserted as the uri-host.
-   If SvcDomainName is has the value "." then the RRNAME for the final HTTPSSVC
+   If SvcDomainName is has the value "." then the RRNAME for the final SVCB
    record MUST be inserted as the uri-host.  (In the case of a CNAME 
-   or a HTTPSSVC SvcRecordType "0" record pointing to an HTTPSSVC record
+   or a SVCB SvcRecordType "0" record pointing to an SVCB record
    with SvcRecordType "1" and SvcDomainName "." then it is the
-   RRNAME for the terminal HTTPSSVC record that must be inserted as the uri-host.)
+   RRNAME for the terminal SVCB record that must be inserted as the uri-host.)
 2. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
    for equal SvcFieldPriority values.  Clients MAY choose to further
    prioritize alt-values where address records are immediately
@@ -465,14 +465,14 @@ For a client to construct the equivalent of an Alt-Svc HTTP response header:
 ## Granularity and lifetime control
 
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
-Field Value specifically to the client.  When using an HTTPSSVC DNS
+Field Value specifically to the client.  When using an SVCB DNS
 record, groups of clients will necessarily receive the same Alt-Svc
 Field Value.  Therefore, this standard is not suitable for uses that
 require single-client granularity in Alt-Svc.
 
 Some DNS caching systems incorrectly extend the lifetime of DNS
 records beyond the stated TTL.  Server operators MUST NOT rely on
-HTTPSSVC records expiring on time, and MAY shorten the TTL to compensate.
+SVCB records expiring on time, and MAY shorten the TTL to compensate.
 
 
 # Client behaviors
@@ -481,21 +481,21 @@ HTTPSSVC records expiring on time, and MAY shorten the TTL to compensate.
 
 When attempting to resolve a name HOST, clients should follow in-order:
 
-1. Issue parallel AAAA/A and HTTPSSVC queries for the name HOST.
+1. Issue parallel AAAA/A and SVCB queries for the name HOST.
    The answers for these may or may not include CNAME pointers
    before reaching one or more of these records.
 
-2. If an HTTPSSVC record of SvcRecordType "0" is returned for HOST,
+2. If an SVCB record of SvcRecordType "0" is returned for HOST,
    clients should loop back to step 1 replacing HOST with SvcDomainName,
    subject to loop detection heuristics.
 
-3. If one or more HTTPSSVC record of SvcRecordType "1" is returned for HOST,
+3. If one or more SVCB record of SvcRecordType "1" is returned for HOST,
    clients should synthesize equivalent Alt-Svc Field Values based
    on the SvcDomainName and SvcFieldValue.  If one of these alt-values
    is selected to be used in a connection, the client will
    need to resolve AAAA and/or A records for SvcDomainName.
 
-4. If only AAAA and/or A records are present for HOST (and no HTTPSSVC),
+4. If only AAAA and/or A records are present for HOST (and no SVCB),
    clients should make a connection to one of the IP addresses
    contained in these records and proceed normally.
 
@@ -507,15 +507,15 @@ to reduce latency impact in comparison to ordinary AAAA/A lookups.
 
 ## HTTP Strict Transport Security
 
-By publishing an HTTPSSVC record, the server
+By publishing an SVCB record, the server
 operator indicates that all useful HTTP resources on that origin are
 reachable over HTTPS, similar to HTTP Strict Transport Security
-{{!HSTS=RFC6797}}.  When an HTTPSSVC record is present for an origin,
+{{!HSTS=RFC6797}}.  When an SVCB record is present for an origin,
 all "http" scheme requests for that origin SHOULD logically be redirected
 to "https".
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
-to determine if an HTTPSSVC record is available for that origin.  To do so,
+to determine if an SVCB record is available for that origin.  To do so,
 the client SHOULD construct a corresponding "https" URL as follows:
 
 1. Replace the "http" scheme with "https".
@@ -526,14 +526,14 @@ the client SHOULD construct a corresponding "https" URL as follows:
 
 This construction is equivalent to Section 8.3 of {{HSTS}} , point 5.
 
-If an HTTPSSVC record is present for this "https" URL, the client
+If an SVCB record is present for this "https" URL, the client
 should treat this as the equivalent of receiving an HTTP "307 
 Temporary Redirect" redirect to the "https" URL.
-Because HTTPSSVC is received over an often insecure channel (DNS),
+Because SVCB is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
 
-If the HTTPSSVC query results in a SERVFAIL error, and the connection
+If the SVCB query results in a SERVFAIL error, and the connection
 between the client and the recursive resolver is cryptographically protected
 (e.g. using TLS {{!RFC7858}} or HTTPS {{!RFC8484}}), the client SHOULD
 abandon the connection attempt and display an error message.  A SERVFAIL
@@ -543,43 +543,43 @@ and the authoritative DNS server is attempting to prevent the upgrade to
 HTTPS.
 
 Similarly, if the client enforces DNSSEC validation on A/AAAA
-RRs, it SHOULD abandon the connection attempt if the HTTPSSVC RR fails
+RRs, it SHOULD abandon the connection attempt if the SVCB RR fails
 to validate.
 
 ## Cache interaction
 
 If the client has an Alt-Svc cache, and a usable Alt-Svc value is
-present in that cache, then the client SHOULD NOT issue an HTTPSSVC DNS
+present in that cache, then the client SHOULD NOT issue an SVCB DNS
 query.  Instead, the client SHOULD proceed with alternative service
 connection as usual.
 
 If the client has a cached Alt-Svc entry that is expiring, the
-client MAY perform an HTTPSSVC query to refresh the entry.
+client MAY perform an SVCB query to refresh the entry.
 
 # DNS Server Behaviors
 
 Recursive DNS servers SHOULD resolve SvcDomainName records and include
 them in the Additional Section (along with any relevant CNAME
 records).  For SvcRecordType=0, recursive DNS servers SHOULD attempt
-to resolve and include A, AAAA, and HTTPSSVC records.  For
+to resolve and include A, AAAA, and SVCB records.  For
 SvcRecordType=1, recursive DNS servers SHOULD attempt to resolve and
 include A and AAAA records.
 
-Authoritative DNS servers SHOULD return A, AAAA, and HTTPSSVC records
+Authoritative DNS servers SHOULD return A, AAAA, and SVCB records
 (as well as any relevant CNAME records) in the Additional Section for
 any in-bailiwick SvcDomainNames.
 
 # Performance optimizations {#optimizations}
 
 For optimal performance (i.e. minimum connection setup time), clients
-SHOULD issue address (AAAA and/or A) and HTTPSSVC queries
+SHOULD issue address (AAAA and/or A) and SVCB queries
 simultaneously, and SHOULD implement a client-side DNS cache.
 With these optimizations in place, and conforming DNS servers,
-using HTTPSSVC does not add network latency to connection setup.
+using SVCB does not add network latency to connection setup.
 
-A nonconforming recursive resolver might return an HTTPSSVC response with
+A nonconforming recursive resolver might return an SVCB response with
 a nonempty SvcDomainName, without the corresponding address records.  If
-all the HTTPSSVC RRs in the response have nonempty SvcDomainName values,
+all the SVCB RRs in the response have nonempty SvcDomainName values,
 and the client does not have address records for any of these values in
 its DNS cache, the client SHOULD perform an additional address query for
 the selected SvcDomainName.
@@ -593,15 +593,15 @@ responses to the address queries that were issued in parallel.
 
 Highly performance-sensitive clients MAY implement the following special-
 case shortcut to avoid increased connection time: if (1) one of the
-HTTPSSVC records returned has SvcRecordType=0, (2) its SvcDomainName
+SVCB records returned has SvcRecordType=0, (2) its SvcDomainName
 is not in the DNS cache, and (3) the address queries for the
 origin domain return usable IP addresses, then the client MAY ignore the
-HTTPSSVC records and connect directly to the origin domain.  When the
-SvcDomainNames and any needed HTTPSSVC records are available, the client
-SHOULD make subsequent requests over connections specified by the HTTPSSVC
+SVCB records and connect directly to the origin domain.  When the
+SvcDomainNames and any needed SVCB records are available, the client
+SHOULD make subsequent requests over connections specified by the SVCB
 records.
 
-Server operators can therefore expect that publishing HTTPSSVC records with
+Server operators can therefore expect that publishing SVCB records with
 SvcRecordType=0 should not cause an additional DNS query for
 performance-sensitive clients.  Server operators who wish to prevent this
 optimization should use SvcRecordType=1.
@@ -644,7 +644,7 @@ The purpose of this standard is to reduce connection latency and
 improve user privacy.  Server operators implementing this standard
 SHOULD also implement TLS 1.3 {{!RFC8446}} and OCSP Stapling
 {{!RFC6066}}, both of which confer substantial performance and privacy
-benefits when used in combination with HTTPSSVC records.
+benefits when used in combination with SVCB records.
 
 To realize the greatest privacy benefits, this proposal is intended for
 use with a privacy-preserving DNS transport (like DNS over TLS
@@ -653,7 +653,7 @@ However, performance improvements, and some modest privacy improvements,
 are possible without the use of those standards.
 
 This RRType could be extended to support schemes other than "https".
-Any such scheme MUST have an entry under the HTTPSSVC RRType in the IANA
+Any such scheme MUST have an entry under the SVCB RRType in the IANA
 DNS Underscore Global Scoped Entry Registry {{!Attrleaf=I-D.ietf-dnsop-attrleaf}}
 The scheme SHOULD have an entry in the IANA URI Schemes Registry {{!RFC7595}}.
 The scheme SHOULD be one for which Alt-Svc is defined.
@@ -666,7 +666,7 @@ Alt-Svc Field Values are intended for distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative
 service is authoritative for the origin (Section 2.1 of {{!AltSvc}}).
 Therefore, DNSSEC signing and validation are OPTIONAL for publishing
-and using HTTPSSVC records.
+and using SVCB records.
 
 TBD: expand this section in more detail.  In particular:
 * Just as with {{!AltSvc}}, clients must validate the TLS server certificate
@@ -682,14 +682,14 @@ range of the Resource Record (RR) TYPEs registry:
 
 | TYPE     | Meaning                | Reference       |
 | ------   | ---------------------- | --------------- |
-| HTTPSSVC | HTTPS Service Location | (This document) |
+| SVCB | HTTPS Service Location | (This document) |
 
 Per {{?Attrleaf}}, please add the following entries to the DNS Underscore
 Global Scoped Entry Registry:
 
 | RR TYPE   | _NODE NAME | Meaning           | Reference       |
 | --------- | ---------- | ----------------- | --------------- |
-| HTTPSSVC  | _https     | Alt-Svc for HTTPS | (This document) |
+| SVCB      | _https     | Alt-Svc for HTTPS | (This document) |
 
 
 Per {{?AltSvc}}, please add the following entries to the HTTP Alt-Svc
@@ -709,6 +709,7 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 
 Thank you to Ian Swett, Ralf Weber, Jon Reed, 
 Martin Thompson, Lucas Pardue, Ilari Liusvaara,
+Tim Wicinski, Tommy Pauly, 
 and others for their feedback and suggestions on this draft.
 
 
@@ -721,10 +722,10 @@ and others for their feedback and suggestions on this draft.
 The following:
 
     www.example.com.  2H  IN CNAME   svc.example.net.
-    example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
-    svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
+    example.com.      2H  IN SVCB 0 0 svc.example.net.
+    svc.example.net.  2H  IN SVCB 1 2 svc3.example.net. "h3=\":8003\"; \
                                        esnikeys=\"ABC...\""
-    svc.example.net.  2H  IN HTTPSSVC 1 3 . "h2=\":8002\"; \
+    svc.example.net.  2H  IN SVCB 1 3 . "h2=\":8002\"; \
                                        esnikeys=\"123...\""
 
 is equivalent to the Alt-Svc record:
@@ -736,7 +737,7 @@ for the origins of both "https://www.example.com" and "https://example.com".
 
 # Comparison with alternatives
 
-The HTTPSSVC record type closely resembles some existing record types
+The SVCB record type closely resembles some existing record types
 and proposals.  A complaint with all of the alternatives is that
 web clients have seemed unenthusiastic about implementing them.
 The hope here is that by providing an extensible solution that solves
@@ -745,18 +746,18 @@ to achieve client implementation.
 
 ## Differences from the SRV RRTYPE
 
-An SRV record {{?RFC2782}} can perform a similar function to the HTTPSSVC record,
+An SRV record {{?RFC2782}} can perform a similar function to the SVCB record,
 informing a client to look in a different location for a service.
 However, there are several differences:
 
 * SRV records are typically mandatory, whereas clients will always
-  continue to function correctly without making use of Alt-Svc or HTTPSSVC.
+  continue to function correctly without making use of Alt-Svc or SVCB.
 * SRV records cannot instruct the client to switch or upgrade
   protocols, whereas Alt-Svc can signal such an upgrade (e.g. to
   HTTP/2).
-* SRV records are not extensible, whereas Alt-Svc and thus HTTPSSVC can be extended with
+* SRV records are not extensible, whereas Alt-Svc and thus SVCB can be extended with
   new parameters.  For example, this is what allows the incorporation of
-  ESNI keys in HTTPSSVC.
+  ESNI keys in SVCB.
 * Using SRV records would not allow a client to skip processing of the
   Alt-Svc information in a subsequent connection, so it does not confer
   a performance advantage.
@@ -781,11 +782,11 @@ master servers, beyond optionally returning in-bailiwick additional records.
 Like that proposal, this addresses the zone apex CNAME challenge
 for clients that implement this.
 
-However with this HTTPSSVC proposal it remains necessary to continue
+However with this SVCB proposal it remains necessary to continue
 to include address records at the zone apex for legacy clients.
 If deployment of this standard is successful, the number of legacy clients
 will fall over time.  As the number of legacy clients declines, the operational
-effort required to serve these users without the benefit of HTTPSSVC indirection
+effort required to serve these users without the benefit of SVCB indirection
 should fall.  Server operators can easily observe how much traffic reaches this
 legacy endpoint, and may remove the apex's address records if the observed legacy
 traffic has fallen to negligible levels.
@@ -809,7 +810,7 @@ Defining an Alt-Svc sni= parameter
 (such as from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}) would
 have provided some benefits to clients and servers not implementing ESNI,
 such as for specifying that "_wildcard.example.com" could be sent as an SNI
-value rather than the full name.  There is nothing precluding HTTPSSVC from
+value rather than the full name.  There is nothing precluding SVCB from
 being used with an sni= parameter if one were to be defined, but it
 is not included here to reduce scope, complexity, and additional potential
 security and tracking risks.
@@ -822,9 +823,11 @@ Some known issues or topics for discussion are listed below.
 
 ## Record Name
 
-Naming is hard.  The "HTTPSSVC" is proposed as a placeholder.
-Other names for this record might include ALTSVC,
-HTTPS, HTTPSSRV, B, or something else.
+Naming is hard.  The "SVCB" is proposed as a placeholder
+that is easy to search for and replace when a final
+name is chosen.
+Other names for this record might include B, ALTSVC,
+HTTPS, HTTPSSRV, HTTPSSVC, or something else.
 
 ## Applicability to other schemes
 
