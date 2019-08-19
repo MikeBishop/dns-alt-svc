@@ -1,14 +1,14 @@
-#  HTTPSSVC and ALTSVC DNS records
+#  SVCB, HTTPSSVC, and ALTSVC DNS records
 
-This is the working area for the individual Internet-Drafts "HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSVC)" and "Finding HTTP Alternative Services via the Domain Name Service".
+This is the working area for the individual Internet-Drafts "Service binding and parameter specification via the DNS (DNS SVCB and HTTPSSVC)" (formerly "HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSVC)") and "Finding HTTP Alternative Services via the Domain Name Service".
 
-## HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSVC)
+## Service binding and parameter specification via the DNS (DNS SVCB and HTTPSSVC)
 
-draft-nygren-httpbis-httpssvc
+draft-nygren-dnsop-svcb-httpssvc
 
-* [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-httpbis-httpssvc-latest.html)
-* [Individual Draft](https://datatracker.ietf.org/doc/draft-nygren-httpbis-httpssvc/)
-* [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-httpbis-httpssvc-latest.diff)
+* [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-dnsop-svcb-httpssvc-latest.html)
+* [Individual Draft](https://datatracker.ietf.org/doc/draft-nygren-dnsop-svcb-httpssvc/)
+* [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-dnsop-svcb-httpssvc-latest.diff)
 
 See also [here for a list of prototype implementations](httpssvc-implementations.md).
 
