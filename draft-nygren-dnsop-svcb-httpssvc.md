@@ -537,7 +537,7 @@ This procedure does not rely on any recursive or authoritative server to
 comply with this specification or have any awareness of SVCB.
 
 When selecting between AAAA and A records to use, clients may
-use an approach such as {{!HappyEyeballsV2=RFC8305}}
+use an approach such as {{!HappyEyeballsV2=RFC8305}}.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
@@ -625,7 +625,7 @@ is the corresponding 2 octet numeric value in network byte order.
 
 ## "esnikeys" {#svcparamkeys-esnikeys}
 
-The SvcParamKey for ESNI is "esnikeys".  Its value is defined i
+The SvcParamKey for ESNI is "esnikeys".  Its value is defined in
  {{esnikeys}}.  It is applicable to most TLS-based protocols.
 
 ## "a" and "aaaa"
