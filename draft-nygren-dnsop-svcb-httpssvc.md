@@ -38,25 +38,15 @@ informative:
 
 This document specifies the "SVCB" and "HTTPSSVC" DNS resource record types to
 facilitate the lookup of information needed to make connections for
-origin resources, such as for HTTPS URLs.  The SVCB DNS RR
-mechanism allows an origin hostname to be served from multiple network
+origin resources, such as for HTTPS URLs.  SVCB records
+allow an origin to be served from multiple network
 locations, each with associated parameters (such as transport protocol
-configuration and keying material for encrypting TLS SNI).  It also
-provides a solution for the inability of the DNS to allow a CNAME to
-be placed at the apex of a domain name.  The HTTPSSVC DNS RR
-is a more-specific variation of the SVCB RR which is specific
-to the use-case of HTTPS and HTTP origin resources.
-
-By allowing this information to be bootstrapped in the DNS,
-it allows for clients to learn of alternative services before their first
-contact with the origin.  This arrangement offers potential benefits to
+configuration and keying material for encrypting TLS SNI).  They also
+aliasing of apex domains, which not possible with CNAME.
+The HTTPSSVC DNS RR is a variation of SVCB for HTTPS and HTTP origins.
+By providing more information to the client before it attempts to
+establish a connection, SVCB offers potential benefits to
 both performance and privacy.
-
-This document specifies both a general-purpose record (via SVCB), but
-also specifies explicit behavior for HTTP and HTTPS URIs (via
-HTTPSSVC).  As part of the latter, it also provides a way to indicate
-that the origin supports HTTPS without having to resort to redirects,
-allowing clients to remove HTTP from the bootstrapping process.
 
 TO BE REMOVED: This proposal is inspired by and based on recent DNS
 usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long
@@ -80,16 +70,15 @@ as they are easy to replace.  Other names might include "B",
 
 # Introduction
 
-The SVCB and HTTPSSVC RRs are intended to address a number of challenges facing
-clients and services, especially when origin resources are available
-over a range of protocol configurations.  This is done in a way that
-provides an extensible model to handle similar use-cases without
-forcing clients to perform additional DNS lookups and without forcing
-them to first make connections to a default service for the origin.
+The SVCB and HTTPSSVC RRs provide clients with complete instructions
+for optimal access to an origin.  This information enables improved
+performance and privacy by avoiding transient connections to a suboptimal
+default server, negotiating a preferred protocol, and providing relevant
+public keys.
 
 For example, when clients need to make a connection to fetch resources
-associated with an HTTPS URI, they must first resolve A and/or AAAA
-address resource records for the origin hostname.  This is adequate
+associated with an HTTPS URI, they currently resolve only A and/or AAAA
+records for the origin hostname.  This is adequate
 when clients default to TCP port 443, do not support Encrypted SNI
 {{!ESNI=I-D.ietf-tls-esni}}, and where the origin service operator
 does not have a desire to put an CNAME at a zone apex (such as for
@@ -117,15 +106,16 @@ of SVCB.
 SVCB is intended to support a wide range of
 services and protocols, many of which may be able to use it directly.
 Services wishing to avoid the need for an {{?Attrleaf}} label with
-SVCB may follow the pattern of HTTPSSVC and assign their own dedicated
-RRTypes.
+SVCB may follow the pattern of HTTPSSVC and assign their own
+SVCB-compatible RRTypes.
 
 All behaviors described as applying to the SVCB RR also apply
 to the HTTPSSVC RR unless explicitly stated otherwise.
 {{https}} describes additional behaviors
 specific to the HTTPSSVC record.  Apart from {{https}}
 and introductory examples, much of this document refers only to the SVCB RR,
-but those references should be taken to apply to both SVCB and HTTPSSVC.
+but those references should be taken to apply to SVCB, HTTPSSVC,
+and any future SVCB-compatible RRTypes.
 
 The SVCB RR has two forms: 1) the "Alias Form" simply delegates operational
 control for a resource; 2) the "Service Form" binds together
@@ -293,6 +283,10 @@ For example within HTTPS, the origin consists of a scheme (typically
 
 Additional DNS terminology intends to be consistent
 with {{?DNSTerm=RFC8499}}.
+
+SVCB is a contraction of "service binding".  HTTPSSVC is a contraction of
+"HTTPS service".  SVCB, HTTPSSVC, and future RRTypes that share SVCB's
+format and registry are collectively known as SVCB-compatible RRTypes.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
 NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
