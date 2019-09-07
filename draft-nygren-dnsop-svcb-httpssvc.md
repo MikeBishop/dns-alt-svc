@@ -42,7 +42,7 @@ origin resources, such as for HTTPS URLs.  SVCB records
 allow an origin to be served from multiple network
 locations, each with associated parameters (such as transport protocol
 configuration and keying material for encrypting TLS SNI).  They also
-enable aliasing of apex domains, which is not possible with CNAME.
+aliasing of apex domains, which not possible with CNAME.
 The HTTPSSVC DNS RR is a variation of SVCB for HTTPS and HTTP origins.
 By providing more information to the client before it attempts to
 establish a connection, SVCB offers potential benefits to
@@ -71,8 +71,8 @@ as they are easy to replace.  Other names might include "B",
 # Introduction
 
 The SVCB and HTTPSSVC RRs provide clients with complete instructions
-for access to an origin.  This information enables improved
-performance and privacy by avoiding transient connections to a sub-optimal
+for optimal access to an origin.  This information enables improved
+performance and privacy by avoiding transient connections to a suboptimal
 default server, negotiating a preferred protocol, and providing relevant
 public keys.
 
@@ -190,7 +190,7 @@ additional DNS RR in a way that:
   operated by the same entity.  This is important as DNS does not
   provide any way to tie together multiple RRs for the same name.
   For example, if www.example.com is a CNAME alias that switches
-  between one of three CDNs or hosting environments, successive queries
+  between one of three CDNs or hosting enviroments, successive queries
   for that name may return records that correspond to different environments.
 * Enables the functional equivalent of a CNAME at a zone apex (such as
   "example.com"), and generally
@@ -208,7 +208,7 @@ Additional goals specific to HTTPSSVC and the HTTPS use-case include:
   implementing support for SRV records, as well as due to a limitation
   that a DNS name can not have both a CNAME record as well as NS RRs
   (as is the case for zone apex names)
-* Provide an HSTS-like indication signaling
+* Provide an HSTS-like indication signalling
   for the duration of the DNS RR TTL that the HTTPS scheme should
   be used instead of HTTP (see {{hsts}}).
 
@@ -385,7 +385,7 @@ the RR is invalid and MUST be discarded.
 
 TODO: decide if we want special handling for any SvcParamKey ranges?
 For example: range for greasing; experimental range;
-range-of-mandatory-to-use-the-RR vs range of
+range-of-manditory-to-use-the-RR vs range of
 ignore-just-param-if-unknown.
 
 
@@ -452,8 +452,7 @@ they would publish a record such as:
     example.com. 3600 IN SVCB 0 svc.example.net.
 
 The SvcDomainName MUST point to a domain name that contains
-another SVCB record, address (AAAA and/or A) records,
-or both address records and a ServiceForm SVCB record.
+another SVCB record or address (AAAA and/or A) records.
 
 Note that the RRName and the SvcDomainName MAY themselves be CNAMEs.
 Clients and recursive resolvers MUST follow CNAMEs as normal.
@@ -496,17 +495,6 @@ RRNAME of this record MUST be used as the effective
 SvcDomainName.  (The SvcDomainName of an SVCB RR in AliasForm MUST NOT have
 this value.)
 
-For example, in the following example "svc2.example.net"
-is the effective SvcDomainName:
-
-    www.example.com.  7200  IN HTTPSSVC svc.example.net.
-    svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPSSVC 0 . ( alpn=h2
-                                         port=8002 esnikeys="..." )
-    svc2.example.net. 300   IN A         192.0.2.2
-    svc2.example.net. 300   IN AAAA      2001:db8::2
-
-
 ### SvcFieldPriority  {#svcfieldpri}
 
 As RRs within an RRSET are explicitly unordered collections, the
@@ -523,7 +511,7 @@ load-balancing.
 # Client behavior {#client-behavior}
 
 An SVCB-aware client resolves an origin by attempting to determine
-the preferred SvcFieldValue and IP addresses for its service, using the
+the preferred SvcFieldValue and IP addresses and SvcFieldValue for its service, using the
 following procedure:
 
 1. Issue parallel AAAA/A and SVCB queries for the name HOST.
@@ -554,19 +542,6 @@ use an approach such as {{!HappyEyeballsV2=RFC8305}}.
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
-## Clients using a Proxy
-
-Clients using a proxy via issuing CONNECT requests
-({{!RFC7231}} Section 4.3.6) should follow the same
-resolution for resolving SVCB records.  If a ServiceForm SVCB
-record is found, the client should select the highest priority acceptable
-option.  From this the client should construct the request-target
-used in the CONNECT request.
-
-In cases where no ServiceForm SVCB record is found, the client should
-proceed as normal and use HOST to construct the request-target.
-
-
 # DNS Server Behavior {#server-behavior}
 
 Authoritative DNS servers SHOULD return A, AAAA, and SVCB records (as
@@ -576,7 +551,7 @@ in-bailiwick SvcDomainNames.
 Recursive resolvers that are aware of SVCB SHOULD ensure that the client can
 execute the procedure in {{client-behavior}} without issuing a second
 round of queries, by following this procedure while constructing a response
-to a stub resolver for a SVCB record query:
+to a stub resolver:
 
 1. When processing an SVCB response from an authoritative server, add it to
    the Additional section (unless it is the Answer).
@@ -587,8 +562,7 @@ to a stub resolver for a SVCB record query:
 
 3. If the record is in AliasForm, resolve A, AAAA, and SVCB records for
    the SvcDomainName.  If the SVCB record does not exist, add the A and AAAA
-   records to the Additional section.  Otherwise, go to step 1,
-   subject to loop detection heuristics.
+   records to the Additional section.  Otherwise, go to step 1.
 
 3. If the records are in ServiceForm, resolve A and AAAA records for each
    SvcDomainName (or for the RRNAME if the SvcDomainName is "."), and include all
@@ -631,7 +605,7 @@ HTTPS, and most are applicable to other protocols as well.
 
 The "alpn" SvcParamKey defines the Application Layer Protocol
 (ALPN, as defined in {{!RFC7301}) supported by a TLS-based alternative
-service.  Its value SHOULD be an entry in the IANA registry "TLS
+service.  Its value SHOULD be an entryin the IANA registry "TLS
 Application-Layer Protocol Negotiation (ALPN) Protocol IDs".
 
 The presentation format and wire format of SvcParamValue
@@ -665,19 +639,6 @@ The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection.
 
-These parameters MAY be repeated multiple times within a record.
-When this happens, the list of addresses SHOULD be concatenated.
-
-When selecting between AAAA and A records to use, clients may use an
-approach such as {{!HappyEyeballsV2=RFC8305}}.  Within an address
-family, clients SHOULD pick addresses to use in a random order.
-
-When only "a" parameters are present, IPv6-only clients MUST either
-resolve an AAAA records from the SvcDomainName or attempt
-to synthesize IPv6 addresses as specified in {{!RFC7050}}.
-This is necessary as recursive resolvers will not be able to
-perform DNS64 ({{!RFC6147}}) on parameters within a SVCB record.
-
 The presentation format for each parameter is a comma-separated list of
 IP addresses in standard textual format {{!RFC5952}}.
 
@@ -697,9 +658,8 @@ To enable special handling for the HTTPS and HTTP use-cases,
 the HTTPSSVC RRType is defined as an instantiation
 of SVCB, specific to the https and http schemes.
 This handling includes a mapping from HTTPSSVC records
-directly into Alt-Svc entries.  Clients MUST NOT
-perform SVCB queries or accept SVCB responses for https
-or http schemes.
+directly into Alt-Svc entries.  HTTP and HTTPS clients MUST NOT
+perform SVCB queries or accept SVCB responses.
 
 The HTTPSSVC wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
@@ -1037,9 +997,6 @@ be populated with the registrations below:
 | 1           | alpn        | ALPN for alternative service  | (This document) |
 | 2           | port        | Port for alternative service  | (This document) |
 | 3           | esnikeys    | ESNI keys literal             | (This document) |
-| 4           | a           | IPv4 address hints            | (This document) |
-| 5           | key5        | Reserved                      | (This document) |
-| 6           | aaaa        | IPv6 address hints            | (This document) |
 | 65280-65534 | keyNNNNN    | Private Use                   | (This document) |
 | 65535       | key65535    | Reserved                      | (This document) |
 
@@ -1075,7 +1032,7 @@ Parameter Registry:
 
 
 
-# Acknowledgments and Related Proposals
+# Acknowledgements and Related Proposals
 
 There have been a wide range of proposed solutions over the years to
 the "CNAME at the Zone Apex" challenge proposed.  These include
