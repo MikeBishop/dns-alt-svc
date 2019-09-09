@@ -689,8 +689,11 @@ When receiving such a record, clients SHOULD combine the sets of addresses.
 When selecting between AAAA and A records to use, clients may use an
 approach such as {{!HappyEyeballsV2=RFC8305}}.
 When only "a" parameters are present, IPv6-only clients may synthesize
-IPv6 addresses as specified in {{!RFC7050}}.  Recursive resolvers MUST NOT
+IPv6 addresses as specified in {{!RFC7050}} or ignore the "a" parameter and
+wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
 perform DNS64 ({{!RFC6147}}) on parameters within a SVCB record.
+For best performance, server operators SHOULD include "aaaa" parameters
+whenever they publish "a" parameters.
 
 The presentation format for each parameter is a comma-separated list of
 IP addresses in standard textual format {{!RFC5952}}.
