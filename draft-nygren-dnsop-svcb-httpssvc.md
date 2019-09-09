@@ -564,11 +564,25 @@ Clients using a domain-oriented transport proxy like HTTP CONNECT
 SVCB support if performing SVCB queries would violate the
 client's privacy intent.
 
-If the client can safely perform SVCB queries, the client SHOULD follow
+If the client can safely perform SVCB queries (e.g. via the
+proxy or an affiliated resolver), the client SHOULD follow
 the standard SVCB resolution process, selecting the highest priority
 option that is compatible with the client and the proxy.  The client
 SHOULD provide the final SvcDomainName and port (if present) to the
 proxy as the destination host and port.
+
+Providing the proxy with the final SvcDomainName has several benefits:
+
+* It allows the client to use the SvcFieldValue, if present, which is
+  only usable with a specific SvcDomainName.  The SvcFieldValue may
+  include information that enhances performance (e.g. alpn) and privacy
+  (e.g. esnikeys).
+
+* It allows the origin to delegate the apex domain.
+
+* It allows the proxy to select between IPv4 and IPv6 addresses for the
+  server according to its configuration, and receive addresses based on
+  its network geolocation.
 
 # DNS Server Behavior {#server-behavior}
 
