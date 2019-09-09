@@ -541,6 +541,8 @@ following procedure:
    SvcDomainName if they are not already available.  These are the
    preferred SvcFieldValue and IP addresses.  If connection fails, the
    client MAY try to connect using values from a lower-priority record.
+   If none of the options are acceptable and working, the client SHOULD
+   connect to the origin server directly.
 
 4. If an SVCB record for HOST does not exist, the received AAAA and/or A
    records are the preferred IP addresses, and there is no preferred
@@ -557,16 +559,30 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
 ## Clients using a Proxy
 
-Clients using a proxy via issuing CONNECT requests
-({{!RFC7231}} Section 4.3.6) should follow the same
-resolution for resolving SVCB records.  If a ServiceForm SVCB
-record is found, the client should select the highest priority acceptable
-option.  From this the client should construct the request-target
-used in the CONNECT request.
+Clients using a domain-oriented transport proxy like HTTP CONNECT
+({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) SHOULD disable
+SVCB support if performing SVCB queries would violate the
+client's privacy intent.
 
-In cases where no ServiceForm SVCB record is found, the client should
-proceed as normal and use HOST to construct the request-target.
+If the client can safely perform SVCB queries (e.g. via the
+proxy or an affiliated resolver), the client SHOULD follow
+the standard SVCB resolution process, selecting the highest priority
+option that is compatible with the client and the proxy.  The client
+SHOULD provide the final SvcDomainName and port (if present) to the
+proxy as the destination host and port.
 
+Providing the proxy with the final SvcDomainName has several benefits:
+
+* It allows the client to use the SvcFieldValue, if present, which is
+  only usable with a specific SvcDomainName.  The SvcFieldValue may
+  include information that enhances performance (e.g. alpn) and privacy
+  (e.g. esnikeys).
+
+* It allows the origin to delegate the apex domain.
+
+* It allows the proxy to select between IPv4 and IPv6 addresses for the
+  server according to its configuration, and receive addresses based on
+  its network geolocation.
 
 # DNS Server Behavior {#server-behavior}
 
@@ -659,25 +675,25 @@ The SvcParamKey for ESNI is "esnikeys".  Its value is defined in
 
 The "a" and "aaaa" keys represent IP address hints for the service.
 If A and AAAA records for SvcDomainName are locally available, the client SHOULD
-ignore these hints.  When A and AAAA records arrive, clients SHOULD
+ignore these hints.  Otherwise, clients MUST perform A and/or AAAA queries
+for SvcDomainName as in {{client-behavior}}, and clients SHOULD
 switch to an IP address in those records as soon as possible.
 
 The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
-unordered collection.
+unordered collection, and clients SHOULD pick addresses to use in a random order.
 
 These parameters MAY be repeated multiple times within a record.
-When this happens, the list of addresses SHOULD be concatenated.
+When receiving such a record, clients SHOULD combine the sets of addresses.
 
-When selecting between AAAA and A records to use, clients may use an
-approach such as {{!HappyEyeballsV2=RFC8305}}.  Within an address
-family, clients SHOULD pick addresses to use in a random order.
-
-When only "a" parameters are present, IPv6-only clients MUST either
-resolve an AAAA records from the SvcDomainName or attempt
-to synthesize IPv6 addresses as specified in {{!RFC7050}}.
-This is necessary as recursive resolvers will not be able to
+When selecting between IPv4 and IPv6 addresses to use, clients may use an
+approach such as {{!HappyEyeballsV2=RFC8305}}.
+When only "a" parameters are present, IPv6-only clients may synthesize
+IPv6 addresses as specified in {{!RFC7050}} or ignore the "a" parameter and
+wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
 perform DNS64 ({{!RFC6147}}) on parameters within a SVCB record.
+For best performance, server operators SHOULD include "aaaa" parameters
+whenever they publish "a" parameters.
 
 The presentation format for each parameter is a comma-separated list of
 IP addresses in standard textual format {{!RFC5952}}.
