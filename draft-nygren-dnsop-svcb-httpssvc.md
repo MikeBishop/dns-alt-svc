@@ -98,13 +98,10 @@ collection of consistent configuration parameters through the DNS
 (such as network location, protocol, and keying information).
 
 This document first describes the SVCB RR as a general-purpose resource
-record that can be applicable to a wide range of services.
+record that can be applied directly and efficiently to a wide range of services.
 As HTTPS is a primary use-case and with special requirements,
 the HTTPSSVC RR is also defined within this document as a special case
 of SVCB.
-
-SVCB is intended to support a wide range of
-services and protocols, many of which may be able to use it directly.
 Services wishing to avoid the need for an {{?Attrleaf}} label with
 SVCB may follow the pattern of HTTPSSVC and assign their own
 SVCB-compatible RRTypes.
@@ -192,8 +189,8 @@ additional DNS RR in a way that:
   For example, if www.example.com is a CNAME alias that switches
   between one of three CDNs or hosting enviroments, successive queries
   for that name may return records that correspond to different environments.
-* Enables the functional equivalent of a CNAME at a zone apex (such as
-  "example.com"), and generally
+* Enables CNAME-like functionality at a zone apex (such as
+  "example.com") for participating protocols, and generally
   enables delegation of operational authority for an origin within the
   DNS to an alternate name.
 
@@ -319,18 +316,21 @@ In ServiceForm, the SvcFieldValue contains key=value pairs.
 Keys are IANA-registered SvcParamKeys ({{svcparamregistry}})
 with both a case-insensitive string representation and
 a numeric representation in the range 0-65535.
-They should only contain characters from the ranges
+Registered key names should only contain characters from the ranges
 "a"-"z", "0"-"9", and "-".  In ABNF {{!RFC5234}},
 
-    key = ALPHA / DIGIT / "-"
+    ALPHA_LC    = %x61-7A   ;  a-z
+    key         = ALPHA_LC / DIGIT / "-"
+    display-key = ALPHA / DIGIT / "-"
 
 Values are in a format specific to the SvcParamKey.
 Their definition should specify both their presentation format
 and wire encoding (e.g., domain names, binary data, or numeric values).
 
 The SVCB format preserves the order of values and can encode multiple
-values for the same parameter.  However, a parameter should not appear
-more than once unless its specification explicitly allows this.
+values for the same parameter.  However, clients MUST consider only
+the first appearance of a parameter unless its specification explicitly allows
+multiple values.
 
 ### Presentation format
 
@@ -338,11 +338,11 @@ The presentation format for SvcFieldValue is a whitespace-separated
 list of the key=value pairs.  Each pair is presented in the following form:
 
     basic-visible = %x21 / %x23-5B / %x5D-7E ; VCHAR minus DQUOTE and "\"
-    escaped       = "\" (VCHAR / WSP)
-    contiguous    = *(basic-visible / escaped-character)
+    escaped-char  = "\" (VCHAR / WSP)
+    contiguous    = *(basic-visible / escaped-char)
     quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
     value         = quoted-string / contiguous
-    pair          = key "=" value
+    pair          = display-key "=" value
 
 The value format is intended to match the definition of &lt;character-string&gt;
 in {{!RFC1035}} Section 5.1.  (Unlike &lt;character-string&gt;, the length
@@ -485,8 +485,9 @@ associates an alternative service and associated parameters with an origin.
 
 {{map2altsvc}} defines a direct mapping between Alt-Svc ({{!AltSvc}}) values
 and the SVCB ServiceForm.  Protocols using SVCB may use this Alt-Svc
-mapping or specify their own semantics.  Each protocol mapping must specify
-client behavior when a SvcFieldValue contains unrecognized parameters.
+mapping or specify their own semantics.  Unless specified otherwise by the
+protocol mapping, clients MUST ignore SvcFieldValue parameters that they do
+not recognize.
 
 ### Special handling of "." for SvcDomainName in ServiceForm {#svcdomainnamedot}
 
@@ -714,7 +715,8 @@ hostnames based on the origin host.
 To construct an Alt-Svc Field Value (as defined in Section 4 of
 {{!AltSvc}}) from an HTTPSSVC record:
 
-* The SvcDomainName is mapped into the uri-host portion of alt-authority.
+* The SvcDomainName is mapped into the uri-host portion of alt-authority
+  with the trailing "." removed.
   (If SvcDomainName is ".", the special handling described in
   {{svcdomainnamedot}} MUST be applied first.)
 
@@ -1193,7 +1195,7 @@ added as an optional SVCB parameter.
 # Change history
 
 * draft-nygren-dnsop-svcb-httpssvc-00
-    * Generalize to a SVCB record, with special-case
+    * Generalize to an SVCB record, with special-case
       handling for Alt-Svc and HTTPS separated out
       to dedicated sections.
     * Split out a separate HTTPSSVC record for
