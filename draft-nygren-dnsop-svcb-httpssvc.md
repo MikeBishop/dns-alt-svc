@@ -686,7 +686,7 @@ unordered collection, and clients SHOULD pick addresses to use in a random order
 These parameters MAY be repeated multiple times within a record.
 When receiving such a record, clients SHOULD combine the sets of addresses.
 
-When selecting between AAAA and A records to use, clients may use an
+When selecting between IPv4 and IPv6 addresses to use, clients may use an
 approach such as {{!HappyEyeballsV2=RFC8305}}.
 When only "a" parameters are present, IPv6-only clients may synthesize
 IPv6 addresses as specified in {{!RFC7050}} or ignore the "a" parameter and
