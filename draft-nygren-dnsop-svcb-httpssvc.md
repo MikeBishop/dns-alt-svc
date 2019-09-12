@@ -199,8 +199,7 @@ Additional goals specific to HTTPSSVC and the HTTPS use-case include:
 * Connect directly to {{!HTTP3=I-D.draft-ietf-quic-http-20}} (QUIC transport)
   alternative service endpoints
 * Obtain the {{!ESNI}} keys associated with an alternative service endpoint
-* Support alternate TCP and UDP ports for the alternative
-  service endpoint, beyond the default for the service
+* Support non-default TCP and UDP ports
 * Address a set of long-standing issues due to HTTP(S) clients not
   implementing support for SRV records, as well as due to a limitation
   that a DNS name can not have both a CNAME record as well as NS RRs
