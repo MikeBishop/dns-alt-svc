@@ -300,8 +300,10 @@ is used to locate endpoints that can service an origin.
 There is special handling for the case of "https" origins.
 The presentation format of the record is:
 
-    Name TTL Class SVCB SvcFieldPriority SvcDomainName SvcFieldValue
+    Name TTL IN SVCB SvcFieldPriority SvcDomainName SvcFieldValue
 
+The SVCB record is defined specifically within 
+the Internet ("IN") Class ({{!RFC1035}}).
 SvcFieldPriority is a number in the range 0-65535,
 SvcDomainName is a domain name,
 and SvcFieldValue is a set of key=value pairs present for the ServiceForm.
