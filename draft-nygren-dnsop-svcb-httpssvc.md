@@ -524,7 +524,7 @@ load-balancing.
 
 # Client behavior {#client-behavior}
 
-An SVCB-aware client resolves an origin by attempting to determine
+An SVCB-aware client resolves an origin HOST by attempting to determine
 the preferred SvcFieldValue and IP addresses for its service, using the
 following procedure:
 
@@ -540,19 +540,19 @@ following procedure:
    for HOST, clients should select the highest-priority option with
    acceptable parameters, and resolve AAAA and/or A records for its
    SvcDomainName if they are not already available.  These are the
-   preferred SvcFieldValue and IP addresses.  If connection fails, the
+   preferred SvcFieldValue and IP addresses.  If the connection fails, the
    client MAY try to connect using values from a lower-priority record.
-   If none of the options are acceptable and working, the client SHOULD
-   connect to the origin server directly.
+   If none of the options succeed, the client SHOULD connect to the origin 
+   server directly.
 
 4. If an SVCB record for HOST does not exist, the received AAAA and/or A
-   records are the preferred IP addresses, and there is no SvcFieldValue.
+   records are the preferred IP addresses and there is no SvcFieldValue.
 
 This procedure does not rely on any recursive or authoritative server to
 comply with this specification or have any awareness of SVCB.
 
-When selecting between AAAA and A records to use, clients may
-use an approach such as {{!HappyEyeballsV2=RFC8305}}.
+When selecting between AAAA and A records to use, clients may use an approach 
+such as {{!HappyEyeballsV2=RFC8305}}.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
@@ -627,6 +627,20 @@ in cache before performing any followup queries.
 With these optimizations in place, and conforming DNS servers,
 using SVCB does not add network latency to connection setup.
 
+Moreover, if an A or AAAA response arrives before an SVCB response, a client which 
+prefers ESNI SHOULD wait up to CD milliseconds before starting secure connections 
+to either address. (Clients may begin TCP connections in this time. QUIC connections 
+should wait. This allows receipt of latent keying material in a SVCR repsonse.) 
+If an SVCB record with a "esnikeys" value and "ipv4hint" or "ipv6hint" values 
+arrives and one of those hints matches an in-progress connection, the secure 
+connection should proceed using the provided ESNI keying material. However, if 
+neither a "ipv4hint" nor "ipv6hint" is available, the client MUST resolve the 
+SvcDomainName in the SVCB response and connect to the preferred A or AAAA adddress
+according to the procedure in {{client-behavior}}.
+
+CD (Connection Delay) is a configurable parameter.  The recommended value is 50 
+milliseconds, as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
+
 A nonconforming recursive resolver might not return all the information
 required to use all the records in an SVCB response.  If
 some of the SVCB RRs in the response can be used without requiring
@@ -678,7 +692,9 @@ The "ipv4hint" and "ipv6hint" keys represent IP address hints for the service.
 If A and AAAA records for SvcDomainName are locally available, the client SHOULD
 ignore these hints.  Otherwise, clients MUST perform A and/or AAAA queries
 for SvcDomainName as in {{client-behavior}}, and clients SHOULD
-switch to an IP address in those records as soon as possible.
+switch to an IP address in those records as soon as possible. Failure to use
+A and/or AAAA response addresses may negatively impact load balancing or other
+geo-aware features and thereby degrade client performance.
 
 The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
