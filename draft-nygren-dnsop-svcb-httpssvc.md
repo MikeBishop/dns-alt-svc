@@ -636,14 +636,9 @@ of an SVCB response {{svcparamkeys-esnikeys}}. CD (Connection Delay)
 is a configurable parameter. The recommended value is 50 milliseconds,
 as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
 
-An SVCB record is consistent with an active or in-progress connection C
-if the following conditions are met:
-
-1. The A or AAAA address for its SvcDomainName matches the destination
-address of C.
-2. The destination port of C matches that specified in the SVCB record.
-
-If an SVCB record is consistent with an active or in-progress
+An SVCB record is consistent with an active or in-progress connection
+if the client would attempt an equivalent connection when making use of
+that record. If an SVCB record is consistent with an active or in-progress
 connection C, the client may continue using C with any information provided
 by the SVCB record. For example, if an SVCB record with a "esnikeys" value and
 "ipv4hint" or "ipv6hint" values {{svcparamkeys-iphints}} arrives, and one of
