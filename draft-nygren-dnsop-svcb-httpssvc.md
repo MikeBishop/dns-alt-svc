@@ -628,7 +628,7 @@ With these optimizations in place, and conforming DNS servers,
 using SVCB does not add network latency to connection setup.
 
 Moreover, if an A or AAAA response arrives before an SVCB response, the
-client SHOULD wait up to CD milliseconds before connecting as if the
+client MAY wait up to CD milliseconds before connecting as if the
 SVCB query returned NODATA, but MUST NOT transmit any information that
 could be altered by an SVCB response until the SVCB response arrives.
 For example, a TLS ClientHello may be altered by the "esnikeys" value
@@ -637,8 +637,13 @@ is a configurable parameter. The recommended value is 50 milliseconds,
 as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
 
 An SVCB record is consistent with an active or in-progress connection C
-if the A or AAAA address for its SvcDomainName matches the destination
-address of C. If an SVCB record is consistent with an active or in-progress
+if the following conditions are met:
+
+1. The A or AAAA address for its SvcDomainName matches the destination
+address of C.
+2. The destination port of C matches that specified in the SVCB record.
+
+If an SVCB record is consistent with an active or in-progress
 connection C, the client may continue using C with any information provided
 by the SVCB record. For example, if an SVCB record with a "esnikeys" value and
 "ipv4hint" or "ipv6hint" values {{svcparamkeys-iphints}} arrives, and one of
