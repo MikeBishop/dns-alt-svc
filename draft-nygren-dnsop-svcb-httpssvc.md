@@ -631,28 +631,30 @@ Moreover, if an A or AAAA response arrives before an SVCB response, the
 client SHOULD wait up to CD milliseconds before connecting as if the
 SVCB query returned NODATA, but MUST NOT transmit any information that
 could be altered by an SVCB response until the SVCB response arrives.
-For example, a TLS connection may be altered by the "esnikeys" value
-of an SVCB response. CD (Connection Delay) is a configurable parameter.
-The recommended value is 50 milliseconds, as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
+For example, a TLS ClientHello may be altered by the "esnikeys" value
+of an SVCB response {{svcparamkeys-esnikeys}}. CD (Connection Delay)
+is a configurable parameter. The recommended value is 50 milliseconds,
+as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
 
-If an SVCB record is consistent with an active or in-progress connection,
-the client may continue using that connection using any information provided
-by the SVCB RR. For example, if an SVCB record with a "esnikeys" value and
-"ipv4hint" or "ipv6hint" values arrives and one of those hints matches the
-address of an in-progress connection, the TLS connection should proceed using
-the provided ESNI keying material.
+An SVCB record is consistent with an active or in-progress connection C
+if the A or AAAA address for its SvcDomainName matches the destination
+address of C. If an SVCB record is consistent with an active or in-progress
+connection C, the client may continue using C with any information provided
+by the SVCB record. For example, if an SVCB record with a "esnikeys" value and
+"ipv4hint" or "ipv6hint" values {{svcparamkeys-iphints}} arrives, and one of
+those hints matches the address of an in-progress connection TCP connection,
+TLS should proceed on that connection using the provided ESNI keying material.
 
 If the SVCB record is not consistent with any active or in-progress connection,
-e.g. there is no "ipv4hint" or "ipv6hint" that matches a connection, clients must
-then resolve the SvcDomainName in the SVCB response to the preferred A or AAAA
-adddress. If a client's DNS cache has valid A or AAAA records for the SvcDomainName,
-those SHOULD be used. Otherwise, clients MUST resolve SvcDomainName to according to
-the procedure in {{client-behavior}}.
+clients must then resolve the SvcDomainName in the SVCB response to the preferred
+A or AAAA adddress. If a client's DNS cache has valid A or AAAA records for the
+SvcDomainName, those SHOULD be used. Otherwise, clients MUST resolve SvcDomainName
+to according to the procedure in {{client-behavior}}.
 
 A nonconforming recursive resolver might not return all the information
 required to use all the records in an SVCB response.  If
-some of the SVCB RRs in the response can be used without requiring
-additional DNS queries, the client MAY prefer those RRs, regardless of
+some of the SVCB records in the response can be used without requiring
+additional DNS queries, the client MAY prefer those records, regardless of
 their priorities.
 
 To avoid a delay for clients using a nonconforming recursive resolver,
@@ -694,7 +696,7 @@ is the corresponding 2 octet numeric value in network byte order.
 The SvcParamKey for ESNI is "esnikeys".  Its value is defined in
 {{esnikeys}}.  It is applicable to most TLS-based protocols.
 
-## "ipv4hint" and "ipv6hint"
+## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
 
 The "ipv4hint" and "ipv6hint" keys represent IP address hints for the service.
 If A and AAAA records for SvcDomainName are locally available, the client SHOULD
