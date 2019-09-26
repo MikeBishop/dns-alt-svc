@@ -302,7 +302,7 @@ The presentation format of the record is:
 
     Name TTL IN SVCB SvcFieldPriority SvcDomainName SvcFieldValue
 
-The SVCB record is defined specifically within 
+The SVCB record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
 SvcFieldPriority is a number in the range 0-65535,
 SvcDomainName is a domain name,
@@ -542,7 +542,7 @@ following procedure:
    SvcDomainName if they are not already available.  These are the
    preferred SvcFieldValue and IP addresses.  If the connection fails, the
    client MAY try to connect using values from a lower-priority record.
-   If none of the options succeed, the client SHOULD connect to the origin 
+   If none of the options succeed, the client SHOULD connect to the origin
    server directly.
 
 4. If an SVCB record for HOST does not exist, the received AAAA and/or A
@@ -551,7 +551,7 @@ following procedure:
 This procedure does not rely on any recursive or authoritative server to
 comply with this specification or have any awareness of SVCB.
 
-When selecting between AAAA and A records to use, clients may use an approach 
+When selecting between AAAA and A records to use, clients may use an approach
 such as {{!HappyEyeballsV2=RFC8305}}.
 
 Some important optimizations are discussed in {{optimizations}}
@@ -627,18 +627,19 @@ in cache before performing any followup queries.
 With these optimizations in place, and conforming DNS servers,
 using SVCB does not add network latency to connection setup.
 
-Moreover, if an A or AAAA response arrives before an SVCB response, a client which 
-prefers ESNI SHOULD wait up to CD milliseconds before starting secure connections 
-to either address. (Clients may begin TCP connections in this time. QUIC connections 
-should wait. This allows receipt of latent keying material in a SVCR repsonse.) 
-If an SVCB record with a "esnikeys" value and "ipv4hint" or "ipv6hint" values 
-arrives and one of those hints matches an in-progress connection, the secure 
-connection should proceed using the provided ESNI keying material. However, if 
-neither a "ipv4hint" nor "ipv6hint" is available, the client MUST resolve the 
-SvcDomainName in the SVCB response and connect to the preferred A or AAAA adddress
-according to the procedure in {{client-behavior}}.
+Moreover, if an A or AAAA response arrives before an SVCB response, a client which
+prefers ESNI SHOULD wait up to CD milliseconds before starting secure connections
+to either address. (Clients may begin TCP connections in this time. QUIC connections
+should wait. This allows receipt of latent keying material in a SVCB repsonse.)
+If an SVCB record with a "esnikeys" value and "ipv4hint" or "ipv6hint" values
+arrives and one of those hints matches an in-progress connection, the secure
+connection should proceed using the provided ESNI keying material. If neither a
+"ipv4hint" nor "ipv6hint" is available, clients must then resolve the SvcDomainName
+in the SVCB response to the preferred A or AAAA adddress. If a client's DNS cache has
+valid A or AAAA records for the SvcDomainName, those SHOULD be used. Otherwise,
+clients MUST resolve SvcDomainName to according to the procedure in {{client-behavior}}.
 
-CD (Connection Delay) is a configurable parameter.  The recommended value is 50 
+CD (Connection Delay) is a configurable parameter.  The recommended value is 50
 milliseconds, as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
 
 A nonconforming recursive resolver might not return all the information
