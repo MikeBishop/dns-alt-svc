@@ -627,31 +627,46 @@ in cache before performing any followup queries.
 With these optimizations in place, and conforming DNS servers,
 using SVCB does not add network latency to connection setup.
 
-Moreover, if an A or AAAA response arrives before an SVCB response, the
-client MAY wait at least CD milliseconds before connecting as if the
+## Optimistic pre-connection and connection reuse
+
+If an address response arrives before the corresponding SVCB response, the
+client MAY initiate a connection as if the
 SVCB query returned NODATA, but MUST NOT transmit any information that
-could be altered by an SVCB response until the SVCB response arrives.
-For example, a TLS ClientHello may be altered by the "esnikeys" value
-of an SVCB response {{svcparamkeys-esnikeys}}. CD (Connection Delay)
-is a configurable parameter. The recommended value is 50 milliseconds,
+could be altered by the SVCB response until it arrives.  For example, a
+TLS ClientHello can be altered by the "esnikeys" value of an SVCB response
+({{svcparamkeys-esnikeys}}).  Clients implementing this optimization SHOULD
+wait for 50 milliseconds before starting optimistic pre-connection,
 as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
 
-An SVCB record is consistent with an active or in-progress connection
+An SVCB record is consistent with a connection
 if the client would attempt an equivalent connection when making use of
 that record. If an SVCB record is consistent with an active or in-progress
-connection C, the client may continue using C with any information provided
-by the SVCB record. For example, if an SVCB record with a "esnikeys" value and
-"ipv4hint" or "ipv6hint" values {{svcparamkeys-iphints}} arrives, and one of
-those hints matches the address of an in-progress connection TCP connection,
-TLS should proceed on that connection using the provided ESNI keying material.
-If the SVCB record is not consistent with any active or in-progress connection,
+connection C, the client MAY prefer that record and use C as its connection.
+For example, suppose the client receives this SVCB RRSet for a protocol
+that uses TLS over TCP:
+
+    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net ( esnikeys="111..."
+                                        ipv6hint=2001:db8::1 port=1234 ... )
+                                   SVCB 2 svc2.example.net ( esnikeys="222..."
+                                        ipv6hint=2001:db8::2 port=1234 ... )
+
+If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
+it MAY proceed with TLS on that connection using `esnikeys="222..."`, even
+though the other record in the RRSet has higher priority.
+
+If none of the SVCB records are consistent
+with any active or in-progress connection,
 clients must proceed as described in Step 3 of the procedure in {{client-behavior}}.
+
+## Preferring usable records
 
 A nonconforming recursive resolver might not return all the information
 required to use all the records in an SVCB response.  If
 some of the SVCB records in the response can be used without requiring
 additional DNS queries, the client MAY prefer those records, regardless of
 their priorities.
+
+## Structuring zones for performance
 
 To avoid a delay for clients using a nonconforming recursive resolver,
 domain owners SHOULD use a single SVCB record whose SvcDomainName is in the
