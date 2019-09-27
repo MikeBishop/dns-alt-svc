@@ -361,14 +361,14 @@ should be represented in wire format, using decimal escape codes
 The RDATA for the SVCB RR consists of:
 
 * a 2 octet field for SvcFieldPriority as an integer in network
-  byte order.  For AliasForm, SvcFieldPriority MUST be 0.
+  byte order.
 * the uncompressed SvcDomainName, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
 * the SvcFieldValue byte string, consuming the remainder of the record
   (so smaller than 65535 octets and constrained by the RDATA
   and DNS message sizes).
 
-AliasForm is defined by SvcFieldValue being empty.
+AliasForm is defined by SvcFieldPriority being 0.
 
 When SvcFieldValue is non-empty (ServiceForm), it contains a list of
 SvcParamKey=SvcParamValue pairs with length-prefixes for the SvcParamValues,
@@ -423,9 +423,9 @@ on port 8004.
 
 ## SvcRecordType
 
-The SvcRecordType is implicit based on the presence of SvcFieldValue,
+The SvcRecordType is indicated by the SvcFieldPriority,
 and defines the form of the SVCB RR.
-When SvcFieldValue is empty, the SVCB SvcRecordType is defined to be
+When SvcFieldPriority is 0, the SVCB SvcRecordType is defined to be
 in AliasForm.  Otherwise, the SVCB SvcRecordType is defined to be
 in ServiceForm.
 
@@ -503,10 +503,10 @@ is the effective SvcDomainName:
 
     www.example.com.  7200  IN HTTPSSVC svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPSSVC 0 . ( alpn=h2
-                                         port=8002 esnikeys="..." )
-    svc2.example.net. 300   IN A         192.0.2.2
-    svc2.example.net. 300   IN AAAA      2001:db8::2
+    svc2.example.net. 7200  IN HTTPSSVC 1 . ( alpn=h2
+                                        port=8002 esnikeys="..." )
+    svc2.example.net. 300   IN A        192.0.2.2
+    svc2.example.net. 300   IN AAAA     2001:db8::2
 
 
 ### SvcFieldPriority {#svcfieldpri}
@@ -599,22 +599,24 @@ to a stub resolver for an SVCB record query:
 1. When processing an SVCB response from an authoritative server, add it to
    the Additional section (unless it is the Answer).
 
-2. Inspect whether each record is in AliasForm or ServiceForm.
-   If at least one record is in AliasForm, ignore all other SVCB records in the
-   RRSet.
+2. If all records are in ServiceForm, resolve A and AAAA records for each
+   SvcDomainName (or for the owner name if the SvcDomainName is "."), and include all
+   the results in the Additional section.
 
-3. If the record is in AliasForm, resolve A, AAAA, and SVCB records for
+3. Otherwise, select an AliasForm record at random, and resolve A, AAAA,
+   and SVCB records for
    the SvcDomainName.  If the SVCB record does not exist, add the A and AAAA
    records to the Additional section.  Otherwise, go to step 1,
    subject to loop detection heuristics.
 
-3. If the records are in ServiceForm, resolve A and AAAA records for each
-   SvcDomainName (or for the owner name if the SvcDomainName is "."), and include all
-   the results in the Additional section.
-
 All DNS servers SHOULD treat the SvcParam portion of the SVCB RR
 as opaque and SHOULD NOT try to alter their behavior based
 on its contents.
+
+When responding to a query that includes the DNSSEC OK bit ({{!RFC3225}}),
+DNSSEC-capable recursive and authoritative DNS servers MUST accompany
+each RRSet in the Additional section with the same DNSSEC-related records
+that it would send when providing that RRSet as an Answer.
 
 
 # Performance optimizations {#optimizations}
