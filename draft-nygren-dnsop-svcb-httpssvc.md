@@ -339,7 +339,8 @@ multiple values.
 The presentation format for SvcFieldValue is a whitespace-separated
 list of the key=value pairs.  Each pair is presented in the following form:
 
-    basic-visible = %x21 / %x23-5B / %x5D-7E ; VCHAR minus DQUOTE and "\"
+    ; basic-visible is VCHAR minus DQUOTE, ";", and "\"
+    basic-visible = %x21 / %x23-3A / %x3C-5B / %x5D-7E
     escaped-char  = "\" (VCHAR / WSP)
     contiguous    = *(basic-visible / escaped-char)
     quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
