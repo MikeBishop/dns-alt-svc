@@ -630,13 +630,13 @@ using SVCB does not add network latency to connection setup.
 ## Optimistic pre-connection and connection reuse
 
 If an address response arrives before the corresponding SVCB response, the
-client MAY initiate a connection as if the
-SVCB query returned NODATA, but MUST NOT transmit any information that
-could be altered by the SVCB response until it arrives.  For example, a
-TLS ClientHello can be altered by the "esnikeys" value of an SVCB response
-({{svcparamkeys-esnikeys}}).  Clients implementing this optimization SHOULD
-wait for 50 milliseconds before starting optimistic pre-connection,
-as per the guidance in {{!HappyEyeballsV2=RFC8305}}.
+client MAY initiate a connection as if the SVCB query returned NODATA, but
+MUST NOT transmit any information that could be altered by the SVCB response
+until it arrives.  For example, a TLS ClientHello can be altered by the
+"esnikeys" value of an SVCB response ({{svcparamkeys-esnikeys}}).  Clients
+implementing this optimization SHOULD wait for 50 milliseconds before
+starting optimistic pre-connection, as per the guidance in
+{{!HappyEyeballsV2=RFC8305}}.
 
 An SVCB record is consistent with a connection
 if the client would attempt an equivalent connection when making use of
