@@ -97,11 +97,10 @@ collection of consistent configuration parameters through the DNS
 
 This document first describes the SVCB RR as a general-purpose resource
 record that can be applied directly and efficiently to a wide range of services.
-As HTTPS is a primary use-case and has special requirements,
-the HTTPSSVC RR is also defined within this document as a special case
-of SVCB.
-Services wishing to avoid the need for an {{?Attrleaf}} label with
-SVCB may follow the pattern of HTTPSSVC and assign their own
+The HTTPSSVC RR is then defined as a special case of SVCB that improves
+efficiency with wildcard domains, which are common in HTTPS, by avoiding
+the need for an {{?Attrleaf}} label.  Protocols with similar needs
+may follow the pattern of HTTPSSVC and assign their own
 SVCB-compatible RR types.
 
 All behaviors described as applying to the SVCB RR also apply
@@ -794,7 +793,9 @@ The HTTPSSVC RR extends the behavior for determining
 a QNAME specified above in {{svcb-names}}.
 In particular, if the scheme is "https" with port 443, or the scheme
 is "http" and the port is 80, then the client's original QNAME is
-equal to the origin host name.
+equal to the origin host name.  This construction enables offline
+DNSSEC signing of wildcard domains, which would otherwise be
+impossible due to SVCB's use of {{?Attrleaf}} labels.
 
 For origins other than https with port 443 and http with port 80,
 the port and scheme continue to be prefixed to the hostname
