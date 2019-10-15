@@ -823,13 +823,18 @@ HTTPS, and receiving an HTTPSSVC record is intended to be similar to
 receiving that field value over HTTPS.  However, there are some
 differences in the intended client and server behavior.
 
-### Insecure delivery
+### Untrusted channel
 
-SVCB does not ensure secure delivery of the SvcFieldValue, so any Alt-Svc
-parameters that require secure delivery MUST NOT have a corresponding
-defined SvcParamKey.  For example, there is no SvcParamKey corresponding
-to the Alt-Svc "persist" parameter, because this parameter is not safe to
-accept over an insecure channel.
+SVCB does not require or provide any assurance of authenticity.  (DNSSEC
+signing and verification, which would provide such assurance, are OPTIONAL.)
+The DNS resolution process is treated as an untrusted channel that learns
+only the QNAME, and is prevented from mounting any attack beyond denial of
+service.
+
+Alt-Svc parameters that cannot be safely received in this model MUST NOT
+have a corresponding defined SvcParamKey.  For example, there is no
+SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
+this parameter is not safe to accept over an untrusted channel.
 
 ### Caching and granularity
 
