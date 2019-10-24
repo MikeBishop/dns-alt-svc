@@ -714,7 +714,7 @@ that have access to the corresponding private key or are authoritative
 for the fallback domain. (See {{!ESNI=I-D.ietf-tls-esni}} for more details about
 the fallback domain.) This yields an anonymity set of cardinality equal
 to the number of ESNI-enabled server domains supported by a given client-facing
-server. Thus, even with SNI encryption, an attacker which can enumerate the
+server. Thus, even with SNI encryption, an attacker who can enumerate the
 set of ESNI-enabled domains supported by a client-facing server can guess the
 correct SNI with probability at least 1/K, where K is the size of this
 ESNI-enabled server anonymity set. This probability may be increased via
