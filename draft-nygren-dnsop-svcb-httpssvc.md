@@ -708,6 +708,18 @@ is the corresponding 2 octet numeric value in network byte order.
 The SvcParamKey for ESNI is "esnikeys".  Its value is defined in
 {{esnikeys}}.  It is applicable to most TLS-based protocols.
 
+When publishing a record containing an "esnikeys" parameter, the publisher
+MUST ensure that all IP addresses of SvcDomainName correspond to servers
+that have access to the corresponding private key or are authoritative
+for the fallback domain. (See {{!ESNI=I-D.ietf-tls-esni}} for more details about
+the fallback domain.) This yields an anonymity set of cardinality equal
+to the number of ESNI-enabled server domains supported by a given client-facing
+server. Thus, even with SNI encryption, an attacker who can enumerate the
+set of ESNI-enabled domains supported by a client-facing server can guess the
+correct SNI with probability at least 1/K, where K is the size of this
+ESNI-enabled server anonymity set. This probability may be increased via
+traffic analysis or other mechanisms.
+
 ## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
 
 The "ipv4hint" and "ipv6hint" keys represent IP address hints for the
