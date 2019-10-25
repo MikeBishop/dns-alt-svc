@@ -710,12 +710,15 @@ The SvcParamKey for ESNI is "esnikeys".  Its value is defined in
 
 ## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
 
-The "ipv4hint" and "ipv6hint" keys represent IP address hints for the service.
-If A and AAAA records for SvcDomainName are locally available, the client SHOULD
-ignore these hints.  Otherwise, clients MUST perform A and/or AAAA queries
-for SvcDomainName as in {{client-behavior}}, and clients SHOULD
-switch to an IP address in those records as soon as possible. Failure to use
-A and/or AAAA response addresses may negatively impact load balancing or other
+The "ipv4hint" and "ipv6hint" keys represent IP address hints for the
+service.  If A and AAAA records for SvcDomainName are locally
+available, the client SHOULD ignore these hints.  Otherwise, clients
+SHOULD perform A and/or AAAA queries for SvcDomainName as in
+{{client-behavior}}, and clients SHOULD use the IP address in those
+responses for future connections. Clients MAY opt to terminate any
+connections using the addresses in hints and instead switch to the
+addresses in response to the SvcDomainName Failure to use A and/or
+AAAA response addresses may negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
 The wire format for each parameter is a sequence of IP addresses in network
