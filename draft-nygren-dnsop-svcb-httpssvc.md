@@ -717,7 +717,7 @@ SHOULD perform A and/or AAAA queries for SvcDomainName as in
 {{client-behavior}}, and clients SHOULD use the IP address in those
 responses for future connections. Clients MAY opt to terminate any
 connections using the addresses in hints and instead switch to the
-addresses in response to the SvcDomainName Failure to use A and/or
+addresses in response to the SvcDomainName. Failure to use A and/or
 AAAA response addresses may negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
