@@ -1302,6 +1302,10 @@ added as an optional SVCB parameter.
 
 # Change history
 
+* draft-ietf-dnsop-svcb-httpssvc-00
+    * Document an optimization for optimistic pre-connection. (Chris Wood)
+    * Relax IP hint handling requirements. (Eric Rescorla)
+
 * draft-nygren-dnsop-svcb-httpssvc-00
     * Generalize to an SVCB record, with special-case
       handling for Alt-Svc and HTTPS separated out
