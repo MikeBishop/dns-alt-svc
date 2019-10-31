@@ -1,7 +1,7 @@
 ---
 title: Service binding and parameter specification via the DNS (DNS SVCB and HTTPSSVC)
 abbrev: SVCB and HTTPSSVC RRs for DNS
-docname: draft-nygren-dnsop-svcb-httpssvc-latest
+docname: draft-ietf-dnsop-svcb-httpssvc-latest
 date: {DATE}
 category: std
 
