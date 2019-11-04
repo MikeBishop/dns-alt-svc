@@ -768,17 +768,17 @@ specification.  This section specifies the mapping for HTTPS and HTTP.
 To enable special handling for the HTTPS and HTTP use-cases,
 the HTTPSSVC RR type is defined as an SVCB-compatible RR type,
 specific to the https and http schemes.  Clients MUST NOT
-perform SVCB queries or accept SVCB responses for https
-or http schemes.
+perform SVCB queries or accept SVCB responses for "https"
+or "http" schemes.
 
 The HTTPSSVC wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPSSVC unless specified otherwise.
 
-The presence of an HTTPSSVC record for an HTTP or HTTPS service also
-provides an indication that all resources are available over HTTPS, as
+The presence of an HTTPSSVC record for an origin also indicates
+that all HTTP resources are available over HTTPS, as
 discussed in {{hsts}}.  This allows HTTPSSVC RRs to apply to
-pre-existing HTTP scheme URLs, while ensuring that the client uses a
+pre-existing "http" scheme URLs, while ensuring that the client uses a
 secure and authenticated HTTPS connection.
 
 The HTTPSSVC RR parallels the concepts
@@ -792,14 +792,18 @@ will implement both, and a partial mapping exists between them
 
 The HTTPSSVC RR extends the behavior for determining
 a QNAME specified above in {{svcb-names}}.
-In particular, if the scheme is "https" with port 443, or the scheme
-is "http" and the port is 80, then the client's original QNAME is
+In particular, if the scheme is "https" with port 443,
+then the client's original QNAME is
 equal to the origin host name.
 
-For origins other than https with port 443 and http with port 80,
+For HTTPS origins with ports other than 443,
 the port and scheme continue to be prefixed to the hostname
 as described in {{svcb-names}}.  Following of HTTPSSVC AliasForm and
 CNAME aliases is also unchanged from SVCB.
+
+Clients always convert the "http" scheme to "https" before performing an
+HTTPSSVC query ({{hsts}}), so domain owners MUST NOT publish HTTPSSVC
+records with a prefix of "_http".
 
 Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
@@ -1035,13 +1039,12 @@ range of the Resource Record (RR) TYPEs registry:
 | HTTPSSVC | HTTPS Service Location and Parameter Binding | (This document) |
 
 
-Per {{?Attrleaf}}, please add the following entries to the DNS Underscore
+Per {{?Attrleaf}}, please add the following entry to the DNS Underscore
 Global Scoped Entry Registry:
 
 | RR TYPE   | _NODE NAME | Meaning           | Reference       |
 | --------- | ---------- | ----------------- | --------------- |
 | HTTPSSVC  | _https     | Alt-Svc for HTTPS | (This document) |
-| HTTPSSVC  | _http      | Alt-Svc for HTTPS | (This document) |
 
 
 Per {{?AltSvc}}, please add the following entry to the HTTP Alt-Svc
