@@ -757,7 +757,8 @@ These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
 {{server-behavior}}, and SHOULD NOT be included if most clients are using
 compliant recursive resolvers.  When SvcDomainName is ".", server operators
-SHOULD NOT include these hints, because they convey no performance benefit.
+SHOULD NOT include these hints, because they are unlikely to convey any
+performance benefit.
 
 
 
