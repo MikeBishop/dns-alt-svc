@@ -1292,6 +1292,11 @@ added as an optional SVCB parameter.
 
 # Change history
 
+* draft-ietf-dnsop-svcb-httpssvc-01
+    * Reduce the emphasis on conversion between HTTPSSVC and Alt-Svc
+    * Make the "untrusted channel" concept more precise.
+    * Make SvcFieldPriority = 0 the definition of AliasForm, instead of a requirement.
+
 * draft-ietf-dnsop-svcb-httpssvc-00
     * Document an optimization for optimistic pre-connection. (Chris Wood)
     * Relax IP hint handling requirements. (Eric Rescorla)
