@@ -140,9 +140,9 @@ example HTTPSSVC and associated A+AAAA records might be:
     example.com.      7200  IN HTTPSSVC 0 svc.example.net.
     ; ServiceForm
     svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. ( alpn=h3
-                                        port=8003 esnikeys="..." )
+                                        port=8003 esniconfig="..." )
     svc.example.net.  7200  IN HTTPSSVC 3 svc2.example.net. ( alpn=h2
-                                        port=8002 esnikeys="..." )
+                                        port=8002 esniconfig="..." )
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
     svc3.example.net. 300   IN A        192.0.2.3
@@ -256,7 +256,7 @@ intended destination to all entities along the network path.
 
 This document also defines a parameter for Encrypted SNI {{!ESNI}}
 keys, both as a general SVCB parameter and also as a corresponding
-Alt-Svc parameter. See {{esnikeys}}.
+Alt-Svc parameter. See {{esniconfig}}.
 
 ## Terminology
 
@@ -413,7 +413,7 @@ As an example:
 
     _8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
     svc4.example.net.  7200  IN SVCB 3 ( svc4.example.net. alpn="bar"
-                                       port="8004" esnikeys="..." )
+                                       port="8004" esniconfig="..." )
 
 would indicate that "foo://api.example.com:8443" is aliased
 to use ALPN protocol "bar" service endpoints offered at "svc4.example.net"
@@ -504,7 +504,7 @@ is the effective SvcDomainName:
     www.example.com.  7200  IN HTTPSSVC svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
     svc2.example.net. 7200  IN HTTPSSVC 1 . ( alpn=h2
-                                        port=8002 esnikeys="..." )
+                                        port=8002 esniconfig="..." )
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
@@ -576,7 +576,7 @@ Providing the proxy with the final SvcDomainName has several benefits:
 * It allows the client to use the SvcFieldValue, if present, which is
   only usable with a specific SvcDomainName.  The SvcFieldValue may
   include information that enhances performance (e.g. alpn) and privacy
-  (e.g. esnikeys).
+  (e.g. esniconfig).
 
 * It allows the origin to delegate the apex domain.
 
@@ -635,7 +635,7 @@ If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
 until it arrives.  For example, a TLS ClientHello can be altered by the
-"esnikeys" value of an SVCB response ({{svcparamkeys-esnikeys}}).  Clients
+"esniconfig" value of an SVCB response ({{svcparamkeys-esniconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{!HappyEyeballsV2=RFC8305}}.
@@ -647,13 +647,13 @@ connection C, the client MAY prefer that record and use C as its connection.
 For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
-    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net ( esnikeys="111..."
-                                        ipv6hint=2001:db8::1 port=1234 ... )
-                                   SVCB 2 svc2.example.net ( esnikeys="222..."
-                                        ipv6hint=2001:db8::2 port=1234 ... )
+    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
+        esniconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
+                                   SVCB 2 svc2.example.net (
+        esniconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
-it MAY proceed with TLS on that connection using `esnikeys="222..."`, even
+it MAY proceed with TLS on that connection using `esniconfig="222..."`, even
 though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
@@ -704,12 +704,12 @@ The presentation format of the SvcParamValue is a numeric value
 between 0 and 65535 inclusive.  The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
 
-## "esnikeys" {#svcparamkeys-esnikeys}
+## "esniconfig" {#svcparamkeys-esniconfig}
 
-The SvcParamKey for ESNI is "esnikeys".  Its value is defined in
-{{esnikeys}}.  It is applicable to most TLS-based protocols.
+The SvcParamKey for ESNI is "esniconfig".  Its value is defined in
+{{esniconfig}}.  It is applicable to most TLS-based protocols.
 
-When publishing a record containing an "esnikeys" parameter, the publisher
+When publishing a record containing an "esniconfig" parameter, the publisher
 MUST ensure that all IP addresses of SvcDomainName correspond to servers
 that have access to the corresponding private key or are authoritative
 for the fallback domain. (See {{!ESNI=I-D.ietf-tls-esni}} for more details about
@@ -901,26 +901,40 @@ Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
 it SHOULD abandon the connection attempt if the HTTPSSVC response fails
 to validate.
 
-# Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys {#esnikeys}
+## Cache interaction
 
-Both SVCB/HTTPSSVC and Alt-Svc "esnikeys" parameters are defined for specifying
-ESNI keys corresponding to an alternative service.
-The value of the parameter is an ESNIKeys structure {{!ESNI}}
+If the client has an Alt-Svc cache, and a usable Alt-Svc value is
+present in that cache, then the client SHOULD NOT issue an HTTPSSVC DNS
+query.  Instead, the client SHOULD proceed with alternative service
+connection as usual.
+
+If the client has a cached Alt-Svc entry that is expiring, the
+client MAY perform an HTTPSSVC query to refresh the entry.
+
+
+# Extensions to enhance privacy
+
+
+## Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
+
+Both SVCB/HTTPSSVC and Alt-Svc "esniconfig" parameters are defined for
+conveying the ESNI configuration of an alternative service.
+The value of the parameter is an ESNIConfig structure {{!ESNI}}
 or the empty string.  ESNI-aware clients SHOULD prefer alt-values
-and SVCB/HTTPSSVC RRs with non-empty esnikeys.
+and SVCB/HTTPSSVC RRs with non-empty esniconfig.
 
 Both the SVCB SvcParamValue presentation format as well
-as the Alt-Svc parameter value is the ESNIKeys structure {{!ESNI}}
+as the Alt-Svc parameter value is the ESNIConfig structure {{!ESNI}}
 encoded in {{!base64=RFC4648}} or the empty string.
 The SVCB SvcParamValue wire format is the octet string
-containing the binary ESNIKeys structure.
+containing the binary ESNIConfig structure.
 
 This parameter MAY also be sent in Alt-Svc HTTP response
 headers and HTTP/2 ALTSVC frames.  This parameter MUST NOT appear more than
 once in a single alt-value.
 
 
-## Handling a mixture of alternatives not supporting esnikeys
+### Handling a mixture of alternatives not supporting ESNI
 
 The Alt-Svc specification states that "the client MAY fall back to using
 the origin" in case of connection failure (Section 2.4 of {{!AltSvc}}).
@@ -929,17 +943,17 @@ not suitable for ESNI, because fallback would negate the privacy benefits of
 ESNI.
 
 Accordingly, any connection attempt that uses ESNI MUST fall back only to
-another alt-value that also has the esnikeys parameter.  If the parameter's
+another alt-value that also has the esniconfig parameter.  If the parameter's
 value is the empty string, the client SHOULD connect as it would in the
-absence of any ESNIKeys information.
+absence of any ESNIConfig information.
 
 For example, suppose a server operator has two alternatives.  Alternative A
 is reliably accessible but does not support ESNI.  Alternative B supports
 ESNI but is not reliably accessible.  The server operator could include a
-full esnikeys value in Alternative B, and mark Alternative A with esnikeys=""
+full esniconfig value in Alternative B, and mark Alternative A with esniconfig=""
 to indicate that fallback from B to A is allowed.
 
-Other clients and services implementing SVCB or HTTPSSVC with esnikeys
+Other clients and services implementing SVCB or HTTPSSVC with esniconfig
 are encouraged to take a similar approach.
 
 
@@ -1014,7 +1028,7 @@ be populated with the registrations below:
 | 0           | key0        | Reserved                      | (This document) |
 | 1           | alpn        | ALPN for alternative service  | (This document) |
 | 2           | port        | Port for alternative service  | (This document) |
-| 3           | esnikeys    | ESNI keys literal             | (This document) |
+| 3           | esniconfig  | Encrypted SNI configuration   | (This document) |
 | 4           | ipv4hint    | IPv4 address hints            | (This document) |
 | 5           | key5        | Reserved                      | (This document) |
 | 6           | ipv6hint    | IPv6 address hints            | (This document) |
@@ -1047,9 +1061,9 @@ Global Scoped Entry Registry:
 Per {{?AltSvc}}, please add the following entry to the HTTP Alt-Svc
 Parameter Registry:
 
-| Alt-Svc Parameter | Meaning              | Reference       |
-| ----------------- | -------------------- | --------------- |
-| esnikeys          | Encrypted SNI keys   | (This document) |
+| Alt-Svc Parameter | Meaning                     | Reference       |
+| ----------------- | --------------------------- | --------------- |
+| esniconfig        | Encrypted SNI configuration | (This document) |
 
 
 
@@ -1158,13 +1172,14 @@ The following:
     www.example.com.  7200  IN CNAME    svc.example.net.
     example.com.      7200  IN HTTPSSVC 0 svc.example.net.
     svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. (
-                                        alpn=h3 port=8003 esnikeys="ABC..." )
-    svc.example.net.  7200  IN HTTPSSVC 3 . alpn=h2 port=8002 esnikeys="123..."
+        alpn=h3 port=8003 esniconfig="ABC..." )
+    svc.example.net.  7200  IN HTTPSSVC 3 . (
+        alpn=h2 port=8002 esniconfig="123..." )
 
 is equivalent to the Alt-Svc record:
 
-    Alt-Svc: h3="svc3.example.net:8003"; esnikeys="ABC..."; ma=7200, \
-             h2="svc.example.net:8002"; esnikeys="123..."; ma=7200
+    Alt-Svc: h3="svc3.example.net:8003"; esniconfig="ABC..."; ma=7200, \
+             h2="svc.example.net:8002"; esniconfig="123..."; ma=7200
 
 for the origins of both "https://www.example.com" and "https://example.com".
 
@@ -1198,7 +1213,7 @@ However, there are several differences:
 ## Differences from the proposed HTTP record
 
 Unlike {{?I-D.draft-bellis-dnsop-http-record-00}}, this approach is
-extensible to cover Alt-Svc and ESNIKeys use-cases.  Like that
+extensible to cover Alt-Svc and ESNI use-cases.  Like that
 proposal, this addresses the zone apex CNAME challenge.
 
 Like that proposal it remains necessary to continue to include
@@ -1208,7 +1223,7 @@ address records at the zone apex for legacy clients.
 ## Differences from the proposed ANAME record
 
 Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
-cover Alt-Svc and ESNIKeys use-cases.  This approach also does not
+cover Alt-Svc and ESNI use-cases.  This approach also does not
 require any changes or special handling on either authoritative or
 master servers, beyond optionally returning in-bailiwick additional records.
 
