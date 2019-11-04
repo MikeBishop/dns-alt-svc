@@ -96,11 +96,12 @@ collection of consistent configuration parameters through the DNS
 (such as network location, protocol, and keying information).
 
 This document first describes the SVCB RR as a general-purpose resource
-record that can be applied directly and efficiently to a wide range of services.
-The HTTPSSVC RR is then defined as a special case of SVCB that improves
-efficiency with wildcard domains, which are common in HTTPS, by avoiding
-the need for an {{?Attrleaf}} label.  Protocols with similar needs
-may follow the pattern of HTTPSSVC and assign their own
+record that can be applied directly and efficiently to a wide range
+of services ({{svcb}}).  The HTTPSSVC RR is then defined as a special
+case of SVCB that improves efficiency and convenience for use with HTTPS
+({{https}}) by avoiding the need for an {{?Attrleaf}} label
+({{httpsnames}}).  Other protocols with similar needs may
+follow the pattern of HTTPSSVC and assign their own
 SVCB-compatible RR types.
 
 All behaviors described as applying to the SVCB RR also apply
@@ -289,7 +290,7 @@ appear in all capitals, as shown here.
 
 
 
-# The SVCB record type
+# The SVCB record type {#svcb}
 
 The SVCB DNS resource record (RR) type (RR type ???)
 is used to locate endpoints that can service an origin.
@@ -793,9 +794,13 @@ The HTTPSSVC RR extends the behavior for determining
 a QNAME specified above in {{svcb-names}}.
 In particular, if the scheme is "https" with port 443, or the scheme
 is "http" and the port is 80, then the client's original QNAME is
-equal to the origin host name.  This construction enables offline
-DNSSEC signing of wildcard domains, which would otherwise be
-impossible due to SVCB's use of {{?Attrleaf}} labels.
+equal to the origin host name.  By removing the {{?Attrleaf}} labels
+used in SVCB, this construction enables offline DNSSEC signing of
+wildcard domains, which are commonly used with HTTPS.  Reusing the
+origin hostname also allows the targets of existing CNAME chains
+(e.g. CDN hosts) to start returning HTTPSSVC responses without
+requiring origin domains to configure and maintain an additional
+delegation.
 
 For origins other than https with port 443 and http with port 80,
 the port and scheme continue to be prefixed to the hostname
