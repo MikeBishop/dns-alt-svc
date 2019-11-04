@@ -901,21 +901,7 @@ Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
 it SHOULD abandon the connection attempt if the HTTPSSVC response fails
 to validate.
 
-## Cache interaction
-
-If the client has an Alt-Svc cache, and a usable Alt-Svc value is
-present in that cache, then the client SHOULD NOT issue an HTTPSSVC DNS
-query.  Instead, the client SHOULD proceed with alternative service
-connection as usual.
-
-If the client has a cached Alt-Svc entry that is expiring, the
-client MAY perform an HTTPSSVC query to refresh the entry.
-
-
-# Extensions to enhance privacy
-
-
-## Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
+# Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
 
 Both SVCB/HTTPSSVC and Alt-Svc "esniconfig" parameters are defined for
 conveying the ESNI configuration of an alternative service.
