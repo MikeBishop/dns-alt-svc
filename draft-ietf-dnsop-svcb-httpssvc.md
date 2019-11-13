@@ -631,7 +631,8 @@ on its contents.
 When responding to a query that includes the DNSSEC OK bit ({{!RFC3225}}),
 DNSSEC-capable recursive and authoritative DNS servers MUST accompany
 each RRSet in the Additional section with the same DNSSEC-related records
-that it would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC3).
+that they would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC,
+NSEC3).
 
 
 # Performance optimizations {#optimizations}
