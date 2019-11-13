@@ -690,7 +690,15 @@ service.  Its value SHOULD be an entry in the IANA registry "TLS
 Application-Layer Protocol Negotiation (ALPN) Protocol IDs".
 
 The presentation format and wire format of SvcParamValue
-is its registered "Identification Sequence".
+is its registered "Identification Sequence".  This key SHALL NOT
+appear more than once in a SvcFieldValue.
+
+Clients MUST include this value in the ProtocolNameList in their
+ClientHello's `application_layer_protocol_negotiation` extension.
+Clients SHOULD also include any other values that they support and
+could negotiate on that connection with equivalent or better security
+properties.  For example, when using a SvcFieldValue with an "alpn" of
+"h2", the client MAY also include "http/1.1" in the ProtocolNameList.
 
 Clients MUST ignore SVCB RRs where the "alpn" SvcParamValue
 is unknown or not supported for use with the current scheme.
