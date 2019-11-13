@@ -216,19 +216,21 @@ a non-normative manner.  (As mentioned above, this all
 applies equally to the HTTPSSVC RR which shares
 the same encoding, format, and high-level semantics.)
 
-The SVCB RR has two forms: AliasForm and ServiceForm.
-SVCB RR entries with two non-empty fields are in AliasForm.
-When more fields are present, this indicates that the SVCB RR
-is in ServiceForm.  The fields are:
+The SVCB RR has two forms: AliasForm, which aliases a name to another name,
+and ServiceForm, which provides connection information bound to a service
+endpoint domain.  Placing both forms in a single RR type allows clients to
+fetch the relevant information with a single query.
+
+The SVCB RR has two mandatory fields and one optional.  The fields are:
 
 1. SvcFieldPriority: The priority of this record (relative to others,
-   with lower values preferred).  Applicable for the ServiceForm,
-   and otherwise has value "0".  (Described in {{pri}}.)
+   with lower values preferred).  A value of 0 indicates AliasForm.
+   (Described in {{pri}}.)
 2. SvcDomainName: The domain name of either the alias target (for
    AliasForm) or the alternative service endpoint (for ServiceForm).
-3. SvcFieldValue: A list of key=value pairs
+3. SvcFieldValue (optional): A list of key=value pairs
    describing the alternative service endpoint for the domain name specified in
-   SvcDomainName (only for ServiceForm and otherwise empty).
+   SvcDomainName (only used in ServiceForm and otherwise ignored).
    Described in {{svcfieldvalue}}.
 
 Cooperating DNS recursive resolvers will perform subsequent record
@@ -586,10 +588,14 @@ Providing the proxy with the final SvcDomainName has several benefits:
 
 # DNS Server Behavior {#server-behavior}
 
+## Authoritative servers
+
 When replying to an SVCB query, authoritative DNS servers SHOULD return
-A, AAAA, and SVCB records (as
-well as any relevant CNAME records) in the Additional Section for any
+A, AAAA, and SVCB records (as well as any relevant CNAME or
+{{!DNAME=RFC6672}} records) in the Additional Section for any
 in-bailiwick SvcDomainNames.
+
+## Recursive resolvers
 
 Recursive resolvers that are aware of SVCB SHOULD ensure that the client can
 execute the procedure in {{client-behavior}} without issuing a second
@@ -604,10 +610,19 @@ to a stub resolver for an SVCB record query:
    the results in the Additional section.
 
 3. Otherwise, select an AliasForm record at random, and resolve A, AAAA,
-   and SVCB records for
-   the SvcDomainName.  If the SVCB record does not exist, add the A and AAAA
-   records to the Additional section.  Otherwise, go to step 1,
-   subject to loop detection heuristics.
+   and SVCB records for the SvcDomainName.  If the SVCB record does not exist,
+   add all records from the A and AAAA responses to the Additional section.
+   Otherwise, go to step 1, subject to loop detection heuristics.
+
+In steps 2 and 3, "resolve" means the resolver's ordinary iterative
+resolution procedure, as if processing a query for that RRSet.
+This includes following any aliases that the resolver would ordinarily
+follow (e.g. CNAME, {{!DNAME}}).  If a queried record does not exist, the
+resolver SHOULD add to the Additional section any records that it would
+normally include in a negative response (e.g. CNAME, SOA), in order to
+enable negative caching by the stub.
+
+## General requirements
 
 All DNS servers SHOULD treat the SvcParam portion of the SVCB RR
 as opaque and SHOULD NOT try to alter their behavior based
@@ -616,7 +631,7 @@ on its contents.
 When responding to a query that includes the DNSSEC OK bit ({{!RFC3225}}),
 DNSSEC-capable recursive and authoritative DNS servers MUST accompany
 each RRSet in the Additional section with the same DNSSEC-related records
-that it would send when providing that RRSet as an Answer.
+that it would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC3).
 
 
 # Performance optimizations {#optimizations}
