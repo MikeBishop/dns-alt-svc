@@ -677,7 +677,7 @@ address records are already present in the client's DNS cache as part of the
 responses to the address queries that were issued in parallel.
 
 
-# Initial SvcParamKeys
+# Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
@@ -693,7 +693,11 @@ The presentation format and wire format of SvcParamValue
 is its registered "Identification Sequence".
 
 Clients MUST ignore SVCB RRs where the "alpn" SvcParamValue
-is unknown or unsupported.
+is unknown or not supported for use with the current scheme.
+
+The value of the "alpn" SvcParamKey can have effects beyond the content
+of the TLS handshake and stream.  For example, an "alpn" value of "h3"
+({{HTTP3}} Section 11.1) indicates the client must use QUIC, not TLS.
 
 ## "port"
 
@@ -774,6 +778,11 @@ or http schemes.
 The HTTPSSVC wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPSSVC unless specified otherwise.
+All the SvcParamKeys defined in {{keys}} are permitted for use in
+HTTPSSVC, and the "alpn" SvcParamKey is REQUIRED.  Its value MUST
+be an ALPN that is suitable for use with HTTPS.  For example, the
+value MAY be "http/1.1", "h2", or "h3", but MUST NOT be "h2c" or
+"ftp".
 
 The presence of an HTTPSSVC record for an HTTP or HTTPS service also
 provides an indication that all resources are available over HTTPS, as
