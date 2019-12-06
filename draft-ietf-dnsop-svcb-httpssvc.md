@@ -693,19 +693,14 @@ The presentation format and wire format of SvcParamValue
 is its registered "Identification Sequence".  This key SHALL NOT
 appear more than once in a SvcFieldValue.
 
-Clients MUST include this value in the ProtocolNameList in their
-ClientHello's `application_layer_protocol_negotiation` extension.
-Clients SHOULD also include any other values that they support and
-could negotiate on that connection with equivalent or better security
-properties.  For example, when using a SvcFieldValue with an "alpn" of
-"h2", the client MAY also include "http/1.1" in the ProtocolNameList.
+The presence of a protocol ID in SvcParamKeys indicates that this
+service endpoint supports the named protocol ID, and is able to negotiate
+it.  For example, an "alpn" value of "h3" ({{HTTP3}} Section 11.1)
+indicates the endpoint supports QUIC, because that is the only transport
+protocol over which HTTP/3 can be negotiated.
 
-Clients MUST ignore SVCB RRs where the "alpn" SvcParamValue
-is unknown or not supported for use with the current scheme.
-
-The value of the "alpn" SvcParamKey can have effects beyond the content
-of the TLS handshake and stream.  For example, an "alpn" value of "h3"
-({{HTTP3}} Section 11.1) indicates the client must use QUIC, not TLS.
+The service endpoint MAY also support protocol IDs that are not listed in
+SvcParamKeys.
 
 ## "port"
 
@@ -790,7 +785,8 @@ All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPSSVC, and the "alpn" SvcParamKey is REQUIRED.  Its value MUST
 be an ALPN that is suitable for use with HTTPS.  For example, the
 value MAY be "http/1.1", "h2", or "h3", but MUST NOT be "h2c" or
-"ftp".
+"ftp".  Regardless of the "alpn" SvcParamValue, all service endpoints
+MUST support HTTP/1.1.
 
 The presence of an HTTPSSVC record for an HTTP or HTTPS service also
 provides an indication that all resources are available over HTTPS, as
