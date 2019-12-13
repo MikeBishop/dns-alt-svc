@@ -139,9 +139,9 @@ example HTTPSSVC and associated A+AAAA records might be:
     ; AliasForm
     example.com.      7200  IN HTTPSSVC 0 svc.example.net.
     ; ServiceForm
-    svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. ( alpn=h3
+    svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. ( proto=h3
                                         port=8003 esniconfig="..." )
-    svc.example.net.  7200  IN HTTPSSVC 3 svc2.example.net. ( alpn=h2
+    svc.example.net.  7200  IN HTTPSSVC 3 svc2.example.net. (
                                         port=8002 esniconfig="..." )
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
@@ -156,9 +156,10 @@ example HTTPSSVC and associated A+AAAA records might be:
 In the preceding example, both of the "example.com" and
 "www.example.com" origin names are aliased to use alternative service
 endpoints offered as "svc.example.net" (with "www.example.com"
-continuing to use a CNAME alias).  HTTP/2 is available on a cluster of
-machines located at svc2.example.net with TCP port 8002 and HTTP/3 is
-available on a cluster of machines located at svc3.example.net with
+continuing to use a CNAME alias).  HTTP/1.1 and HTTP/2 are available
+on a cluster of machines located at svc2.example.net at TCP port 8002,
+and HTTP/1.1, HTTP/2, and HTTP/3 are available on a cluster of machines
+located at svc3.example.net at TCP and
 UDP port 8003.  The client can use the specified ESNI keys to encrypt
 the SNI values of "example.com" and "www.example.com" in the handshake
 with these alternative service endpoints.  When connecting, clients will
@@ -412,12 +413,13 @@ hostnames based on the origin host.
 As an example:
 
     _8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
-    svc4.example.net.  7200  IN SVCB 3 ( svc4.example.net. alpn="bar"
+    svc4.example.net.  7200  IN SVCB 3 ( svc4.example.net. proto="bar"
                                        port="8004" esniconfig="..." )
 
 would indicate that "foo://api.example.com:8443" is aliased
-to use ALPN protocol "bar" service endpoints offered at "svc4.example.net"
-on port 8004.
+to the service endpoints offered at "svc4.example.net" on port 8004,
+which support the protocol "bar" in addition to the default protocols
+for "foo://".
 
 
 
@@ -503,8 +505,7 @@ is the effective SvcDomainName:
 
     www.example.com.  7200  IN HTTPSSVC svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPSSVC 1 . ( alpn=h2
-                                        port=8002 esniconfig="..." )
+    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 esniconfig="..."
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
@@ -575,7 +576,7 @@ Providing the proxy with the final SvcDomainName has several benefits:
 
 * It allows the client to use the SvcFieldValue, if present, which is
   only usable with a specific SvcDomainName.  The SvcFieldValue may
-  include information that enhances performance (e.g. alpn) and privacy
+  include information that enhances performance (e.g. proto) and privacy
   (e.g. esniconfig).
 
 * It allows the origin to delegate the apex domain.
@@ -682,25 +683,35 @@ responses to the address queries that were issued in parallel.
 A few initial SvcParamKeys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
 
-## "alpn"
+## "proto" and "no-proto"
 
-The "alpn" SvcParamKey defines the Application Layer Protocol
-(ALPN, as defined in {{!RFC7301}) supported by a TLS-based alternative
-service.  Its value SHOULD be an entry in the IANA registry "TLS
+The "proto" and "no-proto" SvcParamKeys together indicate the set of protocols
+supported by this service endpoint.  The presentation and wire format are
+the same, in the expectation that values will typically be ASCII strings, but
+any sequence of octets is a permissible value.  Both "proto" and "no-proto"
+are optional, and may appear multiple times.
+
+Each scheme that is mapped to SVCB can define a set or registry of allowed
+protocols.  For TLS-based schemes, the value will typically be an
+"Identification Sequence" from the IANA registry "TLS
 Application-Layer Protocol Negotiation (ALPN) Protocol IDs".
 
-The presentation format and wire format of SvcParamValue
-is its registered "Identification Sequence".  This key SHALL NOT
-appear more than once in a SvcFieldValue.
+Each scheme that makes use of "proto" or "no-proto" will have a "default set"
+of supported protocol values, which SHOULD NOT be empty.  To determine the
+set of protocols supported by an endpoint, the client adds every "proto"
+value to this set, and removes every "no-proto" value from the set.  A
+SvcFieldValue MUST NOT contain both "proto" and "no-proto" keys with the same
+value.
 
-The presence of a protocol ID in SvcParamKeys indicates that this
+The presence of a protocol ID in the protocol set indicates that this
 service endpoint supports the named protocol ID, and is able to negotiate
-it.  For example, an "alpn" value of "h3" ({{HTTP3}} Section 11.1)
+it in practice.  For example, a value of "h3" ({{HTTP3}} Section 11.1)
 indicates the endpoint supports QUIC, because that is the only transport
 protocol over which HTTP/3 can be negotiated.
 
-The service endpoint MAY also support protocol IDs that are not listed in
-SvcParamKeys.
+Clients MAY offer to negotiate suitable protocol values that are not in an
+endpoint's protocol set, but SHOULD NOT attempt connection to a service
+endpoint whose protocol set does not contain any compatible protocols.
 
 ## "port"
 
@@ -782,11 +793,12 @@ The HTTPSSVC wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPSSVC unless specified otherwise.
 All the SvcParamKeys defined in {{keys}} are permitted for use in
-HTTPSSVC, and the "alpn" SvcParamKey is REQUIRED.  Its value MUST
-be an ALPN that is suitable for use with HTTPS.  For example, the
-value MAY be "http/1.1", "h2", or "h3", but MUST NOT be "h2c" or
-"ftp".  Regardless of the "alpn" SvcParamValue, all service endpoints
-MUST support HTTP/1.1.
+HTTPSSVC.
+
+The allowed protocols are the TLS ALPN {{!RFC7301}} values suitable for
+use with HTTPS.  For example, "http/1.1", "h2", and "h3" are allowed
+protocol values, but "h2c" and "ftp" are not.  The default set of
+protocol values is "http/1.1" and "h2".
 
 The presence of an HTTPSSVC record for an HTTP or HTTPS service also
 provides an indication that all resources are available over HTTPS, as
@@ -1024,8 +1036,8 @@ be populated with the registrations below:
 
 | SvcParamKey | NAME        | Meaning                       | Reference       |
 | ----------- | ------      | ----------------------        | --------------- |
-| 0           | key0        | Reserved                      | (This document) |
-| 1           | alpn        | ALPN for alternative service  | (This document) |
+| 0           | proto       | Supported protocol            | (This document) |
+| 1           | no-proto    | Unsupported protocol          | (This document) |
 | 2           | port        | Port for alternative service  | (This document) |
 | 3           | esniconfig  | Encrypted SNI configuration   | (This document) |
 | 4           | ipv4hint    | IPv4 address hints            | (This document) |
@@ -1087,8 +1099,14 @@ Conversion between HTTPSSVC's ServiceForm and Alt-Svc is possible.
 Note that conversion in either direction can be lossy, because
 some parameters are only defined for HTTPSSVC or Alt-Svc.
 
-To construct an Alt-Svc Field Value (as defined in Section 4 of
+To construct a set of Alt-Svc Field Values (as defined in Section 4 of
 {{!AltSvc}}) from an HTTPSSVC record:
+
+* Each value in the SvcFieldValue's protocol set is mapped to a
+  protocol-id.  This MUST follow the normalization and encoding
+  requirements for protocol-id specified in {{!AltSvc}} Section 3.
+  For each protocol-id, create a distinct Alt-Svc Field Value.  Apart from
+  the protocol-id, these Alt-Svc Field Values will otherwise be identical.
 
 * The SvcDomainName is mapped into the uri-host portion of alt-authority
   with the trailing "." removed.
@@ -1097,11 +1115,6 @@ To construct an Alt-Svc Field Value (as defined in Section 4 of
 
 * The SvcParamValue of the "port" service parameter, or 443 if no such
   parameter is present, is written to the port portion of the alt-authority.
-
-* The SvcParamValue of the "alpn" service parameter is mapped to the
-  protocol-id.  This MUST follow the normalization and encoding
-  requirements for protocol-id specified in {{!AltSvc}} Section 3.
-  This parameter is MANDATORY.
 
 * The DNS TTL is mapped to the "ma" (max age) Alt-Svc parameter.
 
@@ -1125,11 +1138,14 @@ intends to include an HTTP response header like
 they could also publish an HTTPSSVC DNS RRSet like
 
     www.example.com. 3600 IN HTTPSSVC 2 svc.example.net. (
-                                        alpn=h3 port=8003 foo=123 )
+                                        proto=h3 port=8003 foo=123 )
                              HTTPSSVC 3 svc.example.net. (
-                                        alpn=h2 port=8002 foo=123 )
+                                        port=8002 foo=123 )
 
 Where "foo" is a hypothetical future HTTPSSVC and Alt-Svc parameter.
+(Note that unlike the Alt-Svc values, these records also indicate support
+for HTTP/1.1 and HTTP/2 on both ports.  This indication could be removed
+by adding "no-proto" SvcParamKeys for these protocols.)
 
 This data type can also be represented as an Unknown RR as described in
 {{!RFC3597}}:
@@ -1171,16 +1187,18 @@ The following:
     www.example.com.  7200  IN CNAME    svc.example.net.
     example.com.      7200  IN HTTPSSVC 0 svc.example.net.
     svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. (
-        alpn=h3 port=8003 esniconfig="ABC..." )
+        proto=h3 port=8003 esniconfig="ABC..." )
     svc.example.net.  7200  IN HTTPSSVC 3 . (
-        alpn=h2 port=8002 esniconfig="123..." )
+        port=8002 esniconfig="123..." )
 
-is equivalent to the Alt-Svc record:
+is similar to the Alt-Svc record:
 
     Alt-Svc: h3="svc3.example.net:8003"; esniconfig="ABC..."; ma=7200, \
              h2="svc.example.net:8002"; esniconfig="123..."; ma=7200
 
 for the origins of both "https://www.example.com" and "https://example.com".
+(Note that the HTTPSSVC records also indicate support for HTTP/1.1 and
+HTTP/2 on both endpoints.)
 
 # Comparison with alternatives
 
