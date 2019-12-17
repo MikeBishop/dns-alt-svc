@@ -919,7 +919,7 @@ it SHOULD abandon the connection attempt if the HTTPSSVC response fails
 to validate.
 
 Finally, when making an "https" scheme request to an origin with an HTTPSSVC
-record, either directly or via the above redirect, client SHOULD terminate the
+record, either directly or via the above redirect, the client SHOULD terminate the
 connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
 of {{HSTS}}.
