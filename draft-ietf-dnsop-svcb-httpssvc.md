@@ -845,9 +845,14 @@ Instead, server operators SHOULD encode the expiration time in the DNS TTL.
 
 The appropriate TTL value will typically be similar to the "ma" value
 used for Alt-Svc, but may vary depending on the desired efficiency and
-agility.  Some DNS caching systems incorrectly extend the lifetime of DNS
-records beyond the stated TTL, so server operators MUST NOT rely on
-HTTPSSVC records expiring on time.
+agility.  Some DNS caches incorrectly extend the lifetime of DNS
+records beyond the stated TTL, so server operators cannot rely on
+HTTPSSVC records expiring on time.  Shortening the TTL to compensate
+for incorrect caching is NOT RECOMMENDED, as this practice impairs the
+performance of correctly functioning caches and does not guarantee
+faster expiration from incorrect caches.  Instead, server operators
+SHOULD continue operating the endpoints in expired records until they
+observe that nearly all connections have migrated to the new endpoints.
 
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPSSVC DNS
