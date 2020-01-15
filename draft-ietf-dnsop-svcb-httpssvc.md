@@ -851,8 +851,8 @@ HTTPSSVC records expiring on time.  Shortening the TTL to compensate
 for incorrect caching is NOT RECOMMENDED, as this practice impairs the
 performance of correctly functioning caches and does not guarantee
 faster expiration from incorrect caches.  Instead, server operators
-SHOULD continue operating the endpoints in expired records until they
-observe that nearly all connections have migrated to the new endpoints.
+SHOULD maintain compatibility with expired records until they observe
+that nearly all connections have migrated to the new configuration.
 
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPSSVC DNS
