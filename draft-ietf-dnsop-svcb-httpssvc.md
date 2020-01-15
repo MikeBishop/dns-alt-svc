@@ -801,9 +801,9 @@ the port and scheme continue to be prefixed to the hostname
 as described in {{svcb-names}}.  Following of HTTPSSVC AliasForm and
 CNAME aliases is also unchanged from SVCB.
 
-Clients always convert the "http" scheme to "https" before performing an
-HTTPSSVC query ({{hsts}}), so domain owners MUST NOT publish HTTPSSVC
-records with a prefix of "_http".
+Clients always convert "http" URLS to "https" before performing an
+HTTPSSVC query using the process described in {{hsts}}, so domain owners
+MUST NOT publish HTTPSSVC records with a prefix of "_http".
 
 Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
