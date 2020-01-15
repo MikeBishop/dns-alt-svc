@@ -599,28 +599,38 @@ in-bailiwick SvcDomainNames.
 
 Recursive resolvers that are aware of SVCB SHOULD ensure that the client can
 execute the procedure in {{client-behavior}} without issuing a second
-round of queries, by following this procedure while constructing a response
-to a stub resolver for an SVCB record query:
+round of queries, by incorporating all the necessary information into a
+single response.  For the initial SVCB record query, this is just the normal
+response construction process (i.e. unknown RR type resolution under
+{{!RFC3597}}).  For followup resolutions performed during this procedure,
+we define incorporation as adding all Answer and Additional RRs to the
+Additional section, and all Authority RRs to the Authority section,
+without altering the response code.
 
-1. When processing an SVCB response from an authoritative server, add it to
-   the Additional section (unless it is the Answer).
+Upon receiving an SVCB query, recursive resolvers SHOULD start with the
+standard resolution procedure, and then follow this procedure to
+construct the full response to the stub resolver:
 
-2. If all records are in ServiceForm, resolve A and AAAA records for each
-   SvcDomainName (or for the owner name if the SvcDomainName is "."), and include all
-   the results in the Additional section.
+1. Incorporate the results of SVCB resolution.
 
-3. Otherwise, select an AliasForm record at random, and resolve A, AAAA,
-   and SVCB records for the SvcDomainName.  If the SVCB record does not exist,
-   add all records from the A and AAAA responses to the Additional section.
-   Otherwise, go to step 1, subject to loop detection heuristics.
+2. If any of the resolved SVCB records are in AliasForm, choose an AliasForm
+   record at random, and resolve SVCB, A, and AAAA records for its
+   SvcDomainName.
 
-In steps 2 and 3, "resolve" means the resolver's ordinary iterative
+    - If any SVCB records are resolved, go to step 1, subject to loop
+      detection heuristics.
+
+    - Otherwise, incorporate the results of A and AAAA resolution, and
+      terminate.
+
+3. All the resolved SVCB records are in ServiceForm.  Resolve A and AAAA
+   queries for each SvcDomainName (or for the owner name if SvcDomainName
+   is "."), incorporate all the results, and terminate.
+
+In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
-follow (e.g. CNAME, {{!DNAME}}).  If a queried record does not exist, the
-resolver SHOULD add to the Additional section any records that it would
-normally include in a negative response (e.g. CNAME, SOA), in order to
-enable negative caching by the stub.
+follow (e.g. CNAME, {{!DNAME}}).
 
 ## General requirements
 
