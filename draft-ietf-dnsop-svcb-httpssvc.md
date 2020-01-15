@@ -851,7 +851,7 @@ For example, with records of:
                  HTTPSSVC 2 . transport=tls
                  
 The "Alt-Used" header for requests to all of https://example.com
-and https://www.example.com and https://pool.svc.example
+and https://www.example.com (and https://pool.svc.example if it exists)
 would be one of:
 
     Alt-Used: h3pool.svc.example:8443
