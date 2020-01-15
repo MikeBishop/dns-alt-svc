@@ -838,9 +838,26 @@ The header's value (in ABNF) SHOULD be
 
     uri-host ":" port
 
-where uri-host is the final value of HOST ({client-behavior}) minus
+where uri-host is the final value of HOST ({{client-behavior}}) minus
 the trailing ".", and port is the port number in use.
 
+For example, with records of:
+
+    $ORIGIN example.com.
+    .   7200 IN HTTPSSVC 0 pool.svc.example.
+    www 7200 IN CNAME pool.svc.example.
+    $ORIGIN svc.example. ; A hosting provider.
+    pool 7200 IN HTTPSSVC 1 h3pool transport=quic port=8443
+                 HTTPSSVC 2 . transport=tls
+                 
+The "Alt-Used" header for requests to all of https://example.com
+and https://www.example.com and https://pool.svc.example
+would be one of:
+
+    Alt-Used: h3pool.svc.example:8443
+    Alt-Used: pool.svc.example:443
+    
+depending on which HTTPSSVC record gets used for the connection.
 
 ## Differences from Alt-Svc
 
