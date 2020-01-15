@@ -595,7 +595,7 @@ A, AAAA, and SVCB records (as well as any relevant CNAME or
 {{!DNAME=RFC6672}} records) in the Additional Section for any
 in-bailiwick SvcDomainNames.
 
-## Recursive resolvers
+## Recursive resolvers {#recursive-behavior}
 
 Recursive resolvers that are aware of SVCB SHOULD ensure that the client can
 execute the procedure in {{client-behavior}} without issuing a second
@@ -686,13 +686,21 @@ If none of the SVCB records are consistent
 with any active or in-progress connection,
 clients must proceed as described in Step 3 of the procedure in {{client-behavior}}.
 
-## Preferring usable records
+## Generating and using incomplete responses
 
-A nonconforming recursive resolver might not return all the information
-required to use all the records in an SVCB response.  If
-some of the SVCB records in the response can be used without requiring
-additional DNS queries, the client MAY prefer those records, regardless of
-their priorities.
+When following the procedure in {{recursive-behavior}}, recursive
+resolvers MAY terminate the procedure early and produce a reply that omits
+some of the associated RRSets.  This might be appropriate when
+the maximum response size is reached, or when responding before fully
+chasing dependencies would improve performance.  When omitting certain
+RRSets, recursive resolvers SHOULD prioritize information from
+higher priority ServiceForm records over lower priority ServiceForm records.
+
+As discussed in {{client-behavior}}, clients MUST be able fetch additional
+information that is required to use an SVCB record, if it is not included
+in the initial response.  As a performance optimization, if some of the SVCB
+records in the response can be used without requiring additional DNS queries,
+the client MAY prefer those records, regardless of their priorities.
 
 ## Structuring zones for performance
 
