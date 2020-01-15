@@ -137,7 +137,7 @@ Consider a simple zone of the form
     simple.example. 300 IN A    192.0.2.1
                            AAAA 2001:db8::1
 
-The domain owner could publish new records like
+The domain owner could add records like
 
     simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
                             HTTPSSVC 2 . alpn=h2 ...
@@ -155,18 +155,23 @@ Consider a zone that is using CNAME aliasing:
     ; Subdomain aliased to a high-performance server pool
     www             7200 IN CNAME pool.svc.example.
     ; Apex domain on fixed IPs because CNAME is not allowed at the apex
-    aliased.example. 300 IN A     192.0.2.1
+    .                300 IN A     192.0.2.1
                          IN AAAA  2001:db8::1
 
 With HTTPSSVC, the owner of aliased.example could alias the apex by
 adding one additional record:
 
-    aliased.example. 7200 IN HTTPSSVC 0 pool.svc.example.
+    .               7200 IN HTTPSSVC 0 pool.svc.example.
 
 With this record in place, HTTPSSVC-aware clients will use the same
-server pool for complex.example and www.complex.example.  (They will
-also upgrade to HTTPS on complex.example.)  Non-HTTPSSVC-aware clients
+server pool for aliased.example and www.aliased.example.  (They will
+also upgrade to HTTPS on aliased.example.)  Non-HTTPSSVC-aware clients
 will just ignore the new record.
+
+Similar to CNAME, HTTPSSVC has no impact on the origin name.
+When connecting, clients will continue to treat the authoritative
+origins as "https://www.aliased.example" and "https://aliased.example",
+respectively, and will validate TLS server certificates accordingly.
 
 ## Example: Parameter binding
 
@@ -175,12 +180,12 @@ it has deployed HTTP/3 on a new server pool with a different
 configuration.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool 7200 IN HTTPSSVC 1 h3 alpn=h3 esniconfig="123..."
-                 HTTPSSVC 2 .  alpn=h2 esniconfig="abc..."
-    pool  300 IN A        192.0.2.2
-                 AAAA     2001:db8::2
-    h3    300 IN A        192.0.2.3
-                 AAAA     2001:db8::3
+    pool  7200 IN HTTPSSVC 1 h3pool alpn=h3 esniconfig="123..."
+                  HTTPSSVC 2 . alpn=h2 esniconfig="abc..."
+    pool   300 IN A        192.0.2.2
+                  AAAA     2001:db8::2
+    h3pool 300 IN A        192.0.2.3
+                  AAAA     2001:db8::3
 
 This configuration is entirely compatible with the "Apex aliasing" example,
 whether the client supports HTTPSSVC or not.  If the client does support
