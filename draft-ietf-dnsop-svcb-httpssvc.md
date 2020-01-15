@@ -96,12 +96,12 @@ collection of consistent configuration parameters through the DNS
 (such as network location, protocol, and keying information).
 
 This document first describes the SVCB RR as a general-purpose resource
-record that can be applied directly and efficiently to a wide range of services.
-As HTTPS is a primary use-case and has special requirements,
-the HTTPSSVC RR is also defined within this document as a special case
-of SVCB.
-Services wishing to avoid the need for an {{?Attrleaf}} label with
-SVCB may follow the pattern of HTTPSSVC and assign their own
+record that can be applied directly and efficiently to a wide range
+of services ({{svcb}}).  The HTTPSSVC RR is then defined as a special
+case of SVCB that improves efficiency and convenience for use with HTTPS
+({{https}}) by avoiding the need for an {{?Attrleaf}} label
+({{httpsnames}}).  Other protocols with similar needs may
+follow the pattern of HTTPSSVC and assign their own
 SVCB-compatible RR types.
 
 All behaviors described as applying to the SVCB RR also apply
@@ -130,44 +130,73 @@ Perhaps this could be included as a svc="baz" parameter
 for protocols that are not the default for the RR type?
 Current inclination is to not do so.
 
-## Introductory Example
+## Example: Protocol enhancements
 
-As an introductory example for an HTTPS origin resource, a set of
-example HTTPSSVC and associated A+AAAA records might be:
+Consider a simple zone of the form
 
-    www.example.com.  7200  IN CNAME    svc.example.net.
-    ; AliasForm
-    example.com.      7200  IN HTTPSSVC 0 svc.example.net.
-    ; ServiceForm
-    svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. ( alpn=h3
-                                        port=8003 esniconfig="..." )
-    svc.example.net.  7200  IN HTTPSSVC 3 svc2.example.net. ( alpn=h2
-                                        port=8002 esniconfig="..." )
-    svc2.example.net. 300   IN A        192.0.2.2
-    svc2.example.net. 300   IN AAAA     2001:db8::2
-    svc3.example.net. 300   IN A        192.0.2.3
-    svc3.example.net. 300   IN AAAA     2001:db8::3
-    ; Compatibility records for non-HTTPSSVC-aware clients
-    example.com.      300   IN A        192.0.2.1
-    example.com.      300   IN AAAA     2001:db8::1
-    svc.example.net.  300   IN A        192.0.2.1
-    svc.example.net.  300   IN AAAA     2001:db8::1
+    simple.example. 300 IN A    192.0.2.1
+                           AAAA 2001:db8::1
 
-In the preceding example, both of the "example.com" and
-"www.example.com" origin names are aliased to use alternative service
-endpoints offered as "svc.example.net" (with "www.example.com"
-continuing to use a CNAME alias).  HTTP/2 is available on a cluster of
-machines located at svc2.example.net with TCP port 8002 and HTTP/3 is
-available on a cluster of machines located at svc3.example.net with
-UDP port 8003.  The client can use the specified ESNI keys to encrypt
-the SNI values of "example.com" and "www.example.com" in the handshake
-with these alternative service endpoints.  When connecting, clients will
-continue to treat the authoritative origins as "https://example.com"
-and "https://www.example.com", respectively.
+The domain owner could add records like
 
-For services other than HTTPS (as well as for HTTPS origins
-with non-default ports), the SVCB RR and an {{?Attrleaf}} label will be used.
-For example, to reach an example resource of
+    simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
+                            HTTPSSVC 2 . alpn=h2 ...
+
+The presence of these records indicates to clients that simple.example
+supports HTTPS, and the key=value pairs indicate that it prefers HTTP/3
+but also supports HTTP/2.  The records can also include other information
+(e.g. non-standard ports, ESNI configuration).
+
+## Example: Apex aliasing
+
+Consider a zone that is using CNAME aliasing:
+
+    $ORIGIN aliased.example. ; A zone that is using a hosting service
+    ; Subdomain aliased to a high-performance server pool
+    www             7200 IN CNAME pool.svc.example.
+    ; Apex domain on fixed IPs because CNAME is not allowed at the apex
+    .                300 IN A     192.0.2.1
+                         IN AAAA  2001:db8::1
+
+With HTTPSSVC, the owner of aliased.example could alias the apex by
+adding one additional record:
+
+    .               7200 IN HTTPSSVC 0 pool.svc.example.
+
+With this record in place, HTTPSSVC-aware clients will use the same
+server pool for aliased.example and www.aliased.example.  (They will
+also upgrade to HTTPS on aliased.example.)  Non-HTTPSSVC-aware clients
+will just ignore the new record.
+
+Similar to CNAME, HTTPSSVC has no impact on the origin name.
+When connecting, clients will continue to treat the authoritative
+origins as "https://www.aliased.example" and "https://aliased.example",
+respectively, and will validate TLS server certificates accordingly.
+
+## Example: Parameter binding
+
+Suppose that svc.example's default server pool supports HTTP/2, and
+it has deployed HTTP/3 on a new server pool with a different
+configuration.  This can be expressed in the following form:
+
+    $ORIGIN svc.example. ; A hosting provider.
+    pool  7200 IN HTTPSSVC 1 h3pool alpn=h3 esniconfig="123..."
+                  HTTPSSVC 2 . alpn=h2 esniconfig="abc..."
+    pool   300 IN A        192.0.2.2
+                  AAAA     2001:db8::2
+    h3pool 300 IN A        192.0.2.3
+                  AAAA     2001:db8::3
+
+This configuration is entirely compatible with the "Apex aliasing" example,
+whether the client supports HTTPSSVC or not.  If the client does support
+HTTPSSVC, all connections will be upgraded to HTTPS, and clients will
+use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
+each server pool can have its own protocol, ESNI configuration, etc.
+
+## Example: Non-HTTPS uses
+
+For services other than HTTPS, the SVCB RR and an {{?Attrleaf}} label
+will be used.  For example, to reach an example resource of
 "baz://api.example.com:8765", the following Alias Form
 SVCB record would be used to delegate to "svc4-baz.example.net."
 which in-turn could return AAAA/A records and/or SVCB
@@ -175,6 +204,8 @@ records in ServiceForm.
 
     _8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
 
+HTTPSSVC records use similar {{?Attrleaf}} labels if the origin contains
+a non-default port.
 
 ## Goals of the SVCB RR
 
@@ -290,7 +321,7 @@ appear in all capitals, as shown here.
 
 
 
-# The SVCB record type
+# The SVCB record type {#svcb}
 
 The SVCB DNS resource record (RR) type (RR type ???)
 is used to locate endpoints that can service an origin.
@@ -362,7 +393,7 @@ The RDATA for the SVCB RR consists of:
 
 * a 2 octet field for SvcFieldPriority as an integer in network
   byte order.
-* the uncompressed SvcDomainName, represented as
+* the uncompressed, fully-qualified SvcDomainName, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
 * the SvcFieldValue byte string, consuming the remainder of the record
   (so smaller than 65535 octets and constrained by the RDATA
@@ -419,7 +450,7 @@ would indicate that "foo://api.example.com:8443" is aliased
 to use ALPN protocol "bar" service endpoints offered at "svc4.example.net"
 on port 8004.
 
-
+(Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
 
 ## SvcRecordType
 
@@ -671,13 +702,12 @@ their priorities.
 ## Structuring zones for performance
 
 To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD use a single SVCB record whose SvcDomainName is in the
-origin hostname's CNAME chain if possible.  This will ensure that the required
+domain owners SHOULD use a single SVCB record whose SvcDomainName is
+"." if possible.  This will ensure that the required
 address records are already present in the client's DNS cache as part of the
 responses to the address queries that were issued in parallel.
 
-
-# Initial SvcParamKeys
+# Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
@@ -690,10 +720,22 @@ service.  Its value SHOULD be an entry in the IANA registry "TLS
 Application-Layer Protocol Negotiation (ALPN) Protocol IDs".
 
 The presentation format and wire format of SvcParamValue
-is its registered "Identification Sequence".
+is its registered "Identification Sequence".  This key SHALL NOT
+appear more than once in a SvcFieldValue.
+
+Clients MUST include this value in the ProtocolNameList in their
+ClientHello's `application_layer_protocol_negotiation` extension.
+Clients SHOULD also include any other values that they support and
+could negotiate on that connection with equivalent or better security
+properties.  For example, when using a SvcFieldValue with an "alpn" of
+"h2", the client MAY also include "http/1.1" in the ProtocolNameList.
 
 Clients MUST ignore SVCB RRs where the "alpn" SvcParamValue
-is unknown or unsupported.
+is unknown or not supported for use with the current scheme.
+
+The value of the "alpn" SvcParamKey can have effects beyond the content
+of the TLS handshake and stream.  For example, an "alpn" value of "h3"
+({{HTTP3}} Section 11.1) indicates the client must use QUIC, not TLS.
 
 ## "port"
 
@@ -756,7 +798,9 @@ IP addresses in standard textual format {{!RFC5952}}.
 These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
 {{server-behavior}}, and SHOULD NOT be included if most clients are using
-compliant recursive resolvers.
+compliant recursive resolvers.  When SvcDomainName is ".", server operators
+SHOULD NOT include these hints, because they are unlikely to convey any
+performance benefit.
 
 
 
@@ -774,6 +818,11 @@ or "http" schemes.
 The HTTPSSVC wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPSSVC unless specified otherwise.
+All the SvcParamKeys defined in {{keys}} are permitted for use in
+HTTPSSVC, and the "alpn" SvcParamKey is REQUIRED.  Its value MUST
+be an ALPN that is suitable for use with HTTPS.  For example, the
+value MAY be "http/1.1", "h2", or "h3", but MUST NOT be "h2c" or
+"ftp".
 
 The presence of an HTTPSSVC record for an origin also indicates
 that all HTTP resources are available over HTTPS, as
@@ -792,9 +841,17 @@ will implement both, and a partial mapping exists between them
 
 The HTTPSSVC RR extends the behavior for determining
 a QNAME specified above in {{svcb-names}}.
-In particular, if the scheme is "https" with port 443,
+In particular, if the scheme is "https" with port 443
 then the client's original QNAME is
-equal to the origin host name.
+equal to the origin host name.  
+
+By removing the {{?Attrleaf}} labels
+used in SVCB, this construction enables offline DNSSEC signing of
+wildcard domains, which are commonly used with HTTPS.  Reusing the
+origin hostname also allows the targets of existing CNAME chains
+(e.g. CDN hosts) to start returning HTTPSSVC responses without
+requiring origin domains to configure and maintain an additional
+delegation.
 
 For HTTPS origins with ports other than 443,
 the port and scheme continue to be prefixed to the hostname
@@ -904,6 +961,12 @@ HTTPS.
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
 it SHOULD abandon the connection attempt if the HTTPSSVC response fails
 to validate.
+
+Finally, when making an "https" scheme request to an origin with an HTTPSSVC
+record, either directly or via the above redirect, the client SHOULD terminate the
+connection if there are any errors with the underlying secure transport, such as
+errors in certificate validation. This aligns with Section 8.4 and Section 12.1
+of {{HSTS}}.
 
 # Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
 
@@ -1294,6 +1357,11 @@ added as an optional SVCB parameter.
 
 
 # Change history
+
+* draft-ietf-dnsop-svcb-httpssvc-01
+    * Reduce the emphasis on conversion between HTTPSSVC and Alt-Svc
+    * Make the "untrusted channel" concept more precise.
+    * Make SvcFieldPriority = 0 the definition of AliasForm, instead of a requirement.
 
 * draft-ietf-dnsop-svcb-httpssvc-00
     * Document an optimization for optimistic pre-connection. (Chris Wood)
