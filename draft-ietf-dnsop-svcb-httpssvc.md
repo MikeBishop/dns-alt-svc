@@ -595,9 +595,9 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If an SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
 cryptographically protected (e.g. using TLS {{!RFC7858}} or HTTPS
-{{!RFC8484}}), the client MUST abandon the connection attempt and display
-an error message.  This ensures that an active attacker cannot mount a
-downgrade attack by deny the user access to the SVCB information.
+{{!RFC8484}}), the client MUST NOT fall back to non-SVCB connection
+establishment.  This ensures that an active attacker cannot mount a
+downgrade attack by denying the user access to the SVCB information.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
 resolver is DNSSEC-validating, and the attacker is between the recursive
@@ -607,8 +607,8 @@ selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it MUST abandon the connection attempt if the SVCB response fails
-to validate.
+it MUST NOT fall back to non-SVCB connection establishment if the SVCB
+response fails to validate.
 
 ## Clients using a Proxy
 
