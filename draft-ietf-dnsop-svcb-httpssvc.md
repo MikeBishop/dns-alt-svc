@@ -277,7 +277,7 @@ provides an extensible data model for describing network
 endpoints that are authoritative for the origin, along with
 parameters associated with each of these endpoints.
 
-For the HTTPS use-case, the HTTPSSVC RR enables many of the benefits of {{!AltSvc=RFC7838}},
+For the HTTPS use-case, the HTTPSSVC RR enables many of the benefits of {{?AltSvc=RFC7838}}
 without waiting for a full HTTP connection initiation (multiple roundtrips)
 before learning of the preferred alternative,
 and without necessarily revealing the user's
@@ -288,12 +288,11 @@ intended destination to all entities along the network path.
 ## Parameter for ESNI
 
 This document also defines a parameter for Encrypted SNI {{!ESNI}}
-keys, both as a general SVCB parameter and also as a corresponding
-Alt-Svc parameter. See {{esniconfig}}.
+keys. See {{esniconfig}}.
 
 ## Terminology
 
-For consistency with {{!AltSvc}}, we adopt the following definitions:
+For consistency with {{AltSvc}}, we adopt the following definitions:
 
 * An "origin" is an information source as in {{!RFC6454}}.
   For services other than HTTPS, the exact definition will
@@ -518,9 +517,7 @@ associates an alternative service location with its connection parameters.
 
 Each protocol scheme that uses SVCB MUST define a protocol mapping that
 explains how SvcFieldValues are applied for connections of that scheme.
-{{map2altsvc}} defines a limited mapping between Alt-Svc ({{!AltSvc}}) values
-and the SVCB ServiceForm.  Protocols using SVCB may use this Alt-Svc
-mapping if they also use Alt-Svc.  Unless specified otherwise by the
+Unless specified otherwise by the
 protocol mapping, clients MUST ignore SvcFieldValue parameters that they do
 not recognize.
 
@@ -542,7 +539,7 @@ is the effective SvcDomainName:
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
 
-### SvcFieldPriority {#svcfieldpri}
+### SvcFieldPriority {#pri}
 
 As RRs within an RRSet are explicitly unordered collections, the
 SvcFieldPriority value serves to indicate priority.
@@ -866,10 +863,8 @@ secure and authenticated HTTPS connection.
 
 The HTTPSSVC RR parallels the concepts
 introduced in the HTTP Alternative Services proposed standard
-{{!AltSvc}}.  Clients and servers that implement HTTPSSVC are NOT
-REQUIRED to implement Alt-Svc.  However, many clients and servers
-will implement both, and a partial mapping exists between them
-({{map2altsvc}}).
+{{AltSvc}}.  Clients and servers that implement HTTPSSVC are NOT
+REQUIRED to implement Alt-Svc.
 
 ## Owner names for HTTPSSVC records {#httpsnames}
 
@@ -877,7 +872,7 @@ The HTTPSSVC RR extends the behavior for determining
 a QNAME specified above in {{svcb-names}}.
 In particular, if the scheme is "https" with port 443
 then the client's original QNAME is
-equal to the origin host name.  
+equal to the origin host name.
 
 By removing the {{?Attrleaf}} labels
 used in SVCB, this construction enables offline DNSSEC signing of
@@ -900,22 +895,10 @@ Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
 hostnames based on the origin host.
 
-## Populating Alt-Used
-
-When using an HTTPSSVC RR in ServiceForm, all clients SHOULD
-include the "Alt-Used" HTTP header (Section 5 of {{!RFC7838}}).
-The header's value (in ABNF) SHOULD be
-
-    uri-host ":" port
-
-where uri-host is the final value of HOST ({client-behavior}) minus
-the trailing ".", and port is the port number in use.
-
-
 ## Differences from Alt-Svc
 
 Publishing a ServiceForm HTTPSSVC record in DNS is intended
-to be similar to transmitting the corresponding Alt-Svc field value over
+to be similar to transmitting an Alt-Svc field value over
 HTTPS, and receiving an HTTPSSVC record is intended to be similar to
 receiving that field value over HTTPS.  However, there are some
 differences in the intended client and server behavior.
@@ -936,7 +919,7 @@ this parameter is not safe to accept over an untrusted channel.
 ### Caching and granularity
 
 There is no SvcParamKey corresponding to the Alt-Svc "ma" (max age) parameter.
-Instead, server operators SHOULD encode the expiration time in the DNS TTL.
+Instead, server operators encode the expiration time in the DNS TTL.
 
 The appropriate TTL value will typically be similar to the "ma" value
 used for Alt-Svc, but may vary depending on the desired efficiency and
@@ -951,15 +934,12 @@ that nearly all connections have migrated to the new configuration.
 
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPSSVC DNS
-record, groups of clients will necessarily receive the same Alt-Svc
-Field Value.  Therefore, HTTPSSVC is not suitable for uses that
+record, groups of clients will necessarily receive the same
+SvcFieldValue.  Therefore, HTTPSSVC is not suitable for uses that
 require single-client granularity.
 
 If the client has an Alt-Svc cache, and a usable Alt-Svc value is
 present in that cache, then the client MAY skip the HTTPSSVC query.
-
-If the client has a cached Alt-Svc entry that is expiring, the
-client MAY perform an HTTPSSVC query to refresh the entry.
 
 
 ## HTTP Strict Transport Security {#hsts}
@@ -1009,29 +989,27 @@ connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
 of {{HSTS}}.
 
-# Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
+# SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
 
-Both SVCB/HTTPSSVC and Alt-Svc "esniconfig" parameters are defined for
+The SVCB "esniconfig" parameter is defined for
 conveying the ESNI configuration of an alternative service.
 The value of the parameter is an ESNIConfig structure {{!ESNI}}
-or the empty string.  ESNI-aware clients SHOULD prefer alt-values
-and SVCB/HTTPSSVC RRs with non-empty esniconfig.
+or the empty string.  ESNI-aware clients SHOULD prefer SVCB/HTTPSSVC RRs with
+non-empty esniconfig.
 
-Both the SVCB SvcParamValue presentation format as well
-as the Alt-Svc parameter value is the ESNIConfig structure {{!ESNI}}
+The parameter value is the ESNIConfig structure {{!ESNI}}
 encoded in {{!base64=RFC4648}} or the empty string.
 The SVCB SvcParamValue wire format is the octet string
 containing the binary ESNIConfig structure.
 
-This parameter MAY also be sent in Alt-Svc HTTP response
-headers and HTTP/2 ALTSVC frames.  This parameter MUST NOT appear more than
-once in a single alt-value.
+This parameter MUST NOT appear more than once in a single SvcFieldValue.
 
 
 ### Handling a mixture of alternatives not supporting ESNI
 
-The Alt-Svc specification states that "the client MAY fall back to using
-the origin" in case of connection failure (Section 2.4 of {{!AltSvc}}).
+The general client behavior specified in {{client-behavior}} permits clients
+to retry connection with a less preferred alternative if the preferred option
+fails, including falling back to a direct connection if all SVCB options fail.
 This behavior is
 not suitable for ESNI, because fallback would negate the privacy benefits of
 ESNI.
@@ -1078,7 +1056,7 @@ SHOULD have a defined specification for use with SVCB.
 
 SVCB/HTTPSSVC RRs are intended for distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative
-service is authoritative for the origin (Section 2.1 of {{!AltSvc}}).
+service is authoritative for the origin (similar to Section 2.1 of {{AltSvc}}).
 Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using SVCB and HTTPSSVC records.
 
@@ -1148,16 +1126,7 @@ Global Scoped Entry Registry:
 
 | RR TYPE   | _NODE NAME | Meaning           | Reference       |
 | --------- | ---------- | ----------------- | --------------- |
-| HTTPSSVC  | _https     | Alt-Svc for HTTPS | (This document) |
-
-
-Per {{?AltSvc}}, please add the following entry to the HTTP Alt-Svc
-Parameter Registry:
-
-| Alt-Svc Parameter | Meaning                     | Reference       |
-| ----------------- | --------------------------- | --------------- |
-| esniconfig        | Encrypted SNI configuration | (This document) |
-
+| HTTPSSVC  | _https     | HTTPS SVCB info   | (This document) |
 
 
 # Acknowledgments and Related Proposals
@@ -1169,112 +1138,11 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 
 Thank you to Ian Swett, Ralf Weber, Jon Reed,
 Martin Thompson, Lucas Pardue, Ilari Liusvaara,
-Tim Wicinski, Tommy Pauly, Chris Wood,
+Tim Wicinski, Tommy Pauly, Chris Wood, David Benjamin,
 and others for their feedback and suggestions on this draft.
 
 
 --- back
-
-# Mapping between HTTPSSVC and Alt-Svc {#map2altsvc}
-
-Conversion between HTTPSSVC's ServiceForm and Alt-Svc is possible.
-Note that conversion in either direction can be lossy, because
-some parameters are only defined for HTTPSSVC or Alt-Svc.
-
-To construct an Alt-Svc Field Value (as defined in Section 4 of
-{{!AltSvc}}) from an HTTPSSVC record:
-
-* The SvcDomainName is mapped into the uri-host portion of alt-authority
-  with the trailing "." removed.
-  (If SvcDomainName is ".", the special handling described in
-  {{svcdomainnamedot}} MUST be applied first.)
-
-* The SvcParamValue of the "port" service parameter, or 443 if no such
-  parameter is present, is written to the port portion of the alt-authority.
-
-* The SvcParamValue of the "alpn" service parameter is mapped to the
-  protocol-id.  This MUST follow the normalization and encoding
-  requirements for protocol-id specified in {{!AltSvc}} Section 3.
-  This parameter is MANDATORY.
-
-* The DNS TTL is mapped to the "ma" (max age) Alt-Svc parameter.
-
-* For SVCB parameters with defined mappings to HTTPS Alt-Svc, each should be
-  included as an Alt-Svc parameter, typically as the SvcParamKey name
-  "=" a defined encoding of the SvcParamValue.
-
-Converting an Alt-Svc Field Value into an HTTPSSVC record follows the reverse
-of this procedure.
-
-Conversion between HTTPSSVC and Alt-Svc Field Value MUST ignore any
-SvcParamKeys and Alt-Svc parameters that are unrecognized or do not have
-a defined mapping.
-
-For example, if the operator of https://www.example.com
-intends to include an HTTP response header like
-
-    Alt-Svc: h3="svc.example.net:8003"; ma=3600; foo=123, \
-             h2="svc.example.net:8002"; ma=3600; foo=123
-
-they could also publish an HTTPSSVC DNS RRSet like
-
-    www.example.com. 3600 IN HTTPSSVC 2 svc.example.net. (
-                                        alpn=h3 port=8003 foo=123 )
-                             HTTPSSVC 3 svc.example.net. (
-                                        alpn=h2 port=8002 foo=123 )
-
-Where "foo" is a hypothetical future HTTPSSVC and Alt-Svc parameter.
-
-This data type can also be represented as an Unknown RR as described in
-{{!RFC3597}}:
-
-    www.example.com. 3600 IN TYPE??? \\# TBD:WRITEME
-
-
-## Multiple records and preference ordering {#pri}
-
-Server operators MAY publish multiple ServiceForm HTTPSSVC
-records as an RRSet.  When converting a collection of alt-values
-into an HTTPSSVC RRSet, the server operator MUST set the
-overall TTL to a value no larger than the minimum
-of the "max age" values (following Section 5.2 of {{!RFC2181}}).
-
-Each RR corresponds to exactly one alt-value, as described
-in Section 3 of {{!AltSvc}}.
-
-As discussed in {{svcfieldpri}}, HTTPSSVC RRs with
-a smaller SvcFieldPriority value SHOULD be sorted ahead of and given
-preference over RRs with a larger SvcFieldPriority value.
-
-When constructing equivalent Alt-Svc headers from an RRSet:
-
-1. The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
-   for equal SvcFieldPriority values.  Clients MAY choose to further
-   prioritize alt-values where address records are immediately
-   available for the alt-value's SvcDomainName.
-2. The client SHOULD concatenate the thus-transformed-and-ordered
-   SvcFieldValues in the RRSet, separated by commas.  (This is
-   semantically equivalent to receiving multiple Alt-Svc HTTP response
-   headers, according to Section 3.2.2 of {{?HTTP=RFC7230}}).
-
-
-## Additional examples
-
-The following:
-
-    www.example.com.  7200  IN CNAME    svc.example.net.
-    example.com.      7200  IN HTTPSSVC 0 svc.example.net.
-    svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. (
-        alpn=h3 port=8003 esniconfig="ABC..." )
-    svc.example.net.  7200  IN HTTPSSVC 3 . (
-        alpn=h2 port=8002 esniconfig="123..." )
-
-is equivalent to the Alt-Svc record:
-
-    Alt-Svc: h3="svc3.example.net:8003"; esniconfig="ABC..."; ma=7200, \
-             h2="svc.example.net:8002"; esniconfig="123..."; ma=7200
-
-for the origins of both "https://www.example.com" and "https://example.com".
 
 # Comparison with alternatives
 
@@ -1293,15 +1161,12 @@ informing a client to look in a different location for a service.
 However, there are several differences:
 
 * SRV records are typically mandatory, whereas clients will always
-  continue to function correctly without making use of Alt-Svc or SVCB.
+  continue to function correctly without making use of SVCB.
 * SRV records cannot instruct the client to switch or upgrade
-  protocols, whereas Alt-Svc can signal such an upgrade (e.g. to
+  protocols, whereas SVCB can signal such an upgrade (e.g. to
   HTTP/2).
 * SRV records are not extensible, whereas SVCB and HTTPSSVC
   can be extended with new parameters.
-* Using SRV records would not allow an HTTPS client to skip processing of the
-  Alt-Svc information in a subsequent connection, so it does not confer
-  a performance advantage.
 
 ## Differences from the proposed HTTP record
 
@@ -1338,23 +1203,12 @@ traffic has fallen to negligible levels.
 Unlike {{!ESNI}}, this approach is extensible and covers
 the Alt-Svc case as well as addresses the zone apex CNAME challenge.
 
-By using the Alt-Svc model we also provide a way to solve
+By mirroring the Alt-Svc model we also provide a way to solve
 the ESNI multi-CDN challenges in a general case.
 
 Unlike ESNI, SVCB allows specifying different ESNI configurations for
 different protocols and ports, rather than applying a single configuration
 to all ports on a domain.
-
-## SNI Alt-Svc parameter
-
-Defining an Alt-Svc sni= parameter
-(such as from {{!AltSvcSNI=I-D.bishop-httpbis-sni-altsvc}}) would
-have provided some benefits to clients and servers not implementing ESNI,
-such as for specifying that "_wildcard.example.com" could be sent as an SNI
-value rather than the full name.  There is nothing precluding SVCB from
-being used with an sni= parameter if one were to be defined, but it
-is not included here to reduce scope, complexity, and additional potential
-security and tracking risks.
 
 # Design Considerations and Open Issues
 
@@ -1383,12 +1237,6 @@ generality and focus.
 
 Advice from experts in DNS wire format best practices would be greatly
 appreciated to refine the proposed details, overall.
-
-## Where to include Priority
-
-The SvcFieldPriority could alternately be included as a pri= Alt-Svc attribute.
-It wouldn't be applicable for Alt-Svc returned via HTTP, but it is also
-not necessarily needed by DNS servers.  It is also not used for AliasForm RRs.
 
 ## Whether to include Weight
 
