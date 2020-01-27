@@ -587,6 +587,26 @@ such as {{!HappyEyeballsV2=RFC8305}}.
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
+## Handling resolution failures
+
+If an SVCB query results in a SERVFAIL error, transport error, or timeout,
+and DNS exchanges between the client and the recursive resolver are
+cryptographically protected (e.g. using TLS {{!RFC7858}} or HTTPS
+{{!RFC8484}}), the client MUST NOT fall back to non-SVCB connection
+establishment.  This ensures that an active attacker cannot mount a
+downgrade attack by denying the user access to the SVCB information.
+
+A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
+resolver is DNSSEC-validating, and the attacker is between the recursive
+resolver and the authoritative DNS server.  A transport error or timeout can
+occur if an active attacker between the client and the recursive resolver is
+selectively dropping SVCB queries or responses, based on their size or
+other observable patterns.
+
+Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
+it MUST NOT fall back to non-SVCB connection establishment if the SVCB
+response fails to validate.
+
 ## Clients using a Proxy
 
 Clients using a domain-oriented transport proxy like HTTP CONNECT
@@ -970,20 +990,7 @@ Because HTTPSSVC is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
 
-If the HTTPSSVC query results in a SERVFAIL error, and the connection
-between the client and the recursive resolver is cryptographically protected
-(e.g. using TLS {{!RFC7858}} or HTTPS {{!RFC8484}}), the client SHOULD
-abandon the connection attempt and display an error message.  A SERVFAIL
-error can occur if the domain is DNSSEC-signed, the recursive resolver is
-DNSSEC-validating, and an active attacker between the recursive resolver
-and the authoritative DNS server is attempting to prevent the upgrade to
-HTTPS.
-
-Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it SHOULD abandon the connection attempt if the HTTPSSVC response fails
-to validate.
-
-Finally, when making an "https" scheme request to an origin with an HTTPSSVC
+When making an "https" scheme request to an origin with an HTTPSSVC
 record, either directly or via the above redirect, the client SHOULD terminate the
 connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
