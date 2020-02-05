@@ -772,7 +772,7 @@ in the expectation that values will typically be ASCII strings, but any
 sequence of octets is a permissible value.  This key MAY appear multiple times
 with different values.
 
-The value of "no-default-transport" MUST be empty, and clients SHOULD reject
+The value of "no-default-transport" MUST be empty, and clients MUST reject
 the RR if a nonempty value is encountered.  This key may appear at most once
 in an RR.  For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
