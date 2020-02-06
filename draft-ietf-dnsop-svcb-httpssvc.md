@@ -940,14 +940,13 @@ require single-client granularity.
 
 ## Interaction with Alt-Svc
 
-If the client has an Alt-Svc cache, and a usable Alt-Svc value is
-present in that cache, then the client MAY skip the HTTPSSVC query.
-If Alt-Svc connection fails, the client SHOULD fall back to the HTTPSSVC
+Clients that do not implement support for ESNI MAY skip the HTTPSSVC query
+if a usable Alt-Svc value is available in the local cache.
+If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPSSVC
 client connection procedure ({{client-behavior}}).
 
-Clients that implement ESNI are subject to additional requirements
-(see {{esni-client-behavior}}).
-
+For clients that implement support for ESNI, the interaction between
+HTTPSSVC and Alt-Svc is described in {{esni-client-behavior}}.
 
 ## HTTP Strict Transport Security {#hsts}
 
@@ -1034,7 +1033,8 @@ An HTTPSSVC RRSet containing some RRs with esniconfig and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
 esniconfig as more preferred (i.e. smaller SvcFieldPriority) than those
-without.
+without, in order to maximize the likelihood that ESNI will be used in the
+absence of an active adversary.
 
 # Interaction with other standards
 
