@@ -936,7 +936,7 @@ have a corresponding defined SvcParamKey.  For example, there is no
 SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
 this parameter is not safe to accept over an untrusted channel.
 
-### Caching and granularity
+### TTL and granularity
 
 There is no SvcParamKey corresponding to the Alt-Svc "ma" (max age) parameter.
 Instead, server operators encode the expiration time in the DNS TTL.
@@ -958,9 +958,18 @@ record, groups of clients will necessarily receive the same
 SvcFieldValue.  Therefore, HTTPSSVC is not suitable for uses that
 require single-client granularity.
 
-If the client has an Alt-Svc cache, and a usable Alt-Svc value is
-present in that cache, then the client MAY skip the HTTPSSVC query.
+## Interaction with Alt-Svc
 
+Clients that do not implement support for ESNI MAY skip the HTTPSSVC query
+if a usable Alt-Svc value is available in the local cache.
+If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPSSVC
+client connection procedure ({{client-behavior}}).
+
+For clients that implement support for ESNI, the interaction between
+HTTPSSVC and Alt-Svc is described in {{esni-client-behavior}}.
+
+This specification does not alter the DNS queries performed when connecting
+to an Alt-Svc hostname (typically A and/or AAAA only).
 
 ## HTTP Strict Transport Security {#hsts}
 
@@ -1000,41 +1009,42 @@ of {{HSTS}}.
 
 The SVCB "esniconfig" parameter is defined for
 conveying the ESNI configuration of an alternative service.
-The value of the parameter is an ESNIConfig structure {{!ESNI}}
-or the empty string.  ESNI-aware clients SHOULD prefer SVCB/HTTPSSVC RRs with
-non-empty esniconfig.
-
-The parameter value is the ESNIConfig structure {{!ESNI}}
-encoded in {{!base64=RFC4648}} or the empty string.
+The value of the parameter is an ESNIConfig structure {{!ESNI}}.
+In presentation format, the structure is encoded in {{!base64=RFC4648}}.
 The SVCB SvcParamValue wire format is the octet string
 containing the binary ESNIConfig structure.
 
 This parameter MUST NOT appear more than once in a single SvcFieldValue.
 
-
-### Handling a mixture of alternatives not supporting ESNI
+## Client behavior {#esni-client-behavior}
 
 The general client behavior specified in {{client-behavior}} permits clients
 to retry connection with a less preferred alternative if the preferred option
 fails, including falling back to a direct connection if all SVCB options fail.
 This behavior is
 not suitable for ESNI, because fallback would negate the privacy benefits of
-ESNI.
+ESNI.  Accordingly, ESNI-capable clients SHALL implement the following
+behavior for connection establishment.
 
-Accordingly, any connection attempt that uses ESNI MUST fall back only to
-another alt-value that also has the esniconfig parameter.  If the parameter's
-value is the empty string, the client SHOULD connect as it would in the
-absence of any ESNIConfig information.
+1. Perform connection establishment using HTTPSSVC as described in
+   {{client-behavior}}, but do not fall back to the origin's A/AAAA records.
+   If all the HTTPSSVC RRs have esniconfig, and they all fail, terminate
+   connection establishment.
+2. If the client implements Alt-Svc, try to connect using any entries from
+   the Alt-Svc cache.
+3. Fall back to the origin's A/AAAA records if necessary.
 
-For example, suppose a server operator has two alternatives.  Alternative A
-is reliably accessible but does not support ESNI.  Alternative B supports
-ESNI but is not reliably accessible.  The server operator could include a
-full esniconfig value in Alternative B, and mark Alternative A with esniconfig=""
-to indicate that fallback from B to A is allowed.
+As a latency optimization, clients MAY prefetch DNS records for later steps
+before they are needed.
 
-Other clients and services implementing SVCB or HTTPSSVC with esniconfig
-are encouraged to take a similar approach.
+## Deployment considerations
 
+An HTTPSSVC RRSet containing some RRs with esniconfig and some without is
+vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
+Zone owners who do use such a mixed configuration SHOULD mark the RRs with
+esniconfig as more preferred (i.e. smaller SvcFieldPriority) than those
+without, in order to maximize the likelihood that ESNI will be used in the
+absence of an active adversary.
 
 # Interaction with other standards
 
@@ -1071,7 +1081,6 @@ Clients MUST ensure that their DNS cache is partitioned for each local
 network, or flushed on network changes, to prevent a local adversary in one
 network from implanting a forged DNS record that allows them to
 track users or hinder their connections after they leave that network.
-
 
 # IANA Considerations
 
