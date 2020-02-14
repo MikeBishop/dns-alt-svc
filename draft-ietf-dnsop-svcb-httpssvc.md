@@ -139,12 +139,11 @@ Consider a simple zone of the form
 
 The domain owner could add records like
 
-    simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
-                            HTTPSSVC 2 . alpn=h2 ...
+    simple.example. 7200 IN HTTPSSVC 1 . transport=quic ...
 
-The presence of these records indicates to clients that simple.example
-supports HTTPS, and the key=value pairs indicate that it prefers HTTP/3
-but also supports HTTP/2.  The records can also include other information
+The presence of this record indicates to clients that simple.example
+supports HTTPS, and the key=value pairs indicate that it supports QUIC
+in addition to HTTPS over TLS.  The records can also include other information
 (e.g. non-standard ports, ESNI configuration).
 
 ## Example: Apex aliasing
@@ -180,8 +179,8 @@ it has deployed HTTP/3 on a new server pool with a different
 configuration.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPSSVC 1 h3pool alpn=h3 esniconfig="123..."
-                  HTTPSSVC 2 . alpn=h2 esniconfig="abc..."
+    pool  7200 IN HTTPSSVC 1 h3pool transport=quic esniconfig="123..."
+                  HTTPSSVC 2 .      esniconfig="abc..."
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
     h3pool 300 IN A        192.0.2.3
@@ -366,7 +365,9 @@ multiple values.
 ### Presentation format
 
 The presentation format for SvcFieldValue is a whitespace-separated
-list of the key=value pairs.  Each pair is presented in the following form:
+list of elements representing a key-value pair, with an absent value
+or "=" indicating an empty value.  Each element is presented in the
+following form:
 
     ; basic-visible is VCHAR minus DQUOTE, ";", and "\"
     basic-visible = %x21 / %x23-3A / %x3C-5B / %x5D-7E
@@ -375,6 +376,7 @@ list of the key=value pairs.  Each pair is presented in the following form:
     quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
     value         = quoted-string / contiguous
     pair          = display-key "=" value
+    element       = display-key / pair
 
 The value format is intended to match the definition of &lt;character-string&gt;
 in {{!RFC1035}} Section 5.1.  (Unlike &lt;character-string&gt;, the length
@@ -444,12 +446,13 @@ hostnames based on the origin host.
 As an example:
 
     _8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
-    svc4.example.net.  7200  IN SVCB 3 ( svc4.example.net. alpn="bar"
-                                       port="8004" esniconfig="..." )
+    svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
+        transport="bar" port="8004" esniconfig="..." )
 
 would indicate that "foo://api.example.com:8443" is aliased
-to use ALPN protocol "bar" service endpoints offered at "svc4.example.net"
-on port 8004.
+to the service endpoints offered at "svc4.example.net" on port 8004,
+which support the transport protocol "bar" in addition to the default
+transport for "foo://".
 
 (Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
 
@@ -533,8 +536,7 @@ is the effective SvcDomainName:
 
     www.example.com.  7200  IN HTTPSSVC svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPSSVC 1 . ( alpn=h2
-                                        port=8002 esniconfig="..." )
+    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 esniconfig="..."
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
@@ -625,8 +627,8 @@ Providing the proxy with the final SvcDomainName has several benefits:
 
 * It allows the client to use the SvcFieldValue, if present, which is
   only usable with a specific SvcDomainName.  The SvcFieldValue may
-  include information that enhances performance (e.g. alpn) and privacy
-  (e.g. esniconfig).
+  include information that enhances performance (e.g. "transport") and
+  privacy (e.g. "esniconfig").
 
 * It allows the origin to delegate the apex domain.
 
@@ -763,30 +765,39 @@ responses to the address queries that were issued in parallel.
 A few initial SvcParamKeys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
 
-## "alpn"
+## "transport" and "no-default-transport"
 
-The "alpn" SvcParamKey defines the Application Layer Protocol
-(ALPN, as defined in {{!RFC7301}) supported by a TLS-based alternative
-service.  Its value SHOULD be an entry in the IANA registry "TLS
-Application-Layer Protocol Negotiation (ALPN) Protocol IDs".
+The "transport" and "no-default-transport" SvcParamKeys together
+indicate the set of transport protocols supported by this service endpoint.
 
-The presentation format and wire format of SvcParamValue
-is its registered "Identification Sequence".  This key SHALL NOT
-appear more than once in a SvcFieldValue.
+Each scheme that is mapped to SVCB defines a set or registry of allowed
+transport values, and a "default set" of supported values, which SHOULD NOT
+be empty.  To determine the set of transport protocols supported by an
+endpoint (the "transport set"), the client collects the set of
+"transport" values, and then adds the default set unless the
+"no-default-transport" SvcParamKey is present.  The presence of a value in
+the transport set indicates that this service endpoint, described by
+SvcDomainName and the other parameters (e.g. "port") offers service with
+that transport.
 
-Clients MUST include this value in the ProtocolNameList in their
-ClientHello's `application_layer_protocol_negotiation` extension.
-Clients SHOULD also include any other values that they support and
-could negotiate on that connection with equivalent or better security
-properties.  For example, when using a SvcFieldValue with an "alpn" of
-"h2", the client MAY also include "http/1.1" in the ProtocolNameList.
+Clients SHOULD NOT attempt connection to a service endpoint whose
+transport set does not contain any compatible transport protocols.  To ensure
+consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
+back to basic connection establishment if all of the RRs indicate
+"no-default-transport", even if connection could have succeeded using a
+non-default transport.
 
-Clients MUST ignore SVCB RRs where the "alpn" SvcParamValue
-is unknown or not supported for use with the current scheme.
+For "transport", the presentation and wire format are the same,
+in the expectation that values will typically be ASCII strings, but any
+sequence of octets is a permissible value.  This key MAY appear multiple times
+with different values.
 
-The value of the "alpn" SvcParamKey can have effects beyond the content
-of the TLS handshake and stream.  For example, an "alpn" value of "h3"
-({{HTTP3}} Section 11.1) indicates the client must use QUIC, not TLS.
+For "no-default-transport", the presentation and wire format values MUST be
+empty, and clients MUST reject the RR if the SvcParamValue has nonzero length.
+This key may appear at most once
+in an RR.  For compatibility with clients that require default transports,
+zone operators SHOULD ensure that at least one RR in each RRSet supports the
+default transports.
 
 ## "port"
 
@@ -794,7 +805,10 @@ The "port" SvcParamKey defines the TCP or UDP port
 that should be used to contact this alternative service.
 
 The presentation format of the SvcParamValue is a numeric value
-between 0 and 65535 inclusive.  The wire format of the SvcParamValue
+between 0 and 65535 inclusive.  Any other values (e.g. the empty value)
+are syntax errors.
+
+The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
 
 ## "esniconfig" {#svcparamkeys-esniconfig}
@@ -830,6 +844,7 @@ geo-aware features and thereby degrade client performance.
 The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection, and clients SHOULD pick addresses to use in a random order.
+An empty list of addresses is invalid.
 
 These parameters MAY be repeated multiple times within a record.
 When receiving such a record, clients SHOULD combine the sets of addresses.
@@ -870,10 +885,10 @@ The HTTPSSVC wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPSSVC unless specified otherwise.
 All the SvcParamKeys defined in {{keys}} are permitted for use in
-HTTPSSVC, and the "alpn" SvcParamKey is REQUIRED.  Its value MUST
-be an ALPN that is suitable for use with HTTPS.  For example, the
-value MAY be "http/1.1", "h2", or "h3", but MUST NOT be "h2c" or
-"ftp".
+HTTPSSVC.
+
+The allowed transport protocols are the protocols in the HTTPS Transport
+Registry ({{transportregistry}}).  The only default transport value is "tls".
 
 The presence of an HTTPSSVC record for an origin also indicates
 that all HTTP resources are available over HTTPS, as
@@ -915,7 +930,7 @@ Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
 hostnames based on the origin host.
 
-## Differences from Alt-Svc
+## Relationship to Alt-Svc
 
 Publishing a ServiceForm HTTPSSVC record in DNS is intended
 to be similar to transmitting an Alt-Svc field value over
@@ -1111,22 +1126,53 @@ MUST NOT start with "key".
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| SvcParamKey | NAME        | Meaning                       | Reference       |
-| ----------- | ------      | ----------------------        | --------------- |
-| 0           | key0        | Reserved                      | (This document) |
-| 1           | alpn        | ALPN for alternative service  | (This document) |
-| 2           | port        | Port for alternative service  | (This document) |
-| 3           | esniconfig  | Encrypted SNI configuration   | (This document) |
-| 4           | ipv4hint    | IPv4 address hints            | (This document) |
-| 5           | key5        | Reserved                      | (This document) |
-| 6           | ipv6hint    | IPv6 address hints            | (This document) |
-| 65280-65534 | keyNNNNN    | Private Use                   | (This document) |
-| 65535       | key65535    | Reserved                      | (This document) |
+| SvcParamKey | NAME                 | Meaning                          | Reference       |
+| ----------- | ------               | ----------------------           | --------------- |
+| 0           | (no name)            | Reserved for internal use        | (This document) |
+| 1           | transport            | Additional transport protocol    | (This document) |
+| 2           | no-default-transport | No support for default transport | (This document) |
+| 3           | port                 | Port for alternative service     | (This document) |
+| 4           | ipv4hint             | IPv4 address hints               | (This document) |
+| 5           | esniconfig           | Encrypted SNI configuration      | (This document) |
+| 6           | ipv6hint             | IPv6 address hints               | (This document) |
+| 65280-65534 | keyNNNNN             | Private Use                      | (This document) |
+| 65535       | key65535             | Reserved                         | (This document) |
 
 TODO: do we also want to reserve a range for greasing?
 
 
-## Registry updates
+## New registry for HTTPS Transport Protocol {#transportregistry}
+
+The "HTTPS Transport Registry" defines the set of secured transport protocols
+that can be used with HTTPS.
+
+### Procedure
+
+A registration MUST include the following fields:
+
+* Protocol: Typical short name for the transport protocol.
+* Identification Sequence: The precise set of octet values that identifies the protocol.
+* Reference: Pointer to text specifying use of this transport with HTTPS.
+
+Values to be added to this name space require Expert Review (see
+{{!RFC5226}}, Section 4.1).  Identification Sequences MUST NOT collide with
+values in the "TLS Application-Layer Protocol Negotiation (ALPN) Protocol IDs"
+registry, and MUST contain only octets from the ranges 0x61-7a (a-z) and
+0x30-0x39 (0-9).
+
+### Initial contents
+
+The "HTTPS Transport Registry" shall initially
+be populated with the registrations below:
+
+| Protocol | Identification Sequence      | Reference       |
+| -------- | ------                       | --------------- |
+| TLS      | 0x74 0x6C 0x73 ("tls")       | RFC 2818        |
+| QUIC     | 0x71 0x75 0x61 0x62 ("quic") | TBD             |
+
+ACTION: create and include a reference to this registry.
+
+## Registry updates {#registry-updates}
 
 Per {{?RFC6895}}, please add the following entry to the data type
 range of the Resource Record (RR) TYPEs registry:
