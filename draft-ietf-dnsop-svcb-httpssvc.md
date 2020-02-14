@@ -948,6 +948,9 @@ client connection procedure ({{client-behavior}}).
 For clients that implement support for ESNI, the interaction between
 HTTPSSVC and Alt-Svc is described in {{esni-client-behavior}}.
 
+This specification does not alter the DNS queries performed when connecting
+to an Alt-Svc hostname (typically A and/or AAAA only).
+
 ## HTTP Strict Transport Security {#hsts}
 
 By publishing an HTTPSSVC record, the server
