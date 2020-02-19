@@ -65,6 +65,10 @@ topic for discussion.  "SVCB" and "HTTPSSVC" are meant as placeholders
 as they are easy to replace.  Other names might include "B",
 "SRV2", "SVCHTTPS", "HTTPS", and "ALTSVC".
 
+TO BE REMOVED: This document is being collaborated on in Github at:
+[https://github.com/MikeBishop/dns-alt-svc](https://github.com/MikeBishop/dns-alt-svc).
+The most recent working version of the document, open issues, etc. should all be
+available there.  The authors (gratefully) accept pull requests.
 
 --- middle
 
