@@ -416,11 +416,14 @@ SvcParamKey=SvcParamValue pairs, represented as:
 
 SvcParamKeys SHALL appear in increasing numeric order.
 
-Clients MUST reject the RR as malformed if
+Clients MUST consider an RR malformed if
 * the parser reaches the end of the RDATA while parsing a SvcFieldValue.
 * SvcParamKeys are not in increasing numeric order.
 * a single SvcParamKey appears twice.
 * a SvcParamValue for a known SvcParamKey does not have the expected format.
+
+If any RRs are malformed, the client MUST reject the entire RRSet and
+fall back to non-SVCB connection establishment.
 
 TODO: decide if we want special handling for any SvcParamKey ranges?
 For example: range for greasing; experimental range;
@@ -778,7 +781,7 @@ A transport protocol is identified by a protocol-id with the following form:
     protocol-id = 1*(ALPHA_LC / DIGIT / "-" / "_" / ".")
 
 The presentation and wire format of "transport" are the same: a comma (0x2c)
-separated list of one or more`protocol-id`s:
+separated list of one or more `protocol-id`s:
 
    transport-value = protocol-id *("," protocol-id)
 
