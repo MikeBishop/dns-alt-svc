@@ -689,6 +689,9 @@ resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
 follow (e.g. CNAME, {{!DNAME}}).
 
+Recursive resolvers SHOULD NOT attempt to parse the contents of the
+SvcFieldValue.
+
 ## General requirements
 
 All DNS servers SHOULD treat the SvcParam portion of the SVCB RR
