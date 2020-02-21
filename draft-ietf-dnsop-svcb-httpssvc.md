@@ -418,9 +418,11 @@ SvcParamKeys SHALL appear in increasing numeric order.
 
 Clients MUST consider an RR malformed if
 * the parser reaches the end of the RDATA while parsing a SvcFieldValue.
-* SvcParamKeys are not in increasing numeric order.
-* a single SvcParamKey appears twice.
+* SvcParamKeys are not in strictly increasing numeric order.
 * a SvcParamValue for a known SvcParamKey does not have the expected format.
+
+Note that the second condition implies that there are no duplicate
+SvcParamKeys.
 
 If any RRs are malformed, the client MUST reject the entire RRSet and
 fall back to non-SVCB connection establishment.
@@ -689,9 +691,6 @@ resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
 follow (e.g. CNAME, {{!DNAME}}).
 
-Recursive resolvers SHOULD NOT attempt to parse the contents of the
-SvcFieldValue.
-
 ## General requirements
 
 All DNS servers SHOULD treat the SvcParam portion of the SVCB RR
@@ -779,14 +778,23 @@ HTTPS, and most are applicable to other protocols as well.
 
 The "transport" and "no-default-transport" SvcParamKeys together
 indicate the set of transport protocols supported by this service endpoint.
-A transport protocol is identified by a protocol-id with the following form:
+Each transport protocol is identified by a protocol-id, which is a sequence
+of 1-255 octets.
 
-    protocol-id = 1*(ALPHA_LC / DIGIT / "-" / "_" / ".")
+    protocol-id = 1*255(OCTET)
 
-The presentation and wire format of "transport" are the same: a comma (0x2c)
-separated list of one or more `protocol-id`s:
+The presentation value of "transport" is a comma-separated list of one or
+more `protocol-id`s.  Any commas present in the protocol-id are escaped
+by a backslash:
 
-   transport-value = protocol-id *("," protocol-id)
+   escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %5d-%FF
+   escaped-id = 1*255(escaped-octet)
+   transport-value = escaped-id *("," escaped-id)
+
+In the wire format for "transport", each protocol-id is prefixed by its
+length as a single octet, and these length-value pairs are concatenated
+to form the SvcParamValue.  These pairs MUST exactly fill the SvcParamValue;
+otherwise, the SvcParamValue is malformed.
 
 For "no-default-transport", the presentation and wire format values MUST be
 empty.
@@ -1159,14 +1167,15 @@ that can be used with HTTPS.
 A registration MUST include the following fields:
 
 * Protocol: Typical short name for the transport protocol.
-* Identification Sequence: The precise set of octet values that identifies the protocol, subject to the requirements in {{transport-key}}.
+* Identification Sequence: The precise sequence of 1 to 255 octet values that identifies the protocol.
 * Reference: Pointer to text specifying use of this transport with HTTPS.
 
 Values to be added to this name space require Expert Review (see
 {{!RFC5226}}, Section 4.1).  Identification Sequences MUST NOT collide with
 values in the "TLS Application-Layer Protocol Negotiation (ALPN) Protocol IDs"
-registry, and MUST contain only octets from the ranges 0x61-7a (a-z) and
-0x30-0x39 (0-9).
+registry, and SHOULD contain only id-characters according to this definition:
+
+    id-character = ALPHA_LC / DIGIT / "-" / "." / "_"
 
 ### Initial contents
 
