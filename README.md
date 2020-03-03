@@ -4,11 +4,11 @@ This is the working area for the individual Internet-Drafts "Service binding and
 
 ## Service binding and parameter specification via the DNS (DNS SVCB and HTTPSSVC)
 
-draft-nygren-dnsop-svcb-httpssvc
+draft-ietf-dnsop-svcb-httpssvc
 
-* [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-dnsop-svcb-httpssvc-latest.html)
-* [Individual Draft](https://datatracker.ietf.org/doc/draft-nygren-dnsop-svcb-httpssvc/)
-* [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-nygren-dnsop-svcb-httpssvc-latest.diff)
+* [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-ietf-dnsop-svcb-httpssvc-latest.html)
+* [Individual Draft](https://datatracker.ietf.org/doc/draft-ietf-dnsop-svcb-httpssvc/)
+* [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-ietf-dnsop-svcb-httpssvc-latest.diff)
 
 See also [here for a list of prototype implementations](httpssvc-implementations.md).
 
