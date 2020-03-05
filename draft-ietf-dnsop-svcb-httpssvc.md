@@ -330,6 +330,12 @@ appear in all capitals, as shown here.
 The SVCB DNS resource record (RR) type (RR type ???)
 is used to locate endpoints that can service an origin.
 There is special handling for the case of "https" origins.
+
+The algorithm for resolving SVCB records and associated
+address records is specified in {{client-behavior}}.
+
+## Presentation format
+
 The presentation format of the record is:
 
     Name TTL IN SVCB SvcFieldPriority SvcDomainName SvcFieldValue
@@ -339,14 +345,14 @@ the Internet ("IN") Class ({{!RFC1035}}).
 SvcFieldPriority is a number in the range 0-65535,
 SvcDomainName is a domain name,
 and SvcFieldValue is a set of key=value pairs present for the ServiceForm.
+Each key SHALL appear at most once in a SvcFieldValue.
 The SvcFieldValue is empty for the AliasForm.
 
-The algorithm for resolving SVCB records and associated
-address records is specified in {{client-behavior}}.
+### Presentation format for SvcFieldValue key=value pairs {#svcfieldvalue}
 
-## Parameter specification via ServiceFieldValue {#svcfieldvalue}
+In ServiceForm, the SvcFieldValue consists of zero or more elements separated
+by whitespace.  Each element represents a key=value pair.
 
-In ServiceForm, the SvcFieldValue contains key=value pairs.
 Keys are IANA-registered SvcParamKeys ({{svcparamregistry}})
 with both a case-insensitive string representation and
 a numeric representation in the range 0-65535.
@@ -360,13 +366,6 @@ Registered key names should only contain characters from the ranges
 Values are in a format specific to the SvcParamKey.
 Their definition should specify both their presentation format
 and wire encoding (e.g., domain names, binary data, or numeric values).
-
-The SVCB format preserves the order of values and can encode multiple
-values for the same parameter.  However, clients MUST consider only
-the first appearance of a parameter unless its specification explicitly allows
-multiple values.
-
-### Presentation format
 
 The presentation format for SvcFieldValue is a whitespace-separated
 list of elements representing a key-value pair, with an absent value
@@ -390,9 +389,10 @@ Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
 In presentation format, values of unrecognized keys
-should be represented in wire format, using decimal escape codes
+SHALL be represented in wire format, using decimal escape codes
 (e.g. \255) when necessary.
 
+Elements in presentation format MAY appear in any order.
 
 ## SVCB RDATA Wire Format
 
@@ -408,9 +408,8 @@ The RDATA for the SVCB RR consists of:
 
 AliasForm is defined by SvcFieldPriority being 0.
 
-When SvcFieldValue is non-empty (ServiceForm), it contains a list of
-SvcParamKey=SvcParamValue pairs with length-prefixes for the SvcParamValues,
-each of which contains:
+When SvcFieldValue is non-empty (ServiceForm), it contains a series of
+SvcParamKey=SvcParamValue pairs, represented as:
 
 * a 2 octet field containing the SvcParamKey as an
   integer in network byte order.
@@ -419,8 +418,18 @@ each of which contains:
   (but constrained by the RDATA and DNS message sizes).
 * an octet string of the length defined by the previous field.
 
-If the parser reaches the end of the RDATA while parsing a SvcFieldValue,
-the RR is invalid and MUST be discarded.
+SvcParamKeys SHALL appear in increasing numeric order.
+
+Clients MUST consider an RR malformed if
+* the parser reaches the end of the RDATA while parsing a SvcFieldValue.
+* SvcParamKeys are not in strictly increasing numeric order.
+* a SvcParamValue for a known SvcParamKey does not have the expected format.
+
+Note that the second condition implies that there are no duplicate
+SvcParamKeys.
+
+If any RRs are malformed, the client MUST reject the entire RRSet and
+fall back to non-SVCB connection establishment.
 
 TODO: decide if we want special handling for any SvcParamKey ranges?
 For example: range for greasing; experimental range;
@@ -769,16 +778,36 @@ responses to the address queries that were issued in parallel.
 A few initial SvcParamKeys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
 
-## "transport" and "no-default-transport"
+## "transport" and "no-default-transport" {#transport-key}
 
 The "transport" and "no-default-transport" SvcParamKeys together
 indicate the set of transport protocols supported by this service endpoint.
+Each transport protocol is identified by a protocol-id, which is a sequence
+of 1-255 octets.
+
+    protocol-id = 1*255(OCTET)
+
+The presentation value of "transport" is a comma-separated list of one or
+more `protocol-id`s.  Any commas present in the protocol-id are escaped
+by a backslash:
+
+   escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %5d-%FF
+   escaped-id = 1*255(escaped-octet)
+   transport-value = escaped-id *("," escaped-id)
+
+In the wire format for "transport", each protocol-id is prefixed by its
+length as a single octet, and these length-value pairs are concatenated
+to form the SvcParamValue.  These pairs MUST exactly fill the SvcParamValue;
+otherwise, the SvcParamValue is malformed.
+
+For "no-default-transport", the presentation and wire format values MUST be
+empty.
 
 Each scheme that is mapped to SVCB defines a set or registry of allowed
-transport values, and a "default set" of supported values, which SHOULD NOT
+protocol IDs, and a "default set" of supported IDs, which SHOULD NOT
 be empty.  To determine the set of transport protocols supported by an
-endpoint (the "transport set"), the client collects the set of
-"transport" values, and then adds the default set unless the
+endpoint (the "transport set"), the client parses the "transport" value's
+protocol IDs, and then adds the default set unless the
 "no-default-transport" SvcParamKey is present.  The presence of a value in
 the transport set indicates that this service endpoint, described by
 SvcDomainName and the other parameters (e.g. "port") offers service with
@@ -791,15 +820,7 @@ back to basic connection establishment if all of the RRs indicate
 "no-default-transport", even if connection could have succeeded using a
 non-default transport.
 
-For "transport", the presentation and wire format are the same,
-in the expectation that values will typically be ASCII strings, but any
-sequence of octets is a permissible value.  This key MAY appear multiple times
-with different values.
-
-For "no-default-transport", the presentation and wire format values MUST be
-empty, and clients MUST reject the RR if the SvcParamValue has nonzero length.
-This key may appear at most once
-in an RR.  For compatibility with clients that require default transports,
+For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
 
@@ -850,17 +871,14 @@ byte order.  Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection, and clients SHOULD pick addresses to use in a random order.
 An empty list of addresses is invalid.
 
-These parameters MAY be repeated multiple times within a record.
-When receiving such a record, clients SHOULD combine the sets of addresses.
-
 When selecting between IPv4 and IPv6 addresses to use, clients may use an
 approach such as {{!HappyEyeballsV2=RFC8305}}.
-When only "ipv4hint" parameters are present, IPv6-only clients may synthesize
+When only "ipv4hint" is present, IPv6-only clients may synthesize
 IPv6 addresses as specified in {{!RFC7050}} or ignore the "ipv4hint" key and
 wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
 perform DNS64 ({{!RFC6147}}) on parameters within an SVCB record.
-For best performance, server operators SHOULD include "ipv6hint" parameters
-whenever they publish "ipv4hint" parameters.
+For best performance, server operators SHOULD include an "ipv6hint" parameter
+whenever they include an "ipv4hint" parameter.
 
 The presentation format for each parameter is a comma-separated list of
 IP addresses in standard textual format {{!RFC5952}}.
@@ -1033,8 +1051,6 @@ In presentation format, the structure is encoded in {{!base64=RFC4648}}.
 The SVCB SvcParamValue wire format is the octet string
 containing the binary ESNIConfig structure.
 
-This parameter MUST NOT appear more than once in a single SvcFieldValue.
-
 ## Client behavior {#esni-client-behavior}
 
 The general client behavior specified in {{client-behavior}} permits clients
@@ -1155,14 +1171,15 @@ that can be used with HTTPS.
 A registration MUST include the following fields:
 
 * Protocol: Typical short name for the transport protocol.
-* Identification Sequence: The precise set of octet values that identifies the protocol.
+* Identification Sequence: The precise sequence of 1 to 255 octet values that identifies the protocol.
 * Reference: Pointer to text specifying use of this transport with HTTPS.
 
 Values to be added to this name space require Expert Review (see
 {{!RFC5226}}, Section 4.1).  Identification Sequences MUST NOT collide with
 values in the "TLS Application-Layer Protocol Negotiation (ALPN) Protocol IDs"
-registry, and MUST contain only octets from the ranges 0x61-7a (a-z) and
-0x30-0x39 (0-9).
+registry, and SHOULD contain only id-characters according to this definition:
+
+    id-character = ALPHA_LC / DIGIT / "-" / "." / "_"
 
 ### Initial contents
 
