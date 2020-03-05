@@ -783,18 +783,18 @@ HTTPS, and most are applicable to other protocols as well.
 
 The "alpn" and "no-default-alpn" SvcParamKeys together
 indicate the set of Application Layer Protocol Negotation (ALPN)
-protocol names (per {{ALPN=?RFC7301}}) 
+protocol identifiers {{?ALPN=RFC7301}} 
 and associated transport protocols supported by this service endpoint.  
 
 As with {{AltSvc}}, the ALPN protocol name is used to 
 identify the application protocol and associated suite 
 of protocols used by the SVCB record (the "protocol suite").
-Clients use the set of ALPN protocol
+Clients use the set of ALPN identifiers
 to filter SVCB records to the set of protocol suites they support,
 and then this informs the underlying transport protocol used (such
 as QUIC-over-UDP or TLS-over-TCP).
 
-The actual Application Layer Protocol negotiated during 
+The actual application-layer protocol negotiated during 
 the secure handshake MAY differ from the ALPN specified 
 in the SVCB record.
 
@@ -811,7 +811,7 @@ by a backslash:
    escaped-id = 1*255(escaped-octet)
    alpn-value = escaped-id *("," escaped-id)
 
-In the wire format for "alpn", each alpn-id is prefixed by its
+In the wire format for "alpn", each ALPN identifier (alpn-value) is prefixed by its
 length as a single octet, and these length-value pairs are concatenated
 to form the SvcParamValue.  These pairs MUST exactly fill the SvcParamValue;
 otherwise, the SvcParamValue is malformed.
@@ -822,15 +822,15 @@ empty.
 Each scheme that is mapped to SVCB defines a set or registry of allowed
 ALPNs, and a "default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
-endpoint (the "alpn set"), the client parses the "alpn" values'
-ALPN IDs, and then adds the default set unless the
+endpoint (the "ALPN set"), the client parses the set of ALPN identifiers in
+the "alpn" parameter, and then adds the default set unless the
 "no-default-alpn" SvcParamKey is present.  The presence of a value in
 the alpn set indicates that this service endpoint, described by
 SvcDomainName and the other parameters (e.g. "port") offers service with
 the protocol suite associated with the ALPN ID.
 
 Clients SHOULD NOT attempt connection to a service endpoint whose
-alpn set does not contain any compatible protocols suites.  To ensure
+alpn set does not contain any compatible protocol suites.  To ensure
 consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
 back to basic connection establishment if all of the RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
@@ -841,13 +841,13 @@ zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
 
 As long as {{ALPN}} is securely negotiated as part of a cryptographic 
-handshake, clients MUST be willing to use "alpn" protocols negotiated
-during a handshake even if they do not match an alpn value in 
-the alpn set.
+handshake, clients MUST be willing to use protocols negotiated
+during a handshake even if they do not match an ALPN value from the
+set of values indicated in the "alpn" parameter.
 
-In cases where the alpn set is a list of multiple values,
+In cases where the ALPN set is a list of multiple values,
 clients SHOULD prefer values earlier in the list, followed 
-by the default alpn if-present.
+by the default ALPN identifier if-present.
 
 ## "port"
 
@@ -935,7 +935,7 @@ All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPSSVC.
 
 The allowed protocols suites are the protocols in the ALPN
-Registry defined for HTTPS.  The only default alpn value 
+Registry defined for HTTPS.  The only default ALPN value 
 is "http/1.1".
 
 The presence of an HTTPSSVC record for an origin also indicates
@@ -1362,4 +1362,3 @@ added as an optional SVCB parameter.
 
 * draft-nygren-httpbis-httpssvc-00
     * Initial version
-
