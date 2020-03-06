@@ -141,15 +141,15 @@ Consider a simple zone of the form
     simple.example. 300 IN A    192.0.2.1
                            AAAA 2001:db8::1
 
-The domain owner could add records like
+The domain owner could add a record like
 
     simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
 
 The presence of this record indicates to clients that simple.example
 supports HTTPS, and the key=value pairs indicate that it supports QUIC
 in addition to HTTPS over TLS (an implicit default).
-The records can also include other information
-(e.g. non-standard ports, ESNI configuration).
+The record could also include other information
+(e.g. non-standard port, ESNI configuration).
 
 ## Example: Apex aliasing
 
@@ -184,8 +184,8 @@ it has deployed HTTP/3 on a new server pool with a different
 configuration.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPSSVC 1 h3pool alpn=h3 esniconfig="123..."
-                  HTTPSSVC 2 .      esniconfig="abc..."
+    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 esniconfig="123..."
+                  HTTPSSVC 2 .      alpn=h2 esniconfig="abc..."
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
     h3pool 300 IN A        192.0.2.3
@@ -422,6 +422,7 @@ SvcParamKey=SvcParamValue pairs, represented as:
 SvcParamKeys SHALL appear in increasing numeric order.
 
 Clients MUST consider an RR malformed if
+
 * the parser reaches the end of the RDATA while parsing a SvcFieldValue.
 * SvcParamKeys are not in strictly increasing numeric order.
 * a SvcParamValue for a known SvcParamKey does not have the expected format.
@@ -464,8 +465,8 @@ As an example:
         alpn="bar" port="8004" esniconfig="..." )
 
 would indicate that "foo://api.example.com:8443" is aliased
-to the service endpoints offered at "svc4.example.net" on port 8004,
-which support the transport protocol associated with "bar" in 
+to the service endpoints offered at "svc4.example.net" on port number 8004,
+which support the protocol "bar" and its associated transport in
 addition to the default transport protocol for "foo://".
 
 (Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
@@ -641,8 +642,8 @@ Providing the proxy with the final SvcDomainName has several benefits:
 
 * It allows the client to use the SvcFieldValue, if present, which is
   only usable with a specific SvcDomainName.  The SvcFieldValue may
-  include information that enhances performance (e.g. "transport") and
-  privacy (e.g. "esniconfig").
+  include information that enhances performance (e.g. alpn) and privacy
+  (e.g. esniconfig).
 
 * It allows the origin to delegate the apex domain.
 
@@ -783,20 +784,15 @@ HTTPS, and most are applicable to other protocols as well.
 
 The "alpn" and "no-default-alpn" SvcParamKeys together
 indicate the set of Application Layer Protocol Negotation (ALPN)
-protocol identifiers {{?ALPN=RFC7301}} 
-and associated transport protocols supported by this service endpoint.  
+protocol identifiers {{!ALPN=RFC7301}}
+and associated transport protocols supported by this service endpoint.
 
-As with {{AltSvc}}, the ALPN protocol name is used to 
-identify the application protocol and associated suite 
-of protocols used by the SVCB record (the "protocol suite").
-Clients use the set of ALPN identifiers
-to filter SVCB records to the set of protocol suites they support,
-and then this informs the underlying transport protocol used (such
+As with {{AltSvc}}, the ALPN protocol identifier is used to
+identify the application protocol and associated suite
+of protocols supported by the endpoint (the "protocol suite").
+Clients filter the set of ALPN identifiers to match the protocol suites they
+support, and this informs the underlying transport protocol used (such
 as QUIC-over-UDP or TLS-over-TCP).
-
-The actual application-layer protocol negotiated during 
-the secure handshake MAY differ from the ALPN specified 
-in the SVCB record.
 
 ALPNs are identified by their registered "Identification Sequence"
 (alpn-id), which is a sequence of 1-255 octets.
@@ -807,11 +803,11 @@ The presentation value of "alpn" is a comma-separated list of one or
 more `alpn-id`s.  Any commas present in the protocol-id are escaped
 by a backslash:
 
-   escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %5d-%FF
-   escaped-id = 1*255(escaped-octet)
-   alpn-value = escaped-id *("," escaped-id)
+    escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %5d-%FF
+    escaped-id = 1*255(escaped-octet)
+    alpn-value = escaped-id *("," escaped-id)
 
-In the wire format for "alpn", each ALPN identifier (alpn-value) is prefixed by its
+In the wire format for "alpn", each ALPN identifier (`alpn-id`) is prefixed by its
 length as a single octet, and these length-value pairs are concatenated
 to form the SvcParamValue.  These pairs MUST exactly fill the SvcParamValue;
 otherwise, the SvcParamValue is malformed.
@@ -819,8 +815,8 @@ otherwise, the SvcParamValue is malformed.
 For "no-default-alpn", the presentation and wire format values MUST be
 empty.
 
-Each scheme that is mapped to SVCB defines a set or registry of allowed
-ALPNs, and a "default set" of supported ALPNs, which SHOULD NOT
+Each scheme that is mapped to SVCB defines a
+"default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
 endpoint (the "ALPN set"), the client parses the set of ALPN identifiers in
 the "alpn" parameter, and then adds the default set unless the
@@ -828,6 +824,10 @@ the "alpn" parameter, and then adds the default set unless the
 the alpn set indicates that this service endpoint, described by
 SvcDomainName and the other parameters (e.g. "port") offers service with
 the protocol suite associated with the ALPN ID.
+
+ALPN IDs that do not uniquely identify a protocol suite (e.g. an ID that
+can be used with both TLS and DTLS) are not compatible with this
+SvcParamKey and MUST NOT be included in the ALPN set.
 
 Clients SHOULD NOT attempt connection to a service endpoint whose
 alpn set does not contain any compatible protocol suites.  To ensure
@@ -840,14 +840,17 @@ For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
 
-As long as {{ALPN}} is securely negotiated as part of a cryptographic 
-handshake, clients MUST be willing to use protocols negotiated
-during a handshake even if they do not match an ALPN value from the
-set of values indicated in the "alpn" parameter.
+Clients MUST include an `application_layer_protocol_negotiation` extension
+in their ClientHello with a ProtocolNameList that includes at least one ID
+from the ALPN set.  Clients SHOULD also include any other values that they
+support and could negotiate on that connection with equivalent or better
+security properties.  For example, if the ALPN set only contains "http/1.1",
+the client could include "http/1.1" and "h2" in the ProtocolNameList.
 
-In cases where the ALPN set is a list of multiple values,
-clients SHOULD prefer values earlier in the list, followed 
-by the default ALPN identifier if-present.
+Once the client has formulated the ClientHello, protocol negotiation
+on that connection proceeds as specified in {{!ALPN}}, without regard to the
+SVCB ALPN set.  To preserve the security guarantees of this process, clients
+MUST consolidate all compatible ALPN IDs into a single ProtocolNameList.
 
 ## "port"
 
@@ -931,12 +934,9 @@ or "http" schemes.
 The HTTPSSVC wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPSSVC unless specified otherwise.
-All the SvcParamKeys defined in {{keys}} are permitted for use in
-HTTPSSVC.
 
-The allowed protocols suites are the protocols in the ALPN
-Registry defined for HTTPS.  The only default ALPN value 
-is "http/1.1".
+All the SvcParamKeys defined in {{keys}} are permitted for use in
+HTTPSSVC.  The default set of ALPN IDs is the single value "http/1.1".
 
 The presence of an HTTPSSVC record for an origin also indicates
 that all HTTP resources are available over HTTPS, as
@@ -986,8 +986,15 @@ HTTPS, and receiving an HTTPSSVC record is intended to be similar to
 receiving that field value over HTTPS.  However, there are some
 differences in the intended client and server behavior.
 
-Unlike Alt-Svc, the ALPN value in a SVCB record is not
-guaranteed to match the ALPN value negotiated in the TLS handshake.
+### ALPN usage
+
+Unlike Alt-Svc Field Values, HTTPSSVC records can contain multiple ALPN
+IDs, and clients are encouraged to offer additional ALPNs that they
+support (subject to security constraints).
+
+TO BE REMOVED: The ALPN semantics in {{AltSvc}} are ambiguous, and
+problematic in some interpretations.  We should update {{AltSvc}}
+to give it well-defined semantics that match HTTPSSVC.
 
 ### Untrusted channel
 
@@ -1175,17 +1182,17 @@ MUST NOT start with "key".
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| SvcParamKey | NAME                 | Meaning                          | Reference       |
-| ----------- | ------               | ----------------------           | --------------- |
-| 0           | (no name)            | Reserved for internal use        | (This document) |
-| 1           | transport            | Additional transport protocol    | (This document) |
-| 2           | no-default-transport | No support for default transport | (This document) |
-| 3           | port                 | Port for alternative service     | (This document) |
-| 4           | ipv4hint             | IPv4 address hints               | (This document) |
-| 5           | esniconfig           | Encrypted SNI configuration      | (This document) |
-| 6           | ipv6hint             | IPv6 address hints               | (This document) |
-| 65280-65534 | keyNNNNN             | Private Use                      | (This document) |
-| 65535       | key65535             | Reserved                         | (This document) |
+| SvcParamKey | NAME            | Meaning                         | Reference       |
+| ----------- | ------          | ----------------------          | --------------- |
+| 0           | (no name)       | Reserved for internal use       | (This document) |
+| 1           | alpn            | Additional supported protocol   | (This document) |
+| 2           | no-default-alpn | No support for default protocol | (This document) |
+| 3           | port            | Port for alternative service    | (This document) |
+| 4           | ipv4hint        | IPv4 address hints              | (This document) |
+| 5           | esniconfig      | Encrypted SNI configuration     | (This document) |
+| 6           | ipv6hint        | IPv6 address hints              | (This document) |
+| 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
+| 65535       | key65535        | Reserved                        | (This document) |
 
 TODO: do we also want to reserve a range for greasing?
 
@@ -1216,7 +1223,7 @@ the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-ietf-dnsop-aname-03}}, and others.
 
 Thank you to Ian Swett, Ralf Weber, Jon Reed,
-Martin Thompson, Lucas Pardue, Ilari Liusvaara,
+Martin Thomson, Lucas Pardue, Ilari Liusvaara,
 Tim Wicinski, Tommy Pauly, Chris Wood, David Benjamin,
 and others for their feedback and suggestions on this draft.
 
