@@ -502,9 +502,8 @@ they would publish a record such as:
 
     example.com. 3600 IN SVCB 0 svc.example.net.
 
-The SvcDomainName MUST point to a domain name that contains
-another SVCB record, address (AAAA and/or A) records,
-or both address records and a ServiceForm SVCB record.
+The SvcDomainName MUST be the fully-qualified name of a domain that
+has SVCB, AAAA, or A records.
 
 Note that the SVCB record's owner name MAY be the canonical name
 of a CNAME record, and the SvcDomainName MAY be the owner of a CNAME
