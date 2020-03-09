@@ -815,7 +815,7 @@ otherwise, the SvcParamValue is malformed.
 For "no-default-alpn", the presentation and wire format values MUST be
 empty.
 
-Each scheme that is mapped to SVCB defines a
+Each scheme that uses this SvcParamKey defines a
 "default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
 endpoint (the "ALPN set"), the client parses the set of ALPN identifiers in
@@ -830,7 +830,7 @@ can be used with both TLS and DTLS) are not compatible with this
 SvcParamKey and MUST NOT be included in the ALPN set.
 
 Clients SHOULD NOT attempt connection to a service endpoint whose
-alpn set does not contain any compatible protocol suites.  To ensure
+ALPN set does not contain any compatible protocol suites.  To ensure
 consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
 back to basic connection establishment if all of the RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
@@ -1185,7 +1185,7 @@ be populated with the registrations below:
 | SvcParamKey | NAME            | Meaning                         | Reference       |
 | ----------- | ------          | ----------------------          | --------------- |
 | 0           | (no name)       | Reserved for internal use       | (This document) |
-| 1           | alpn            | Additional supported protocol   | (This document) |
+| 1           | alpn            | Additional supported protocols  | (This document) |
 | 2           | no-default-alpn | No support for default protocol | (This document) |
 | 3           | port            | Port for alternative service    | (This document) |
 | 4           | ipv4hint        | IPv4 address hints              | (This document) |
