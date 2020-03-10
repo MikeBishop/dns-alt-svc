@@ -542,8 +542,7 @@ not recognize.
 
 For ServiceForm SVCB RRs, if SvcDomainName has the value ".", then the
 owner name of this record MUST be used as the effective
-SvcDomainName.  (The SvcDomainName of an SVCB RR in AliasForm MUST NOT have
-this value.)
+SvcDomainName.
 
 For example, in the following example "svc2.example.net"
 is the effective SvcDomainName:
