@@ -184,8 +184,8 @@ it has deployed HTTP/3 on a new server pool with a different
 configuration.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 echo="123..."
-                  HTTPSSVC 2 .      alpn=h2 echo="abc..."
+    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 echoconfig="123..."
+                  HTTPSSVC 2 .      alpn=h2 echoconfig="abc..."
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
     h3pool 300 IN A        192.0.2.3
@@ -292,7 +292,7 @@ intended destination to all entities along the network path.
 ## Parameter for Encrypted ClientHello
 
 This document also defines a parameter for Encrypted ClientHello {{!ECHO}}
-keys. See {{echo}}.
+keys. See {{echoconfig}}.
 
 ## Terminology
 
@@ -462,7 +462,7 @@ As an example:
 
     _8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
     svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
-        alpn="bar" port="8004" echo="..." )
+        alpn="bar" port="8004" echoconfig="..." )
 
 would indicate that "foo://api.example.com:8443" is aliased
 to the service endpoints offered at "svc4.example.net" on port number 8004,
@@ -551,7 +551,7 @@ is the effective SvcDomainName:
 
     www.example.com.  7200  IN HTTPSSVC svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 echo="..."
+    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 echoconfig="..."
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
@@ -643,7 +643,7 @@ Providing the proxy with the final SvcDomainName has several benefits:
 * It allows the client to use the SvcFieldValue, if present, which is
   only usable with a specific SvcDomainName.  The SvcFieldValue may
   include information that enhances performance (e.g. alpn) and privacy
-  (e.g. echo).
+  (e.g. echoconfig).
 
 * It allows the origin to delegate the apex domain.
 
@@ -726,7 +726,7 @@ If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
 until it arrives.  For example, a TLS ClientHello can be altered by the
-"echo" value of an SVCB response ({{svcparamkeys-echo}}).  Clients
+"echoconfig" value of an SVCB response ({{svcparamkeys-echoconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{!HappyEyeballsV2=RFC8305}}.
@@ -739,12 +739,12 @@ For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
     _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
-        echo="111..." ipv6hint=2001:db8::1 port=1234 ... )
+        echoconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
                                    SVCB 2 svc2.example.net (
-        echo="222..." ipv6hint=2001:db8::2 port=1234 ... )
+        echoconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
-it MAY proceed with TLS on that connection using `echo="222..."`, even
+it MAY proceed with TLS on that connection using `echoconfig="222..."`, even
 though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
@@ -864,19 +864,21 @@ are syntax errors.
 The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
 
-## "echo" {#svcparamkeys-echo}
+## "echoconfig" {#svcparamkeys-echoconfig}
 
-The SvcParamKey to enable Encrypted ClientHello (ECHO) is "echo".  Its value
-is defined in {{echo}}.  It is applicable to most TLS-based protocols.
+The SvcParamKey to enable Encrypted ClientHello (ECHO) is "echoconfig".  Its
+value is defined in {{echoconfig}}.  It is applicable to most TLS-based
+protocols.
 
-When publishing a record containing an "echo" parameter, the publisher
+When publishing a record containing an "echoconfig" parameter, the publisher
 MUST ensure that all IP addresses of SvcDomainName correspond to servers
 that have access to the corresponding private key or are authoritative
 for the public name. (See Section 7.2.2 of {{!ECHO}} for more
-details about the public name.) This yields an anonymity set of cardinality equal
-to the number of ECHO-enabled server domains supported by a given client-facing
-server. Thus, even with an encrypted ClientHello, an attacker who can enumerate the
-set of ECHO-enabled domains supported by a client-facing server can guess the
+details about the public name.) This yields an anonymity set of cardinality
+equal to the number of ECHO-enabled server domains supported by a given
+client-facing server. Thus, even with an encrypted ClientHello, an attacker
+who can enumerate the set of ECHO-enabled domains supported by a
+client-facing server can guess the
 correct SNI with probability at least 1/K, where K is the size of this
 ECHO-enabled server anonymity set. This probability may be increased via
 traffic analysis or other mechanisms.
@@ -1079,13 +1081,13 @@ connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
 of {{HSTS}}.
 
-# SVCB/HTTPSSVC parameter for ECHO configuration {#echo}
+# SVCB/HTTPSSVC parameter for ECHO configuration {#echoconfig}
 
-The SVCB "echo" parameter is defined for
+The SVCB "echoconfig" parameter is defined for
 conveying the ECHO configuration of an alternative service.
-In wire format, the value of the parameter is an ECHOConfigs vector {{!ECHO}},
-including the redundant length prefix.  In presentation format, the value is
-encoded in {{!base64=RFC4648}}.
+In wire format, the value of the parameter is an ECHOConfigs vector
+{{!ECHO}}, including the redundant length prefix.  In presentation format,
+the value is encoded in {{!base64=RFC4648}}.
 
 ## Client behavior {#echo-client-behavior}
 
@@ -1099,8 +1101,8 @@ behavior for connection establishment.
 
 1. Perform connection establishment using HTTPSSVC as described in
    {{client-behavior}}, but do not fall back to the origin's A/AAAA records.
-   If all the HTTPSSVC RRs have an "echo" key, and they all fail, terminate
-   connection establishment.
+   If all the HTTPSSVC RRs have an "echoconfig" key, and they all fail,
+   terminate connection establishment.
 2. If the client implements Alt-Svc, try to connect using any entries from
    the Alt-Svc cache.
 3. Fall back to the origin's A/AAAA records if necessary.
@@ -1110,10 +1112,10 @@ before they are needed.
 
 ## Deployment considerations
 
-An HTTPSSVC RRSet containing some RRs with an "echo" key and some without is
+An HTTPSSVC RRSet containing some RRs with "echoconfig" and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-an "echo" key as more preferred (i.e. smaller SvcFieldPriority) than those
+"echoconfig" as more preferred (i.e. smaller SvcFieldPriority) than those
 without, in order to maximize the likelihood that ECHO will be used in the
 absence of an active adversary.
 
@@ -1189,7 +1191,7 @@ be populated with the registrations below:
 | 2           | no-default-alpn | No support for default protocol | (This document) |
 | 3           | port            | Port for alternative service    | (This document) |
 | 4           | ipv4hint        | IPv4 address hints              | (This document) |
-| 5           | echo            | Encrypted ClientHello info      | (This document) |
+| 5           | echoconfig      | Encrypted ClientHello info      | (This document) |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
 | 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
 | 65535       | key65535        | Reserved                        | (This document) |
