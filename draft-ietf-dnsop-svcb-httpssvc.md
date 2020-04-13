@@ -549,7 +549,7 @@ this value.)
 For example, in the following example "svc2.example.net"
 is the effective SvcDomainName:
 
-    www.example.com.  7200  IN HTTPSSVC svc.example.net.
+    www.example.com.  7200  IN HTTPSSVC 0 svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
     svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 esniconfig="..."
     svc2.example.net. 300   IN A        192.0.2.2
