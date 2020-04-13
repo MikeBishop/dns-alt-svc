@@ -1294,6 +1294,19 @@ should fall.  Server operators can easily observe how much traffic reaches this
 legacy endpoint, and may remove the apex's address records if the observed legacy
 traffic has fallen to negligible levels.
 
+## Comparison with separate RR types for AliasForm and ServiceForm
+
+Abstractly, functions of AliasForm and ServiceForm are independent,
+so it might be tempting to specify them as separate RR types.  However,
+this would result in a serious performance impairment, because clients
+cannot rely on their recursive resolver to follow SVCB aliases (unlike
+CNAME).  Thus, clients would have to issue queries for both RR types
+in parallel, potentially at each step of the alias chain.  Recursive
+resolvers that implement the specification would, upon receipt of a
+ServiceForm query, emit both a ServiceForm and an AliasForm query to
+the authoritative.  Thus, splitting the RR type would double, or in
+some cases triple, the load on clients and servers, and would not
+reduce implementation complexity.
 
 # Design Considerations and Open Issues
 
