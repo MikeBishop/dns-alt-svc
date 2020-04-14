@@ -141,12 +141,11 @@ Consider a simple zone of the form
     simple.example. 300 IN A    192.0.2.1
                            AAAA 2001:db8::1
 
-The domain owner could add a record like
+The domain owner could add this record
 
     simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
 
-The presence of this record indicates to clients that simple.example
-supports HTTPS, and the key=value pairs indicate that it supports QUIC
+to indicate that simple.example uses HTTPS, and supports QUIC
 in addition to HTTPS over TCP (an implicit default).
 The record could also include other information
 (e.g. non-standard port, ECHO configuration).
@@ -467,15 +466,18 @@ purposes.
 For example, clients MUST continue to validate TLS certificate
 hostnames based on the origin host.
 
-As an example:
+As an example, the owner of example.com could publish this record
 
     _8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
+
+to indicate that "foo://api.example.com:8443" is aliased to "svc4.example.net".
+The owner of example.net, in turn, could publish this record
+
     svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
         alpn="bar" port="8004" echoconfig="..." )
 
-would indicate that "foo://api.example.com:8443" is aliased
-to the service endpoints offered at "svc4.example.net" on port number 8004,
-which support the protocol "bar" and its associated transport in
+to indicate that these services are served on port number 8004,
+which supports the protocol "bar" and its associated transport in
 addition to the default transport protocol for "foo://".
 
 (Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
