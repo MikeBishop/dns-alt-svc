@@ -360,8 +360,8 @@ a numeric representation in the range 0-65535.
 Registered key names should only contain characters from the ranges
 "a"-"z", "0"-"9", and "-".  In ABNF {{!RFC5234}},
 
-    ALPHA_LC    = %x61-7A   ;  a-z
-    key         = ALPHA_LC / DIGIT / "-"
+    ALPHA-LC    = %x61-7A   ;  a-z
+    key         = ALPHA-LC / DIGIT / "-"
     display-key = ALPHA / DIGIT / "-"
 
 Values are in a format specific to the SvcParamKey.
@@ -803,7 +803,7 @@ The presentation value of "alpn" is a comma-separated list of one or
 more `alpn-id`s.  Any commas present in the protocol-id are escaped
 by a backslash:
 
-    escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %5d-%FF
+    escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %x5D-FF
     escaped-id = 1*255(escaped-octet)
     alpn-value = escaped-id *("," escaped-id)
 
