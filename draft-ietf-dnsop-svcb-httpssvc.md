@@ -130,7 +130,7 @@ parameter specification, similar to HTTPSSVC.
 TO BE REMOVED: Another open question is whether SVCB records
 should be self-descriptive and include the service name
 (eg, "https") in the RDATA section to avoid ambiguity.
-Perhaps this could be included as a svc="baz" parameter
+Perhaps this could be included as an svc="baz" parameter
 for protocols that are not the default for the RR type?
 Current inclination is to not do so.
 
@@ -309,7 +309,7 @@ For consistency with {{AltSvc}}, we adopt the following definitions:
   origin over a specified protocol.
 
 For example within HTTPS, the origin consists of a scheme (typically
-"https"), a host name, and a port (typically "443").
+"https"), a hostname, and a port (typically "443").
 
 Additional DNS terminology intends to be consistent
 with {{?DNSTerm=RFC8499}}.
@@ -346,7 +346,7 @@ the Internet ("IN") Class ({{!RFC1035}}).
 SvcFieldPriority is a number in the range 0-65535,
 SvcDomainName is a domain name,
 and SvcFieldValue is a set of key=value pairs present for the ServiceForm.
-Each key SHALL appear at most once in a SvcFieldValue.
+Each key SHALL appear at most once in an SvcFieldValue.
 The SvcFieldValue is empty for the AliasForm.
 
 ### Presentation format for SvcFieldValue key=value pairs {#svcfieldvalue}
@@ -389,7 +389,7 @@ of a value is not limited to 255 characters.)
 Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
-In presentation format, values of unrecognized keys
+In presentation format, values corresponding to unrecognized keys
 SHALL be represented in wire format, using decimal escape codes
 (e.g. \255) when necessary.
 
@@ -431,7 +431,7 @@ SvcParamKeys SHALL appear in increasing numeric order.
 
 Clients MUST consider an RR malformed if
 
-* the parser reaches the end of the RDATA while parsing a SvcFieldValue.
+* the parser reaches the end of the RDATA while parsing an SvcFieldValue.
 * SvcParamKeys are not in strictly increasing numeric order.
 * the SvcParamValue for an SvcParamKey does not have the expected format.
 
@@ -451,7 +451,7 @@ ignore-just-param-if-unknown.
 
 When querying the SVCB RR, an origin is typically translated into a QNAME
 by prefixing the port and scheme with "_", then concatenating them with the
-host name, resulting in a domain name like "_8004._examplescheme.api.example.com.".
+hostname, resulting in a domain name like "_8004._examplescheme.api.example.com.".
 
 Protocol mappings for SVCB MAY remove the port or replace it with other
 protocol-specific information, but MUST retain the scheme in the QNAME.
@@ -963,7 +963,7 @@ The HTTPSSVC RR extends the behavior for determining
 a QNAME specified above in {{svcb-names}}.
 In particular, if the scheme is "https" with port 443
 then the client's original QNAME is
-equal to the origin host name.
+equal to the origin hostname.
 
 By removing the {{?Attrleaf}} labels
 used in SVCB, this construction enables offline DNSSEC signing of
@@ -1165,7 +1165,7 @@ track users or hinder their connections after they leave that network.
 
 ## New registry for Service Parameters {#svcparamregistry}
 
-The "Service Binding (SVCB) Parameter Registry" defines the name space
+The "Service Binding (SVCB) Parameter Registry" defines the namespace
 for parameters, including string representations and numeric
 SvcParamKey values.  This registry is shared with other SVCB-compatible
 RR types, such as HTTPSSVC.
@@ -1181,7 +1181,7 @@ A registration MUST include the following fields:
 * Meaning: a short description
 * Pointer to specification text
 
-Values to be added to this name space require Expert Review (see
+Values to be added to this namespace require Expert Review (see
 {{!RFC5226}}, Section 4.1).  Apart from the initial contents, the name
 MUST NOT start with "key".
 
@@ -1268,7 +1268,7 @@ Unlike {{?I-D.draft-bellis-dnsop-http-record-00}}, this approach is
 extensible to cover Alt-Svc and ESNI use-cases.  Like that
 proposal, this addresses the zone apex CNAME challenge.
 
-Like that proposal it remains necessary to continue to include
+Like that proposal, it remains necessary to continue to include
 address records at the zone apex for legacy clients.
 
 
@@ -1282,7 +1282,7 @@ master servers, beyond optionally returning in-bailiwick additional records.
 Like that proposal, this addresses the zone apex CNAME challenge
 for clients that implement this.
 
-However with this SVCB proposal it remains necessary to continue
+However, with this SVCB proposal, it remains necessary to continue
 to include address records at the zone apex for legacy clients.
 If deployment of this standard is successful, the number of legacy clients
 will fall over time.  As the number of legacy clients declines, the operational
