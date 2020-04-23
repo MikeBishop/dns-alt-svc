@@ -393,6 +393,14 @@ In presentation format, values of unrecognized keys
 SHALL be represented in wire format, using decimal escape codes
 (e.g. \255) when necessary.
 
+When decoding values of unrecognized keys in the presentation format:
+
+* a character other than "\" represents its ASCII value in wire format.
+* the character "\" followed by three decimal digits, up to 255, represents
+  an octet in the wire format.
+* the character "\" followed by any allowed character, except a decimal digit,
+  represents the subsequent character's ASCII value.
+
 Elements in presentation format MAY appear in any order.
 
 ## SVCB RDATA Wire Format
@@ -425,7 +433,7 @@ Clients MUST consider an RR malformed if
 
 * the parser reaches the end of the RDATA while parsing a SvcFieldValue.
 * SvcParamKeys are not in strictly increasing numeric order.
-* a SvcParamValue for a known SvcParamKey does not have the expected format.
+* the SvcParamValue for an SvcParamKey does not have the expected format.
 
 Note that the second condition implies that there are no duplicate
 SvcParamKeys.
