@@ -401,7 +401,8 @@ When decoding values of unrecognized keys in the presentation format:
 * the character "\" followed by any allowed character, except a decimal digit,
   represents the subsequent character's ASCII value.
 
-Elements in presentation format MAY appear in any order.
+Elements in presentation format MAY appear in any order, but keys MUST NOT be
+repeated.
 
 ## SVCB RDATA Wire Format
 
@@ -812,13 +813,13 @@ more `alpn-id`s.  Any commas present in the protocol-id are escaped
 by a backslash:
 
     escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %x5D-FF
-    escaped-id = 1*255(escaped-octet)
+    escaped-id = 1*(escaped-octet)
     alpn-value = escaped-id *("," escaped-id)
 
-In the wire format for "alpn", each ALPN identifier (`alpn-id`) is prefixed by its
-length as a single octet, and these length-value pairs are concatenated
-to form the SvcParamValue.  These pairs MUST exactly fill the SvcParamValue;
-otherwise, the SvcParamValue is malformed.
+The wire format value for "alpn" consists of at least one ALPN identifier
+(`alpn-id`) prefixed by its length as a single octet, and these length-value
+pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
+fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
 
 For "no-default-alpn", the presentation and wire format values MUST be
 empty.
