@@ -873,6 +873,10 @@ are syntax errors.
 The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
 
+If a port-restricting firewall is in place between the client and the service
+endpoint, changing the port number can cause clients to lose access to the
+service, so operators should exercise caution when using this SvcParamKey.
+
 ## "esniconfig" {#svcparamkeys-esniconfig}
 
 The SvcParamKey for ESNI is "esniconfig".  Its value is defined in
