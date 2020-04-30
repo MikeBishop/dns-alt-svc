@@ -367,11 +367,11 @@ Registered key names should only contain characters from the ranges
 Values are in a format specific to the SvcParamKey.
 Their definition should specify both their presentation format
 and wire encoding (e.g., domain names, binary data, or numeric values).
+The initial keys and formats are defined in {{keys}}.
 
 The presentation format for SvcFieldValue is a whitespace-separated
-list of elements representing a key-value pair, with an absent value
-or "=" indicating an empty value.  Each element is presented in the
-following form:
+list of key=value pairs.  When the value, or both the value and the "=", are
+omitted, the presentation value is the empty string.
 
     ; basic-visible is VCHAR minus DQUOTE, ";", and "\"
     basic-visible = %x21 / %x23-3A / %x3C-5B / %x5D-7E
@@ -422,11 +422,12 @@ When SvcFieldValue is non-empty (ServiceForm), it contains a series of
 SvcParamKey=SvcParamValue pairs, represented as:
 
 * a 2 octet field containing the SvcParamKey as an
-  integer in network byte order.
+  integer in network byte order.  (See {{iana-keys}} for the defined values.)
 * a 2 octet field containing the length of the SvcParamValue
   as an integer between 0 and 65535 in network byte order
   (but constrained by the RDATA and DNS message sizes).
-* an octet string of the length defined by the previous field.
+* an octet string of this length whose contents are in a format determined
+  by the SvcParamKey.
 
 SvcParamKeys SHALL appear in increasing numeric order.
 
@@ -1186,7 +1187,7 @@ Values to be added to this namespace require Expert Review (see
 {{!RFC5226}}, Section 4.1).  Apart from the initial contents, the name
 MUST NOT start with "key".
 
-### Initial contents
+### Initial contents {#iana-keys}
 
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
