@@ -395,10 +395,10 @@ SHALL be represented in wire format, using decimal escape codes
 
 When decoding values of unrecognized keys in the presentation format:
 
-* a character other than "\" represents its ASCII value in wire format.
-* the character "\" followed by three decimal digits, up to 255, represents
+* a character other than "\\" represents its ASCII value in wire format.
+* the character "\\" followed by three decimal digits, up to 255, represents
   an octet in the wire format.
-* the character "\" followed by any allowed character, except a decimal digit,
+* the character "\\" followed by any allowed character, except a decimal digit,
   represents the subsequent character's ASCII value.
 
 Elements in presentation format MAY appear in any order, but keys MUST NOT be
