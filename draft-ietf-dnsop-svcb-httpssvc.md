@@ -1091,6 +1091,11 @@ In wire format, the value of the parameter is an ECHOConfigs vector
 {{!ECHO}}, including the redundant length prefix.  In presentation format,
 the value is encoded in {{!base64=RFC4648}}.
 
+The value of this parameter and any corresponding ECHOConfig extensions are directed
+at the outer TLS ClientHello when ECHO is in use. This parameter does not affect
+parameters of the inner TLS ClientHello. Thus, changes targeting the inner TLS
+ClientHello when ECHO is in use SHOULD use other SVCB parameters.
+
 ## Client behavior {#echo-client-behavior}
 
 The general client behavior specified in {{client-behavior}} permits clients
@@ -1120,14 +1125,6 @@ Zone owners who do use such a mixed configuration SHOULD mark the RRs with
 "echoconfig" as more preferred (i.e. smaller SvcFieldPriority) than those
 without, in order to maximize the likelihood that ECHO will be used in the
 absence of an active adversary.
-
-## Relation to ECHOConfig Extensions
-
-The TLS ECHOConfig structure {{!ECHO}} supports adding arbitrary parameters via
-extensions. That extension mechanism SHOULD NOT be used for any parameter that
-might influence a client's connection properties. In particular, any SVCB parameter
-other than "echoconfig" that affects the TLS ClientHello is directed at the
-encrypted inner ClientHello when ECHO is in use.
 
 # Interaction with other standards
 
