@@ -1124,7 +1124,7 @@ absence of an active adversary.
 ## Relation to ECHOConfig Extensions
 
 The TLS ECHOConfig structure {{!ECHO}} supports adding arbitrary parameters via
-extensions. This extension mechanism SHOULD NOT be used for any parameter that
+extensions. That extension mechanism SHOULD NOT be used for any parameter that
 might influence a client's connection properties. In particular, any SVCB parameter
 other than "echoconfig" which affects the TLS ClientHello are directed at the
 encrypted inner ClientHello when ECHO is in use.
