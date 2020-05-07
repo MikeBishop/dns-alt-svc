@@ -770,7 +770,7 @@ chasing dependencies would improve performance.  When omitting certain
 RRSets, recursive resolvers SHOULD prioritize information from
 higher priority ServiceForm records over lower priority ServiceForm records.
 
-As discussed in {{client-behavior}}, clients MUST be able fetch additional
+As discussed in {{client-behavior}}, clients MUST be able to fetch additional
 information that is required to use an SVCB record, if it is not included
 in the initial response.  As a performance optimization, if some of the SVCB
 records in the response can be used without requiring additional DNS queries,
