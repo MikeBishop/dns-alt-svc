@@ -147,7 +147,7 @@ The domain owner could add a record like
 
 The presence of this record indicates to clients that simple.example
 supports HTTPS, and the key=value pairs indicate that it supports QUIC
-in addition to HTTPS over TLS (an implicit default).
+in addition to HTTPS over TCP (an implicit default).
 The record could also include other information
 (e.g. non-standard port, ESNI configuration).
 
