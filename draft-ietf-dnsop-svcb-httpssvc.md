@@ -1093,8 +1093,7 @@ the value is encoded in {{!base64=RFC4648}}.
 
 The value of this parameter and any included ECHOConfig extensions are directed
 at the outer TLS ClientHello when ECHO is in use. This parameter does not affect
-parameters of the inner TLS ClientHello. Thus, changes targeting the inner TLS
-ClientHello when ECHO is in use SHOULD use other SVCB parameters.
+construction of the inner TLS ClientHello.
 
 ## Client behavior {#echo-client-behavior}
 
