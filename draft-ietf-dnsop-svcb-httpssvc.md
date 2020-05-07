@@ -708,7 +708,7 @@ follow (e.g. CNAME, {{!DNAME}}).
 
 ## General requirements
 
-All DNS servers SHOULD treat the SvcParam portion of the SVCB RR
+All DNS servers SHOULD treat the SvcFieldValue portion of the SVCB RR
 as opaque and SHOULD NOT try to alter their behavior based
 on its contents.
 
