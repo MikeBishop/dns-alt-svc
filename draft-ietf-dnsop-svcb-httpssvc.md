@@ -876,6 +876,11 @@ are syntax errors.
 The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
 
+If a port-restricting firewall is in place between some client and the service
+endpoint, changing the port number might cause that client to lose access to
+the service, so operators should exercise caution when using this SvcParamKey
+to specify a non-default port.
+
 ## "echoconfig" {#svcparamkeys-echoconfig}
 
 The SvcParamKey to enable Encrypted ClientHello (ECHO) is "echoconfig".  Its
