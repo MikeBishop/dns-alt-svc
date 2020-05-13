@@ -370,8 +370,8 @@ and wire encoding (e.g., domain names, binary data, or numeric values).
 The initial keys and formats are defined in {{keys}}.
 
 The presentation format for SvcFieldValue is a whitespace-separated
-list of key=value pairs.  When the value, or both the value and the "=", are
-omitted, the presentation value is the empty string.
+list of key=value pairs.  When the value is omitted, or both the value and
+the "=" are omitted, the presentation value is the empty string.
 
     ; basic-visible is VCHAR minus DQUOTE, ";", and "\"
     basic-visible = %x21 / %x23-3A / %x3C-5B / %x5D-7E
