@@ -41,7 +41,7 @@ facilitate the lookup of information needed to make connections for
 origin resources, such as for HTTPS URLs.  SVCB records
 allow an origin to be served from multiple network
 locations, each with associated parameters (such as transport protocol
-configuration and keying material for encrypting TLS SNI).  They also
+configuration and keys for encrypting the TLS ClientHello).  They also
 enable aliasing of apex domains, which is not possible with CNAME.
 The HTTPSSVC DNS RR is a variation of SVCB for HTTPS and HTTP origins.
 By providing more information to the client before it attempts to
@@ -83,7 +83,7 @@ public keys.
 For example, when clients need to make a connection to fetch resources
 associated with an HTTPS URI, they currently resolve only A and/or AAAA
 records for the origin hostname.  This is adequate for services that use
-basic HTTPS (fixed port, no QUIC, no {{!ESNI=I-D.ietf-tls-esni}}).
+basic HTTPS (fixed port, no QUIC, no {{!ECHO=I-D.ietf-tls-esni}}).
 Going beyond basic HTTPS confers privacy, performance, and operational
 advantages, but it requires the client to learn additional
 information, and it is highly
@@ -141,15 +141,14 @@ Consider a simple zone of the form
     simple.example. 300 IN A    192.0.2.1
                            AAAA 2001:db8::1
 
-The domain owner could add a record like
+The domain owner could add this record
 
     simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
 
-The presence of this record indicates to clients that simple.example
-supports HTTPS, and the key=value pairs indicate that it supports QUIC
-in addition to HTTPS over TLS (an implicit default).
+to indicate that simple.example uses HTTPS, and supports QUIC
+in addition to HTTPS over TCP (an implicit default).
 The record could also include other information
-(e.g. non-standard port, ESNI configuration).
+(e.g. non-standard port, ECHO configuration).
 
 ## Example: Apex aliasing
 
@@ -184,8 +183,8 @@ it has deployed HTTP/3 on a new server pool with a different
 configuration.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 esniconfig="123..."
-                  HTTPSSVC 2 .      alpn=h2 esniconfig="abc..."
+    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 echoconfig="123..."
+                  HTTPSSVC 2 .      alpn=h2 echoconfig="abc..."
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
     h3pool 300 IN A        192.0.2.3
@@ -195,7 +194,7 @@ This configuration is entirely compatible with the "Apex aliasing" example,
 whether the client supports HTTPSSVC or not.  If the client does support
 HTTPSSVC, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
-each server pool can have its own protocol, ESNI configuration, etc.
+each server pool can have its own protocol, ECHO configuration, etc.
 
 ## Example: Non-HTTPS uses
 
@@ -234,7 +233,7 @@ Additional goals specific to HTTPSSVC and the HTTPS use-case include:
 
 * Connect directly to {{!HTTP3=I-D.draft-ietf-quic-http-20}} (QUIC transport)
   alternative service endpoints
-* Obtain the {{!ESNI}} keys associated with an alternative service endpoint
+* Obtain the {{!ECHO}} keys associated with an alternative service endpoint
 * Support non-default TCP and UDP ports
 * Address a set of long-standing issues due to HTTP(S) clients not
   implementing support for SRV records, as well as due to a limitation
@@ -289,10 +288,10 @@ intended destination to all entities along the network path.
 
 
 
-## Parameter for ESNI
+## Parameter for Encrypted ClientHello
 
-This document also defines a parameter for Encrypted SNI {{!ESNI}}
-keys. See {{esniconfig}}.
+This document also defines a parameter for Encrypted ClientHello {{!ECHO}}
+keys. See {{echoconfig}}.
 
 ## Terminology
 
@@ -367,11 +366,11 @@ Registered key names should only contain characters from the ranges
 Values are in a format specific to the SvcParamKey.
 Their definition should specify both their presentation format
 and wire encoding (e.g., domain names, binary data, or numeric values).
+The initial keys and formats are defined in {{keys}}.
 
 The presentation format for SvcFieldValue is a whitespace-separated
-list of elements representing a key-value pair, with an absent value
-or "=" indicating an empty value.  Each element is presented in the
-following form:
+list of key=value pairs.  When the value is omitted, or both the value and
+the "=" are omitted, the presentation value is the empty string.
 
     ; basic-visible is VCHAR minus DQUOTE, ";", and "\"
     basic-visible = %x21 / %x23-3A / %x3C-5B / %x5D-7E
@@ -395,10 +394,10 @@ SHALL be represented in wire format, using decimal escape codes
 
 When decoding values of unrecognized keys in the presentation format:
 
-* a character other than "\" represents its ASCII value in wire format.
-* the character "\" followed by three decimal digits, up to 255, represents
+* a character other than "\\" represents its ASCII value in wire format.
+* the character "\\" followed by three decimal digits, up to 255, represents
   an octet in the wire format.
-* the character "\" followed by any allowed character, except a decimal digit,
+* the character "\\" followed by any allowed character, except a decimal digit,
   represents the subsequent character's ASCII value.
 
 Elements in presentation format MAY appear in any order, but keys MUST NOT be
@@ -422,11 +421,12 @@ When SvcFieldValue is non-empty (ServiceForm), it contains a series of
 SvcParamKey=SvcParamValue pairs, represented as:
 
 * a 2 octet field containing the SvcParamKey as an
-  integer in network byte order.
+  integer in network byte order.  (See {{iana-keys}} for the defined values.)
 * a 2 octet field containing the length of the SvcParamValue
   as an integer between 0 and 65535 in network byte order
   (but constrained by the RDATA and DNS message sizes).
-* an octet string of the length defined by the previous field.
+* an octet string of this length whose contents are in a format determined
+  by the SvcParamKey.
 
 SvcParamKeys SHALL appear in increasing numeric order.
 
@@ -467,15 +467,18 @@ purposes.
 For example, clients MUST continue to validate TLS certificate
 hostnames based on the origin host.
 
-As an example:
+As an example, the owner of example.com could publish this record
 
     _8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
-    svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
-        alpn="bar" port="8004" esniconfig="..." )
 
-would indicate that "foo://api.example.com:8443" is aliased
-to the service endpoints offered at "svc4.example.net" on port number 8004,
-which support the protocol "bar" and its associated transport in
+to indicate that "foo://api.example.com:8443" is aliased to "svc4.example.net".
+The owner of example.net, in turn, could publish this record
+
+    svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
+        alpn="bar" port="8004" echoconfig="..." )
+
+to indicate that these services are served on port number 8004,
+which supports the protocol "bar" and its associated transport in
 addition to the default transport protocol for "foo://".
 
 (Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
@@ -560,7 +563,7 @@ is the effective SvcDomainName:
 
     www.example.com.  7200  IN HTTPSSVC 0 svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 esniconfig="..."
+    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 echoconfig="..."
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
@@ -652,7 +655,7 @@ Providing the proxy with the final SvcDomainName has several benefits:
 * It allows the client to use the SvcFieldValue, if present, which is
   only usable with a specific SvcDomainName.  The SvcFieldValue may
   include information that enhances performance (e.g. alpn) and privacy
-  (e.g. esniconfig).
+  (e.g. echoconfig).
 
 * It allows the origin to delegate the apex domain.
 
@@ -708,7 +711,7 @@ follow (e.g. CNAME, {{!DNAME}}).
 
 ## General requirements
 
-All DNS servers SHOULD treat the SvcParam portion of the SVCB RR
+All DNS servers SHOULD treat the SvcFieldValue portion of the SVCB RR
 as opaque and SHOULD NOT try to alter their behavior based
 on its contents.
 
@@ -735,7 +738,7 @@ If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
 until it arrives.  For example, a TLS ClientHello can be altered by the
-"esniconfig" value of an SVCB response ({{svcparamkeys-esniconfig}}).  Clients
+"echoconfig" value of an SVCB response ({{svcparamkeys-echoconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{!HappyEyeballsV2=RFC8305}}.
@@ -748,12 +751,12 @@ For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
     _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
-        esniconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
+        echoconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
                                    SVCB 2 svc2.example.net (
-        esniconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
+        echoconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
-it MAY proceed with TLS on that connection using `esniconfig="222..."`, even
+it MAY proceed with TLS on that connection using `echoconfig="222..."`, even
 though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
@@ -770,7 +773,7 @@ chasing dependencies would improve performance.  When omitting certain
 RRSets, recursive resolvers SHOULD prioritize information from
 higher priority ServiceForm records over lower priority ServiceForm records.
 
-As discussed in {{client-behavior}}, clients MUST be able fetch additional
+As discussed in {{client-behavior}}, clients MUST be able to fetch additional
 information that is required to use an SVCB record, if it is not included
 in the initial response.  As a performance optimization, if some of the SVCB
 records in the response can be used without requiring additional DNS queries,
@@ -878,21 +881,23 @@ endpoint, changing the port number might cause that client to lose access to
 the service, so operators should exercise caution when using this SvcParamKey
 to specify a non-default port.
 
-## "esniconfig" {#svcparamkeys-esniconfig}
+## "echoconfig" {#svcparamkeys-echoconfig}
 
-The SvcParamKey for ESNI is "esniconfig".  Its value is defined in
-{{esniconfig}}.  It is applicable to most TLS-based protocols.
+The SvcParamKey to enable Encrypted ClientHello (ECHO) is "echoconfig".  Its
+value is defined in {{echoconfig}}.  It is applicable to most TLS-based
+protocols.
 
-When publishing a record containing an "esniconfig" parameter, the publisher
+When publishing a record containing an "echoconfig" parameter, the publisher
 MUST ensure that all IP addresses of SvcDomainName correspond to servers
 that have access to the corresponding private key or are authoritative
-for the fallback domain. (See {{!ESNI=I-D.ietf-tls-esni}} for more details about
-the fallback domain.) This yields an anonymity set of cardinality equal
-to the number of ESNI-enabled server domains supported by a given client-facing
-server. Thus, even with SNI encryption, an attacker who can enumerate the
-set of ESNI-enabled domains supported by a client-facing server can guess the
+for the public name. (See Section 7.2.2 of {{!ECHO}} for more
+details about the public name.) This yields an anonymity set of cardinality
+equal to the number of ECHO-enabled server domains supported by a given
+client-facing server. Thus, even with an encrypted ClientHello, an attacker
+who can enumerate the set of ECHO-enabled domains supported by a
+client-facing server can guess the
 correct SNI with probability at least 1/K, where K is the size of this
-ESNI-enabled server anonymity set. This probability may be increased via
+ECHO-enabled server anonymity set. This probability may be increased via
 traffic analysis or other mechanisms.
 
 ## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
@@ -1047,13 +1052,14 @@ require single-client granularity.
 
 ## Interaction with Alt-Svc
 
-Clients that do not implement support for ESNI MAY skip the HTTPSSVC query
+Clients that do not implement support for Encrypted ClientHello MAY
+skip the HTTPSSVC query
 if a usable Alt-Svc value is available in the local cache.
 If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPSSVC
 client connection procedure ({{client-behavior}}).
 
-For clients that implement support for ESNI, the interaction between
-HTTPSSVC and Alt-Svc is described in {{esni-client-behavior}}.
+For clients that implement support for ECHO, the interaction between
+HTTPSSVC and Alt-Svc is described in {{echo-client-behavior}}.
 
 This specification does not alter the DNS queries performed when connecting
 to an Alt-Svc hostname (typically A and/or AAAA only).
@@ -1092,29 +1098,28 @@ connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
 of {{HSTS}}.
 
-# SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
+# SVCB/HTTPSSVC parameter for ECHO configuration {#echoconfig}
 
-The SVCB "esniconfig" parameter is defined for
-conveying the ESNI configuration of an alternative service.
-The value of the parameter is an ESNIConfig structure {{!ESNI}}.
-In presentation format, the structure is encoded in {{!base64=RFC4648}}.
-The SVCB SvcParamValue wire format is the octet string
-containing the binary ESNIConfig structure.
+The SVCB "echoconfig" parameter is defined for
+conveying the ECHO configuration of an alternative service.
+In wire format, the value of the parameter is an ECHOConfigs vector
+{{!ECHO}}, including the redundant length prefix.  In presentation format,
+the value is encoded in {{!base64=RFC4648}}.
 
-## Client behavior {#esni-client-behavior}
+## Client behavior {#echo-client-behavior}
 
 The general client behavior specified in {{client-behavior}} permits clients
 to retry connection with a less preferred alternative if the preferred option
 fails, including falling back to a direct connection if all SVCB options fail.
 This behavior is
-not suitable for ESNI, because fallback would negate the privacy benefits of
-ESNI.  Accordingly, ESNI-capable clients SHALL implement the following
+not suitable for ECHO, because fallback would negate the privacy benefits of
+ECHO.  Accordingly, ECHO-capable clients SHALL implement the following
 behavior for connection establishment.
 
 1. Perform connection establishment using HTTPSSVC as described in
    {{client-behavior}}, but do not fall back to the origin's A/AAAA records.
-   If all the HTTPSSVC RRs have esniconfig, and they all fail, terminate
-   connection establishment.
+   If all the HTTPSSVC RRs have an "echoconfig" key, and they all fail,
+   terminate connection establishment.
 2. If the client implements Alt-Svc, try to connect using any entries from
    the Alt-Svc cache.
 3. Fall back to the origin's A/AAAA records if necessary.
@@ -1124,11 +1129,11 @@ before they are needed.
 
 ## Deployment considerations
 
-An HTTPSSVC RRSet containing some RRs with esniconfig and some without is
+An HTTPSSVC RRSet containing some RRs with "echoconfig" and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-esniconfig as more preferred (i.e. smaller SvcFieldPriority) than those
-without, in order to maximize the likelihood that ESNI will be used in the
+"echoconfig" as more preferred (i.e. smaller SvcFieldPriority) than those
+without, in order to maximize the likelihood that ECHO will be used in the
 absence of an active adversary.
 
 # Interaction with other standards
@@ -1191,7 +1196,7 @@ Values to be added to this namespace require Expert Review (see
 {{!RFC5226}}, Section 4.1).  Apart from the initial contents, the name
 MUST NOT start with "key".
 
-### Initial contents
+### Initial contents {#iana-keys}
 
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
@@ -1203,7 +1208,7 @@ be populated with the registrations below:
 | 2           | no-default-alpn | No support for default protocol | (This document) |
 | 3           | port            | Port for alternative service    | (This document) |
 | 4           | ipv4hint        | IPv4 address hints              | (This document) |
-| 5           | esniconfig      | Encrypted SNI configuration     | (This document) |
+| 5           | echoconfig      | Encrypted ClientHello info      | (This document) |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
 | 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
 | 65535       | key65535        | Reserved                        | (This document) |
@@ -1271,7 +1276,7 @@ However, there are several differences:
 ## Differences from the proposed HTTP record
 
 Unlike {{?I-D.draft-bellis-dnsop-http-record-00}}, this approach is
-extensible to cover Alt-Svc and ESNI use-cases.  Like that
+extensible to cover Alt-Svc and Encrypted ClientHello use-cases.  Like that
 proposal, this addresses the zone apex CNAME challenge.
 
 Like that proposal, it remains necessary to continue to include
@@ -1281,7 +1286,7 @@ address records at the zone apex for legacy clients.
 ## Differences from the proposed ANAME record
 
 Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
-cover Alt-Svc and ESNI use-cases.  This approach also does not
+cover Alt-Svc and ECHO use-cases.  This approach also does not
 require any changes or special handling on either authoritative or
 master servers, beyond optionally returning in-bailiwick additional records.
 
@@ -1297,18 +1302,19 @@ should fall.  Server operators can easily observe how much traffic reaches this
 legacy endpoint, and may remove the apex's address records if the observed legacy
 traffic has fallen to negligible levels.
 
+## Comparison with separate RR types for AliasForm and ServiceForm
 
-## Differences from the proposed ESNI record
-
-Unlike {{!ESNI}}, this approach is extensible and covers
-the Alt-Svc case as well as addresses the zone apex CNAME challenge.
-
-By mirroring the Alt-Svc model we also provide a way to solve
-the ESNI multi-CDN challenges in a general case.
-
-Unlike ESNI, SVCB allows specifying different ESNI configurations for
-different protocols and ports, rather than applying a single configuration
-to all ports on a domain.
+Abstractly, functions of AliasForm and ServiceForm are independent,
+so it might be tempting to specify them as separate RR types.  However,
+this would result in a serious performance impairment, because clients
+cannot rely on their recursive resolver to follow SVCB aliases (unlike
+CNAME).  Thus, clients would have to issue queries for both RR types
+in parallel, potentially at each step of the alias chain.  Recursive
+resolvers that implement the specification would, upon receipt of a
+ServiceForm query, emit both a ServiceForm and an AliasForm query to
+the authoritative.  Thus, splitting the RR type would double, or in
+some cases triple, the load on clients and servers, and would not
+reduce implementation complexity.
 
 # Design Considerations and Open Issues
 
