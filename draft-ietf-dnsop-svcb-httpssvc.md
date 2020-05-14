@@ -134,82 +134,6 @@ Perhaps this could be included as an svc="baz" parameter
 for protocols that are not the default for the RR type?
 Current inclination is to not do so.
 
-## Example: Protocol enhancements
-
-Consider a simple zone of the form
-
-    simple.example. 300 IN A    192.0.2.1
-                           AAAA 2001:db8::1
-
-The domain owner could add this record
-
-    simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
-
-to indicate that simple.example uses HTTPS, and supports QUIC
-in addition to HTTPS over TCP (an implicit default).
-The record could also include other information
-(e.g. non-standard port, ECHO configuration).
-
-## Example: Apex aliasing
-
-Consider a zone that is using CNAME aliasing:
-
-    $ORIGIN aliased.example. ; A zone that is using a hosting service
-    ; Subdomain aliased to a high-performance server pool
-    www             7200 IN CNAME pool.svc.example.
-    ; Apex domain on fixed IPs because CNAME is not allowed at the apex
-    .                300 IN A     192.0.2.1
-                         IN AAAA  2001:db8::1
-
-With HTTPSSVC, the owner of aliased.example could alias the apex by
-adding one additional record:
-
-    .               7200 IN HTTPSSVC 0 pool.svc.example.
-
-With this record in place, HTTPSSVC-aware clients will use the same
-server pool for aliased.example and www.aliased.example.  (They will
-also upgrade to HTTPS on aliased.example.)  Non-HTTPSSVC-aware clients
-will just ignore the new record.
-
-Similar to CNAME, HTTPSSVC has no impact on the origin name.
-When connecting, clients will continue to treat the authoritative
-origins as "https://www.aliased.example" and "https://aliased.example",
-respectively, and will validate TLS server certificates accordingly.
-
-## Example: Parameter binding
-
-Suppose that svc.example's default server pool supports HTTP/2, and
-it has deployed HTTP/3 on a new server pool with a different
-configuration.  This can be expressed in the following form:
-
-    $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 echoconfig="123..."
-                  HTTPSSVC 2 .      alpn=h2 echoconfig="abc..."
-    pool   300 IN A        192.0.2.2
-                  AAAA     2001:db8::2
-    h3pool 300 IN A        192.0.2.3
-                  AAAA     2001:db8::3
-
-This configuration is entirely compatible with the "Apex aliasing" example,
-whether the client supports HTTPSSVC or not.  If the client does support
-HTTPSSVC, all connections will be upgraded to HTTPS, and clients will
-use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
-each server pool can have its own protocol, ECHO configuration, etc.
-
-## Example: Non-HTTPS uses
-
-For services other than HTTPS, the SVCB RR and an {{?Attrleaf}} label
-will be used.  For example, to reach an example resource of
-"baz://api.example.com:8765", the following Alias Form
-SVCB record would be used to delegate to "svc4-baz.example.net."
-which in-turn could return AAAA/A records and/or SVCB
-records in ServiceForm.
-
-    _8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
-
-HTTPSSVC records use similar {{?Attrleaf}} labels if the origin contains
-a non-default port.
-
 ## Goals of the SVCB RR
 
 The goal of the SVCB RR is to allow clients to resolve a single
@@ -1144,6 +1068,84 @@ Zone owners who do use such a mixed configuration SHOULD mark the RRs with
 "echoconfig" as more preferred (i.e. smaller SvcFieldPriority) than those
 without, in order to maximize the likelihood that ECHO will be used in the
 absence of an active adversary.
+
+# Examples
+
+## Protocol enhancements
+
+Consider a simple zone of the form
+
+    simple.example. 300 IN A    192.0.2.1
+                           AAAA 2001:db8::1
+
+The domain owner could add this record
+
+    simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
+
+to indicate that simple.example uses HTTPS, and supports QUIC
+in addition to HTTPS over TCP (an implicit default).
+The record could also include other information
+(e.g. non-standard port, ECHO configuration).
+
+## Apex aliasing
+
+Consider a zone that is using CNAME aliasing:
+
+    $ORIGIN aliased.example. ; A zone that is using a hosting service
+    ; Subdomain aliased to a high-performance server pool
+    www             7200 IN CNAME pool.svc.example.
+    ; Apex domain on fixed IPs because CNAME is not allowed at the apex
+    .                300 IN A     192.0.2.1
+                         IN AAAA  2001:db8::1
+
+With HTTPSSVC, the owner of aliased.example could alias the apex by
+adding one additional record:
+
+    .               7200 IN HTTPSSVC 0 pool.svc.example.
+
+With this record in place, HTTPSSVC-aware clients will use the same
+server pool for aliased.example and www.aliased.example.  (They will
+also upgrade to HTTPS on aliased.example.)  Non-HTTPSSVC-aware clients
+will just ignore the new record.
+
+Similar to CNAME, HTTPSSVC has no impact on the origin name.
+When connecting, clients will continue to treat the authoritative
+origins as "https://www.aliased.example" and "https://aliased.example",
+respectively, and will validate TLS server certificates accordingly.
+
+## Parameter binding
+
+Suppose that svc.example's default server pool supports HTTP/2, and
+it has deployed HTTP/3 on a new server pool with a different
+configuration.  This can be expressed in the following form:
+
+    $ORIGIN svc.example. ; A hosting provider.
+    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 echoconfig="123..."
+                  HTTPSSVC 2 .      alpn=h2 echoconfig="abc..."
+    pool   300 IN A        192.0.2.2
+                  AAAA     2001:db8::2
+    h3pool 300 IN A        192.0.2.3
+                  AAAA     2001:db8::3
+
+This configuration is entirely compatible with the "Apex aliasing" example,
+whether the client supports HTTPSSVC or not.  If the client does support
+HTTPSSVC, all connections will be upgraded to HTTPS, and clients will
+use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
+each server pool can have its own protocol, ECHO configuration, etc.
+
+## Non-HTTPS uses
+
+For services other than HTTPS, the SVCB RR and an {{?Attrleaf}} label
+will be used.  For example, to reach an example resource of
+"baz://api.example.com:8765", the following Alias Form
+SVCB record would be used to delegate to "svc4-baz.example.net."
+which in-turn could return AAAA/A records and/or SVCB
+records in ServiceForm.
+
+    _8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
+
+HTTPSSVC records use similar {{?Attrleaf}} labels if the origin contains
+a non-default port.
 
 # Interaction with other standards
 
