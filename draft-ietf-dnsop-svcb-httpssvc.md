@@ -1112,7 +1112,8 @@ detail of ECHO, and its contents are controlled by the ECHOConfig in accordance
 with {{ECHO}}.  The inner ClientHello is used for establishing a connection to the
 service, so its contents may be influenced by other SVCB parameters.  For example,
 the requirements on the ProtocolNameList in {{alpn-key}} apply only to the inner
-ClientHello.
+ClientHello.  Similarly, it is the inner ClientHello whose Server Name Indication
+identifies the origin.
 
 ## Client behavior {#echo-client-behavior}
 
