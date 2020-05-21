@@ -83,7 +83,7 @@ public keys.
 For example, when clients need to make a connection to fetch resources
 associated with an HTTPS URI, they currently resolve only A and/or AAAA
 records for the origin hostname.  This is adequate for services that use
-basic HTTPS (fixed port, no QUIC, no {{!ECHO=I-D.ietf-tls-esni}}).
+basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}).
 Going beyond basic HTTPS confers privacy, performance, and operational
 advantages, but it requires the client to learn additional
 information, and it is highly
@@ -157,7 +157,7 @@ Additional goals specific to HTTPSSVC and the HTTPS use-case include:
 
 * Connect directly to {{!HTTP3=I-D.draft-ietf-quic-http-20}} (QUIC transport)
   alternative service endpoints
-* Obtain the {{!ECHO}} keys associated with an alternative service endpoint
+* Obtain the {{!ECH}} keys associated with an alternative service endpoint
 * Support non-default TCP and UDP ports
 * Address a set of long-standing issues due to HTTP(S) clients not
   implementing support for SRV records, as well as due to a limitation
@@ -214,8 +214,8 @@ intended destination to all entities along the network path.
 
 ## Parameter for Encrypted ClientHello
 
-This document also defines a parameter for Encrypted ClientHello {{!ECHO}}
-keys. See {{echoconfig}}.
+This document also defines a parameter for Encrypted ClientHello {{!ECH}}
+keys. See {{echconfig}}.
 
 ## Terminology
 
@@ -399,7 +399,7 @@ to indicate that "foo://api.example.com:8443" is aliased to "svc4.example.net".
 The owner of example.net, in turn, could publish this record
 
     svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
-        alpn="bar" port="8004" echoconfig="..." )
+        alpn="bar" port="8004" echconfig="..." )
 
 to indicate that these services are served on port number 8004,
 which supports the protocol "bar" and its associated transport in
@@ -487,7 +487,7 @@ is the effective SvcDomainName:
 
     www.example.com.  7200  IN HTTPSSVC 0 svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 echoconfig="..."
+    svc2.example.net. 7200  IN HTTPSSVC 1 . port=8002 echconfig="..."
     svc2.example.net. 300   IN A        192.0.2.2
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
@@ -579,7 +579,7 @@ Providing the proxy with the final SvcDomainName has several benefits:
 * It allows the client to use the SvcFieldValue, if present, which is
   only usable with a specific SvcDomainName.  The SvcFieldValue may
   include information that enhances performance (e.g. alpn) and privacy
-  (e.g. echoconfig).
+  (e.g. echconfig).
 
 * It allows the origin to delegate the apex domain.
 
@@ -662,7 +662,7 @@ If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
 until it arrives.  For example, a TLS ClientHello can be altered by the
-"echoconfig" value of an SVCB response ({{svcparamkeys-echoconfig}}).  Clients
+"echconfig" value of an SVCB response ({{svcparamkeys-echconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{!HappyEyeballsV2=RFC8305}}.
@@ -675,12 +675,12 @@ For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
     _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
-        echoconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
+        echconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
                                    SVCB 2 svc2.example.net (
-        echoconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
+        echconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
-it MAY proceed with TLS on that connection using `echoconfig="222..."`, even
+it MAY proceed with TLS on that connection using `echconfig="222..."`, even
 though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
@@ -805,23 +805,23 @@ endpoint, changing the port number might cause that client to lose access to
 the service, so operators should exercise caution when using this SvcParamKey
 to specify a non-default port.
 
-## "echoconfig" {#svcparamkeys-echoconfig}
+## "echconfig" {#svcparamkeys-echconfig}
 
-The SvcParamKey to enable Encrypted ClientHello (ECHO) is "echoconfig".  Its
-value is defined in {{echoconfig}}.  It is applicable to most TLS-based
+The SvcParamKey to enable Encrypted ClientHello (ECH) is "echconfig".  Its
+value is defined in {{echconfig}}.  It is applicable to most TLS-based
 protocols.
 
-When publishing a record containing an "echoconfig" parameter, the publisher
+When publishing a record containing an "echconfig" parameter, the publisher
 MUST ensure that all IP addresses of SvcDomainName correspond to servers
 that have access to the corresponding private key or are authoritative
-for the public name. (See Section 7.2.2 of {{!ECHO}} for more
+for the public name. (See Section 7.2.2 of {{!ECH}} for more
 details about the public name.) This yields an anonymity set of cardinality
-equal to the number of ECHO-enabled server domains supported by a given
+equal to the number of ECH-enabled server domains supported by a given
 client-facing server. Thus, even with an encrypted ClientHello, an attacker
-who can enumerate the set of ECHO-enabled domains supported by a
+who can enumerate the set of ECH-enabled domains supported by a
 client-facing server can guess the
 correct SNI with probability at least 1/K, where K is the size of this
-ECHO-enabled server anonymity set. This probability may be increased via
+ECH-enabled server anonymity set. This probability may be increased via
 traffic analysis or other mechanisms.
 
 ## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
@@ -982,8 +982,8 @@ if a usable Alt-Svc value is available in the local cache.
 If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPSSVC
 client connection procedure ({{client-behavior}}).
 
-For clients that implement support for ECHO, the interaction between
-HTTPSSVC and Alt-Svc is described in {{echo-client-behavior}}.
+For clients that implement support for ECH, the interaction between
+HTTPSSVC and Alt-Svc is described in {{ech-client-behavior}}.
 
 This specification does not alter the DNS queries performed when connecting
 to an Alt-Svc hostname (typically A and/or AAAA only).
@@ -1022,36 +1022,36 @@ connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
 of {{HSTS}}.
 
-# SVCB/HTTPSSVC parameter for ECHO configuration {#echoconfig}
+# SVCB/HTTPSSVC parameter for ECH configuration {#echconfig}
 
-The SVCB "echoconfig" parameter is defined for
-conveying the ECHO configuration of an alternative service.
-In wire format, the value of the parameter is an ECHOConfigs vector
-{{!ECHO}}, including the redundant length prefix.  In presentation format,
+The SVCB "echconfig" parameter is defined for
+conveying the ECH configuration of an alternative service.
+In wire format, the value of the parameter is an ECHConfigs vector
+{{!ECH}}, including the redundant length prefix.  In presentation format,
 the value is encoded in {{!base64=RFC4648}}.
 
-When ECHO is in use, the TLS ClientHello is divided into an unencrypted "outer"
+When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
 and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
-detail of ECHO, and its contents are controlled by the ECHOConfig in accordance
-with {{ECHO}}.  The inner ClientHello is used for establishing a connection to the
+detail of ECH, and its contents are controlled by the ECHConfig in accordance
+with {{ECH}}.  The inner ClientHello is used for establishing a connection to the
 service, so its contents may be influenced by other SVCB parameters.  For example,
 the requirements on the ProtocolNameList in {{alpn-key}} apply only to the inner
 ClientHello.  Similarly, it is the inner ClientHello whose Server Name Indication
 identifies the origin.
 
-## Client behavior {#echo-client-behavior}
+## Client behavior {#ech-client-behavior}
 
 The general client behavior specified in {{client-behavior}} permits clients
 to retry connection with a less preferred alternative if the preferred option
 fails, including falling back to a direct connection if all SVCB options fail.
 This behavior is
-not suitable for ECHO, because fallback would negate the privacy benefits of
-ECHO.  Accordingly, ECHO-capable clients SHALL implement the following
+not suitable for ECH, because fallback would negate the privacy benefits of
+ECH.  Accordingly, ECH-capable clients SHALL implement the following
 behavior for connection establishment.
 
 1. Perform connection establishment using HTTPSSVC as described in
    {{client-behavior}}, but do not fall back to the origin's A/AAAA records.
-   If all the HTTPSSVC RRs have an "echoconfig" key, and they all fail,
+   If all the HTTPSSVC RRs have an "echconfig" key, and they all fail,
    terminate connection establishment.
 2. If the client implements Alt-Svc, try to connect using any entries from
    the Alt-Svc cache.
@@ -1062,11 +1062,11 @@ before they are needed.
 
 ## Deployment considerations
 
-An HTTPSSVC RRSet containing some RRs with "echoconfig" and some without is
+An HTTPSSVC RRSet containing some RRs with "echconfig" and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-"echoconfig" as more preferred (i.e. smaller SvcFieldPriority) than those
-without, in order to maximize the likelihood that ECHO will be used in the
+"echconfig" as more preferred (i.e. smaller SvcFieldPriority) than those
+without, in order to maximize the likelihood that ECH will be used in the
 absence of an active adversary.
 
 # Examples
@@ -1085,7 +1085,7 @@ The domain owner could add this record
 to indicate that simple.example uses HTTPS, and supports QUIC
 in addition to HTTPS over TCP (an implicit default).
 The record could also include other information
-(e.g. non-standard port, ECHO configuration).
+(e.g. non-standard port, ECH configuration).
 
 ## Apex aliasing
 
@@ -1120,8 +1120,8 @@ it has deployed HTTP/3 on a new server pool with a different
 configuration.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 echoconfig="123..."
-                  HTTPSSVC 2 .      alpn=h2 echoconfig="abc..."
+    pool  7200 IN HTTPSSVC 1 h3pool alpn=h2,h3 echconfig="123..."
+                  HTTPSSVC 2 .      alpn=h2 echconfig="abc..."
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
     h3pool 300 IN A        192.0.2.3
@@ -1131,7 +1131,7 @@ This configuration is entirely compatible with the "Apex aliasing" example,
 whether the client supports HTTPSSVC or not.  If the client does support
 HTTPSSVC, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
-each server pool can have its own protocol, ECHO configuration, etc.
+each server pool can have its own protocol, ECH configuration, etc.
 
 ## Non-HTTPS uses
 
@@ -1219,7 +1219,7 @@ be populated with the registrations below:
 | 2           | no-default-alpn | No support for default protocol | (This document) |
 | 3           | port            | Port for alternative service    | (This document) |
 | 4           | ipv4hint        | IPv4 address hints              | (This document) |
-| 5           | echoconfig      | Encrypted ClientHello info      | (This document) |
+| 5           | echconfig      | Encrypted ClientHello info      | (This document) |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
 | 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
 | 65535       | key65535        | Reserved                        | (This document) |
@@ -1297,7 +1297,7 @@ address records at the zone apex for legacy clients.
 ## Differences from the proposed ANAME record
 
 Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
-cover Alt-Svc and ECHO use-cases.  This approach also does not
+cover Alt-Svc and ECH use-cases.  This approach also does not
 require any changes or special handling on either authoritative or
 master servers, beyond optionally returning in-bailiwick additional records.
 
