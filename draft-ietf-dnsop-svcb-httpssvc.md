@@ -55,7 +55,7 @@ for HTTP).  These proposals each provide an important function but are
 potentially incompatible with each other, such as when an origin is
 load-balanced across multiple hosting providers (multi-CDN).
 Furthermore, these each add potential cases for adding additional
-record lookups in-addition to AAAA/A lookups. This design attempts to
+record lookups in addition to AAAA/A lookups. This design attempts to
 provide a unified framework that encompasses the key functionality of
 these proposals, as well as providing some extensibility for
 addressing similar future challenges.
@@ -87,7 +87,7 @@ basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}).
 Going beyond basic HTTPS confers privacy, performance, and operational
 advantages, but it requires the client to learn additional
 information, and it is highly
-desirable to minimize the number of round-trip and lookups required to
+desirable to minimize the number of round-trips and lookups required to
 learn this additional information.
 
 The SVCB and HTTPSSVC RRs also help when the operator of an origin
@@ -1228,7 +1228,7 @@ TODO: do we also want to reserve a range for greasing?
 
 ## Registry updates {#registry-updates}
 
-Per {{?RFC6895}}, please add the following entry to the data type
+Per {{?RFC6895}}, please add the following entries to the data type
 range of the Resource Record (RR) TYPEs registry:
 
 | TYPE     | Meaning                                      | Reference       |
@@ -1345,7 +1345,7 @@ HTTPS, HTTPSSRV, HTTPSSVC, SVCHTTPS, or something else.
 
 The SVCB record was designed as a generalization of HTTPSSVC,
 based on feedback requesting a solution that applied to protocols
-pther than HTTP.  Past efforts
+other than HTTP.  Past efforts
 to over-generalize have not met with broad success, but we
 hope that HTTPSSVC and SVCB have struck an acceptable balance between
 generality and focus.
@@ -1357,7 +1357,7 @@ appreciated to refine the proposed details, overall.
 
 ## Whether to include Weight
 
-Some other similar mechanisms such as SRV have a weight in-addition
+Some other similar mechanisms such as SRV have a weight in addition
 to priority.  That is excluded here for simplicity.  It could always be
 added as an optional SVCB parameter.
 
