@@ -1095,13 +1095,13 @@ Consider a zone that is using CNAME aliasing:
     ; Subdomain aliased to a high-performance server pool
     www             7200 IN CNAME pool.svc.example.
     ; Apex domain on fixed IPs because CNAME is not allowed at the apex
-    .                300 IN A     192.0.2.1
+    @                300 IN A     192.0.2.1
                          IN AAAA  2001:db8::1
 
 With HTTPSSVC, the owner of aliased.example could alias the apex by
 adding one additional record:
 
-    .               7200 IN HTTPSSVC 0 pool.svc.example.
+    @               7200 IN HTTPSSVC 0 pool.svc.example.
 
 With this record in place, HTTPSSVC-aware clients will use the same
 server pool for aliased.example and www.aliased.example.  (They will
