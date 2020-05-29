@@ -446,10 +446,14 @@ Note that the SVCB record's owner name MAY be the canonical name
 of a CNAME record, and the SvcDomainName MAY be the owner of a CNAME
 record. Clients and recursive resolvers MUST follow CNAMEs as normal.
 
-Due to the risk of loops, clients and recursive resolvers MUST
-implement loop detection.  Chains of consecutive SVCB and CNAME
-records SHOULD be limited to (8?) prior to reaching terminal address
-records.
+To avoid unbounded alias chains, clients and recursive resolvers MUST impose a
+limit on the total number of SVCB aliases they will follow for each resolution
+request.  This limit MUST NOT be zero, i.e. implementations MUST be able to
+follow at least one AliasForm record.  The exact value of this limit
+is left to implementations.
+
+For compatibility and performance, zone owners SHOULD NOT configure their zones
+to require following multiple AliasForm records.
 
 As legacy clients will not know to use this record, service
 operators will likely need to retain fallback AAAA and A records
@@ -517,7 +521,8 @@ following procedure:
 
 2. If an SVCB record of AliasForm SvcRecordType is returned for HOST,
    clients MUST loop back to step 1 replacing HOST with SvcDomainName,
-   subject to loop detection heuristics.
+   subject to chain length limits and loop detection heuristics (see 
+   {{client-failures}}).
 
 3. If one or more SVCB records of ServiceForm SvcRecordType are returned
    for HOST, clients should select the highest-priority option with
@@ -540,7 +545,7 @@ such as {{!HappyEyeballsV2=RFC8305}}.
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
-## Handling resolution failures
+## Handling resolution failures {#client-failures}
 
 If an SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
@@ -559,6 +564,10 @@ other observable patterns.
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
 it MUST NOT fall back to non-SVCB connection establishment if the SVCB
 response fails to validate.
+
+If the client is unable to complete SVCB resolution due to its chain length
+limit, the client SHOULD fall back to non-SVCB connection, as if the
+origin's SVCB record did not exist.
 
 ## Clients using a Proxy
 
@@ -612,14 +621,14 @@ Upon receiving an SVCB query, recursive resolvers SHOULD start with the
 standard resolution procedure, and then follow this procedure to
 construct the full response to the stub resolver:
 
-1. Incorporate the results of SVCB resolution.
+1. Incorporate the results of SVCB resolution.  If the chain length limit has
+   been reached, terminate successfully (i.e. a NOERROR response).
 
 2. If any of the resolved SVCB records are in AliasForm, choose an AliasForm
    record at random, and resolve SVCB, A, and AAAA records for its
    SvcDomainName.
 
-    - If any SVCB records are resolved, go to step 1, subject to loop
-      detection heuristics.
+    - If any SVCB records are resolved, go to step 1.
 
     - Otherwise, incorporate the results of A and AAAA resolution, and
       terminate.
@@ -687,12 +696,13 @@ If none of the SVCB records are consistent
 with any active or in-progress connection,
 clients must proceed as described in Step 3 of the procedure in {{client-behavior}}.
 
-## Generating and using incomplete responses
+## Generating and using incomplete responses {#incomplete-response}
 
 When following the procedure in {{recursive-behavior}}, recursive
 resolvers MAY terminate the procedure early and produce a reply that omits
-some of the associated RRSets.  This might be appropriate when
-the maximum response size is reached, or when responding before fully
+some of the associated RRSets.  This is REQUIRED when the chain length limit
+is reached ({{recursive-behavior}} step 1), but might also be appropriate
+when the maximum response size is reached, or when responding before fully
 chasing dependencies would improve performance.  When omitting certain
 RRSets, recursive resolvers SHOULD prioritize information from
 higher priority ServiceForm records over lower priority ServiceForm records.
