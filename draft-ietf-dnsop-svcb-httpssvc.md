@@ -296,8 +296,8 @@ The presentation format for SvcFieldValue is a whitespace-separated
 list of key=value pairs.  When the value is omitted, or both the value and
 the "=" are omitted, the presentation value is the empty string.
 
-    ; basic-visible is VCHAR minus DQUOTE, ";", and "\"
-    basic-visible = %x21 / %x23-3A / %x3C-5B / %x5D-7E
+    ; basic-visible is VCHAR minus DQUOTE, ";", "(", ")", and "\".
+    basic-visible = %x21 / %x23-27 / %2A-3A / %x3C-5B / %x5D-7E
     escaped-char  = "\" (VCHAR / WSP)
     contiguous    = *(basic-visible / escaped-char)
     quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
