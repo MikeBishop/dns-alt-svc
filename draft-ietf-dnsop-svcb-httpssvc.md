@@ -1008,7 +1008,7 @@ all "http" scheme requests for that origin SHOULD logically be redirected
 to "https".
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
-to determine if an HTTPSSVC record is available for that origin.  To do so,
+to determine if any HTTPSSVC records exists for that origin.  To do so,
 the client SHOULD construct a corresponding "https" URL as follows:
 
 1. Replace the "http" scheme with "https".
@@ -1019,9 +1019,9 @@ the client SHOULD construct a corresponding "https" URL as follows:
 
 This construction is equivalent to Section 8.3 of {{HSTS}}, point 5.
 
-If an HTTPSSVC record is present for this "https" URL, the client
-should treat this as the equivalent of receiving an HTTP "307
-Temporary Redirect" redirect to the "https" URL.
+If an HTTPSSVC query for this "https" URL returns any HTTPSSVC records
+(AliasForm or ServiceForm), the client SHOULD act as if it has received an
+HTTP "307 Temporary Redirect" redirect to this "https" URL.
 Because HTTPSSVC is received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
