@@ -33,7 +33,10 @@ author:
 normative:
 
 informative:
-
+  FETCH:
+    title: "Fetch Living Standard"
+    date: May 2020
+    target: "https://fetch.spec.whatwg.org/"
 --- abstract
 
 This document specifies the "SVCB" and "HTTPSSVC" DNS resource record types to
@@ -1031,6 +1034,17 @@ record, either directly or via the above redirect, the client SHOULD terminate t
 connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
 of {{HSTS}}.
+
+## HTTP-based protocols
+
+We define an "HTTP-based protocol" as one that involves connecting to an "http:"
+or "https:" URL.  When implementing an HTTP-based protocol, clients that use
+HTTPSSVC for HTTP SHOULD also use it for this URL.  For example, clients that
+support HTTPSSVC and implement {{!WebSocket=RFC6455}} SHOULD use HTTPSSVC for
+the `requestURL`, as defined in {{!FETCH}}.
+
+An HTTP-based protocol MAY define its own SVCB mapping.  Such mappings MAY
+be defined to take precedence over HTTPSSVC.
 
 # SVCB/HTTPSSVC parameter for ECH configuration {#echconfig}
 
