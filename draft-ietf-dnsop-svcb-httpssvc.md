@@ -284,8 +284,8 @@ Registered key names should only contain characters from the ranges
 "a"-"z", "0"-"9", and "-".  In ABNF {{!RFC5234}},
 
     ALPHA-LC    = %x61-7A   ;  a-z
-    key         = ALPHA-LC / DIGIT / "-"
-    display-key = ALPHA / DIGIT / "-"
+    key         = 1*(ALPHA-LC / DIGIT / "-")
+    display-key = 1*(ALPHA / DIGIT / "-")
 
 Values are in a format specific to the SvcParamKey.
 Their definition should specify both their presentation format
@@ -299,7 +299,7 @@ the "=" are omitted, the presentation value is the empty string.
     ; basic-visible is VCHAR minus DQUOTE, ";", "(", ")", and "\".
     basic-visible = %x21 / %x23-27 / %2A-3A / %x3C-5B / %x5D-7E
     escaped-char  = "\" (VCHAR / WSP)
-    contiguous    = *(basic-visible / escaped-char)
+    contiguous    = 1*(basic-visible / escaped-char)
     quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
     value         = quoted-string / contiguous
     pair          = display-key "=" value
