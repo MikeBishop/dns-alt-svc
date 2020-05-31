@@ -580,8 +580,8 @@ If the client can safely perform SVCB queries (e.g. via the
 proxy or an affiliated resolver), the client SHOULD follow
 the standard SVCB resolution process, selecting the highest priority
 option that is compatible with the client and the proxy.  The client
-SHOULD provide the final SvcDomainName and port (if present) to the
-proxy as the destination host and port.
+SHOULD provide the final SvcDomainName and port to the
+proxy, which will perform any required A and AAAA lookups.
 
 Providing the proxy with the final SvcDomainName has several benefits:
 
