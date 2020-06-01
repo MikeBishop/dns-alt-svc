@@ -114,12 +114,6 @@ and introductory examples, much of this document refers only to the SVCB RR,
 but those references should be taken to apply to SVCB, HTTPS,
 and any future SVCB-compatible RR types.
 
-The SVCB RR has two forms: 1) the "Alias Form" simply delegates operational
-control for a resource; 2) the "Service Form" binds together
-configuration information for a service endpoint.
-The Service Form provides additional key=value parameters
-within each RDATA set.
-
 TO BE REMOVED: If we use this for providing configuration for DNS
 authorities, it is likely we'd specify a distinct "NS2" RR type that is
 an instantiation of SVCB for authoritative nameserver delegation and
@@ -166,22 +160,21 @@ a non-normative manner.  (As mentioned above, this all
 applies equally to the HTTPS RR which shares
 the same encoding, format, and high-level semantics.)
 
-The SVCB RR has two forms: AliasForm, which aliases a name to another name,
-and ServiceForm, which provides connection information bound to a service
+The SVCB RR has two modes: Alias Mode, which aliases a name to another name,
+and Service Mode, which provides connection information bound to a service
 endpoint domain.  Placing both forms in a single RR type allows clients to
 fetch the relevant information with a single query.
 
 The SVCB RR has two mandatory fields and one optional.  The fields are:
 
-1. SvcFieldPriority: The priority of this record (relative to others,
-   with lower values preferred).  A value of 0 indicates AliasForm.
+1. Priority: The priority of this record (relative to others,
+   with lower values preferred).  A value of 0 indicates Alias Mode.
    (Described in {{pri}}.)
-2. SvcDomainName: The domain name of either the alias target (for
-   AliasForm) or the alternative service endpoint (for ServiceForm).
-3. SvcFieldValue (optional): A list of key=value pairs
-   describing the alternative service endpoint for the domain name specified in
-   SvcDomainName (only used in ServiceForm and otherwise ignored).
-   Described in {{svcfieldvalue}}.
+2. Target: The domain name of either the alias target (for
+   Alias Mode) or the alternative service endpoint (for Service Mode).
+3. Dictionary (optional): A list of key=value pairs
+   describing the alternative service endpoint at
+   Target (only used in Service Mode and otherwise ignored).
 
 Cooperating DNS recursive resolvers will perform subsequent record
 resolution (for SVCB, A, and AAAA records) and return them in the
@@ -191,7 +184,7 @@ or perform necessary SVCB, A, and AAAA record resolutions.  DNS
 authoritative servers may attach in-bailiwick SVCB, A, AAAA, and CNAME
 records in the Additional Section to responses for a SVCB query.
 
-When in the ServiceForm, the SvcFieldValue of the SVCB RR
+In Service Mode, the Dictionary of the SVCB RR
 provides an extensible data model for describing network
 endpoints that are authoritative for the origin, along with
 parameters associated with each of these endpoints.
@@ -254,41 +247,36 @@ can also be defined as-needed.  In particular, the
 HTTPS RR (RR type ???) provides special handling 
 for the case of "https" origins as described in {{https}}.
 
-## Presentation format
+## Zone file presentation format {#presentation}
 
 The presentation format of the record is:
 
-    Name TTL IN SVCB SvcFieldPriority SvcDomainName SvcFieldValue
+    Name TTL IN SVCB Priority Target Dictionary
 
 The SVCB record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
-SvcFieldPriority is a number in the range 0-65535,
-SvcDomainName is a domain name (absolute or relative),
-and SvcFieldValue is a set of key=value pairs present for the ServiceForm.
-Each key SHALL appear at most once in an SvcFieldValue.
-The SvcFieldValue is empty for the AliasForm.
 
-### Presentation format for SvcFieldValue key=value pairs {#svcfieldvalue}
-
-In ServiceForm, the SvcFieldValue consists of zero or more elements separated
+Priority is a number in the range 0-65535,
+Target is a domain name,
+and Dictionary is represented as zero or more elements separated
 by whitespace.  Each element represents a key=value pair.
+Keys are subject to IANA control ({{svcparamregistry}}).
 
-Keys are IANA-registered SvcParamKeys ({{svcparamregistry}})
-with both a case-insensitive string representation and
-a numeric representation in the range 0-65535.
-Registered key names should only contain characters from the ranges
-"a"-"z", "0"-"9", and "-".  In ABNF {{!RFC5234}},
+Each key SHALL appear at most once in a Dictionary.
+In presentation format, keys are case-insensitive alphanumeric strings.
+Key names should only contain characters from the ranges "a"-"z", "0"-"9", and "-".
+In ABNF {{!RFC5234}},
 
     ALPHA-LC    = %x61-7A   ;  a-z
     key         = 1*(ALPHA-LC / DIGIT / "-")
     display-key = 1*(ALPHA / DIGIT / "-")
 
-Values are in a format specific to the SvcParamKey.
+Values are in a format specific to the key.
 Their definition should specify both their presentation format
 and wire encoding (e.g., domain names, binary data, or numeric values).
 The initial keys and formats are defined in {{keys}}.
 
-The presentation format for SvcFieldValue is a whitespace-separated
+The presentation format for the Dictionary is a whitespace-separated
 list of key=value pairs.  When the value is omitted, or both the value and
 the "=" are omitted, the presentation value is the empty string.
 
@@ -301,9 +289,9 @@ the "=" are omitted, the presentation value is the empty string.
     pair          = display-key "=" value
     element       = display-key / pair
 
-The value format is intended to match the definition of &lt;character-string&gt;
+The `value` format is intended to match the definition of &lt;character-string&gt;
 in {{!RFC1035}} Section 5.1.  (Unlike &lt;character-string&gt;, the length
-of a value is not limited to 255 characters.)
+of a `value` is not limited to 255 characters.)
 
 Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
@@ -323,46 +311,44 @@ When decoding values of unrecognized keys in the presentation format:
 Elements in presentation format MAY appear in any order, but keys MUST NOT be
 repeated.
 
-## SVCB RDATA Wire Format
+## RDATA wire format
 
 The RDATA for the SVCB RR consists of:
 
-* a 2 octet field for SvcFieldPriority as an integer in network
+* a 2 octet field for Priority as an integer in network
   byte order.
-* the uncompressed, fully-qualified SvcDomainName, represented as
+* the uncompressed, fully-qualified Target, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
-* the SvcFieldValue byte string, consuming the remainder of the record
+* the Dictionary, consuming the remainder of the record
   (so smaller than 65535 octets and constrained by the RDATA
   and DNS message sizes).
 
-AliasForm is defined by SvcFieldPriority being 0.
+When the Dictionary is non-empty (Service Mode), it contains a series of
+key=value pairs, represented as:
 
-When SvcFieldValue is non-empty (ServiceForm), it contains a series of
-SvcParamKey=SvcParamValue pairs, represented as:
-
-* a 2 octet field containing the SvcParamKey as an
+* a 2 octet field containing the key as an
   integer in network byte order.  (See {{iana-keys}} for the defined values.)
-* a 2 octet field containing the length of the SvcParamValue
+* a 2 octet field containing the length of the value
   as an integer between 0 and 65535 in network byte order
   (but constrained by the RDATA and DNS message sizes).
 * an octet string of this length whose contents are in a format determined
-  by the SvcParamKey.
+  by the key.
 
-SvcParamKeys SHALL appear in increasing numeric order.
+Keys SHALL appear in increasing numeric order.
 
 Clients MUST consider an RR malformed if:
 
-* the parser reaches the end of the RDATA while parsing an SvcFieldValue.
-* SvcParamKeys are not in strictly increasing numeric order.
-* the SvcParamValue for an SvcParamKey does not have the expected format.
+* the parser reaches the end of the RDATA while parsing the Dictionary.
+* Dictionary keys are not in strictly increasing numeric order.
+* the value for a key does not have the expected format.
 
 Note that the second condition implies that there are no duplicate
-SvcParamKeys.
+keys.
 
 If any RRs are malformed, the client MUST reject the entire RRSet and
 fall back to non-SVCB connection establishment.
 
-TODO: decide if we want special handling for any SvcParamKey ranges?
+TODO: decide if we want special handling for any key ranges?
 For example: range for greasing; experimental range;
 range-of-mandatory-to-use-the-RR vs range of
 ignore-just-param-if-unknown.
@@ -406,30 +392,25 @@ addition to the default transport protocol for "foo://".
 
 (Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
 
-## SvcRecordType
+## Modes
 
-The SvcRecordType is indicated by the SvcFieldPriority,
-and defines the form of the SVCB RR.
-When SvcFieldPriority is 0, the SVCB SvcRecordType is defined to be
-in AliasForm.  Otherwise, the SVCB SvcRecordType is defined to be
-in ServiceForm.
+When Priority is 0 the SVCB record is in Alias Mode. Otherwise, it is in Service Mode.
 
 Within a SVCB RRSet,
-all RRs should have the same SvcRecordType.
-If an RRSet contains a record in AliasForm, the client MUST ignore
-any records in the set with ServiceForm.
+all RRs SHOULD have the same Mode.
+If an RRSet contains a record in Alias Mode, the recipient MUST ignore
+any Service Mode records in the set.
 
 
 
-## SVCB records: AliasForm
+## SVCB records: Alias Mode
 
-When SvcRecordType is AliasForm, the SVCB record is to be treated
-similar to a CNAME alias pointing to
-SvcDomainName.  SVCB RRSets SHOULD only have a single resource
-record in this form.  If multiple are present, clients or recursive
+In Alias Mode, the SVCB record acts like a CNAME alias pointing to
+Target, but only aliases SVCB queries.  SVCB RRSets SHOULD only contain a single record
+in Alias Mode.  If multiple records are present, clients or recursive
 resolvers SHOULD pick one at random.
 
-The AliasForm's primary purpose is to allow aliasing
+The primary purpose of Alias Mode is to allow aliasing
 at the zone apex, where CNAME is not allowed.
 For example, if an operator of https://example.com wanted to
 point HTTPS requests to a service operating at svc.example.net,
@@ -437,22 +418,22 @@ they would publish a record such as:
 
     example.com. 3600 IN SVCB 0 svc.example.net.
 
-In AliasForm, SvcDomainName MUST be the name of a domain that has SVCB, AAAA,
+In Alias Mode, Target MUST be the name of a domain that has SVCB, AAAA,
 or A records.  It MUST NOT be equal to the owner name, as this would cause a
 loop.
 
 Note that the SVCB record's owner name MAY be the canonical name
-of a CNAME record, and the SvcDomainName MAY be the owner of a CNAME
+of a CNAME record, and the Target MAY be the owner of a CNAME
 record. Clients and recursive resolvers MUST follow CNAMEs as normal.
 
 To avoid unbounded alias chains, clients and recursive resolvers MUST impose a
 limit on the total number of SVCB aliases they will follow for each resolution
 request.  This limit MUST NOT be zero, i.e. implementations MUST be able to
-follow at least one AliasForm record.  The exact value of this limit
+follow at least one Alias Mode record.  The exact value of this limit
 is left to implementations.
 
 For compatibility and performance, zone owners SHOULD NOT configure their zones
-to require following multiple AliasForm records.
+to require following multiple Alias Mode records.
 
 As legacy clients will not know to use this record, service
 operators will likely need to retain fallback AAAA and A records
@@ -461,32 +442,32 @@ the target of the SVCB record might offer better performance, and
 therefore would be preferable for clients implementing this specification
 to use.
 
-Note that SVCB AliasForm RRs do not alias to RR types other than
-address records (AAAA and A), CNAMEs, and ServiceForm SVCB records.
-For example, an AliasForm SVCB record does not alias to an HTTPS RR,
+SVCB and SVCB-compatible record types use Alias Mode only within the type.
+For example, an SVCB record cannot alias to an HTTPS record,
 nor vice-versa.
 
-## SVCB records: ServiceForm
+## SVCB records: Service Mode
 
-When SvcRecordType is the ServiceForm, the combination of
-SvcDomainName and SvcFieldValue parameters within each resource record
-associates an alternative service location with its connection parameters.
+In Service Mode, the
+Target and Dictionary within each resource record
+associate an alternative service location with its connection parameters.
 
 Each protocol scheme that uses SVCB MUST define a protocol mapping that
-explains how SvcFieldValues are applied for connections of that scheme.
+explains how Dictionaries are applied for connections of that scheme.
 Unless specified otherwise by the
-protocol mapping, clients MUST ignore SvcFieldValue parameters that they do
+protocol mapping, clients MUST ignore Dictionary parameters that they do
 not recognize.
 
-### Special handling of "." for SvcDomainName in ServiceForm {#svcdomainnamedot}
+### Special handling of "." for Target in Service Mode {#Targetdot}
 
-For ServiceForm SVCB RRs, if SvcDomainName has the value "." (represented in
+In Service Mode, if Target has the value "."  (represented in
 the wire format as a zero-length label), then the
 owner name of this record MUST be used as the effective
-SvcDomainName.
+SvcDomainName.  (In Alias Mode, Target MUST NOT have
+this value.)
 
 For example, in the following example "svc2.example.net"
-is the effective SvcDomainName:
+is the effective Target:
 
     www.example.com.  7200  IN HTTPS 0 svc.example.net.
     svc.example.net.  7200  IN CNAME    svc2.example.net.
@@ -495,15 +476,15 @@ is the effective SvcDomainName:
     svc2.example.net. 300   IN AAAA     2001:db8::2
 
 
-### SvcFieldPriority {#pri}
+### Priority {#pri}
 
-As RRs within an RRSet are explicitly unordered collections, the
-SvcFieldPriority value serves to indicate priority.
-SVCB RRs with a smaller SvcFieldPriority value SHOULD be given
-preference over RRs with a larger SvcFieldPriority value.
+RRSets are explicitly unordered collections, so the
+Priority field is used to impose an ordering on SVCB RRs.
+SVCB RRs with a smaller Priority value SHOULD be given
+preference over RRs with a larger Priority value.
 
 When receiving an RRSet containing multiple SVCB records with the
-same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
+same Priority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure uniform
 load-balancing.
 
@@ -511,29 +492,29 @@ load-balancing.
 # Client behavior {#client-behavior}
 
 An SVCB-aware client resolves an origin HOST by attempting to determine
-the preferred SvcFieldValue and IP addresses for its service, using the
+the preferred Dictionary and IP addresses for its service, using the
 following procedure:
 
 1. Issue parallel AAAA/A and SVCB queries for the name HOST.
    The answers for these may or may not include CNAME pointers
    before reaching one or more of these records.
 
-2. If a SVCB record of AliasForm SvcRecordType is returned for HOST,
-   clients MUST loop back to step 1 replacing HOST with SvcDomainName,
-   subject to chain length limits and loop detection heuristics (see
+2. If an Alias Mode SVCB record is returned for HOST,
+   clients MUST loop back to step 1 replacing HOST with Target,
+   subject to chain length limits and loop detection heuristics (see 
    {{client-failures}}).
 
-3. If one or more SVCB records of ServiceForm SvcRecordType are returned
-   for HOST, clients should select the highest-priority compatible record with
+3. If one or more Service Mode SVCB records are returned
+   for HOST, clients should select the smallest-Priority compatible record with
    acceptable parameters, and resolve AAAA and/or A records for its
-   SvcDomainName if they are not already available.  These are the
-   preferred SvcFieldValue and IP addresses.  If the connection fails, the
+   Target if they are not already available.  These are the
+   preferred Dictionary and IP addresses.  If the connection fails, the
    client MAY try to connect using values from a lower-priority record.
    If none of the options succeed, the client SHOULD connect to the origin
    server directly.
 
 4. If a SVCB record for HOST does not exist, the received AAAA and/or A
-   records are the preferred IP addresses and there is no SvcFieldValue.
+   records are the preferred IP addresses and there is no Dictionary.
 
 This procedure does not rely on any recursive or authoritative server to
 comply with this specification or have any awareness of SVCB.
@@ -577,15 +558,15 @@ client's privacy intent.
 
 If the client can safely perform SVCB queries (e.g. via the
 proxy or an affiliated resolver), the client SHOULD follow
-the standard SVCB resolution process, selecting the highest priority
+the standard SVCB resolution process, selecting the smallest-Priority
 option that is compatible with the client and the proxy.  The client
-SHOULD provide the final SvcDomainName and port to the
+SHOULD provide the final Target and port to the
 proxy, which will perform any required A and AAAA lookups.
 
-Providing the proxy with the final SvcDomainName has several benefits:
+Providing the proxy with the final Target has several benefits:
 
-* It allows the client to use the SvcFieldValue, if present, which is
-  only usable with a specific SvcDomainName.  The SvcFieldValue may
+* It allows the client to use the Dictionary, if present, which is
+  only usable with a specific Target.  The Dictionary may
   include information that enhances performance (e.g. alpn) and privacy
   (e.g. echconfig).
 
@@ -602,7 +583,7 @@ Providing the proxy with the final SvcDomainName has several benefits:
 When replying to a SVCB query, authoritative DNS servers SHOULD return
 A, AAAA, and SVCB records (as well as any relevant CNAME or
 {{!DNAME=RFC6672}} records) in the Additional Section for any
-in-bailiwick SvcDomainNames.
+in-bailiwick Targets.
 
 ## Recursive resolvers {#recursive-behavior}
 
@@ -623,17 +604,17 @@ construct the full response to the stub resolver:
 1. Incorporate the results of SVCB resolution.  If the chain length limit has
    been reached, terminate successfully (i.e. a NOERROR response).
 
-2. If any of the resolved SVCB records are in AliasForm, choose an AliasForm
-   record at random, and resolve SVCB, A, and AAAA records for its
-   SvcDomainName.
+2. If any of the resolved SVCB records are in Alias Mode, choose one of them
+   at random, and resolve SVCB, A, and AAAA records for its
+   Target.
 
     - If any SVCB records are resolved, go to step 1.
 
     - Otherwise, incorporate the results of A and AAAA resolution, and
       terminate.
 
-3. All the resolved SVCB records are in ServiceForm.  Resolve A and AAAA
-   queries for each SvcDomainName (or for the owner name if SvcDomainName
+3. All the resolved SVCB records are in Service Mode.  Resolve A and AAAA
+   queries for each Target (or for the owner name if Target
    is "."), incorporate all the results, and terminate.
 
 In this procedure, "resolve" means the resolver's ordinary recursive
@@ -643,7 +624,7 @@ follow (e.g. CNAME, {{!DNAME}}).
 
 ## General requirements
 
-All DNS servers SHOULD treat the SvcFieldValue portion of the SVCB RR
+Recursive resolvers SHOULD treat the Dictionary portion of the SVCB RR
 as opaque and SHOULD NOT try to alter their behavior based
 on its contents.
 
@@ -670,7 +651,7 @@ If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
 until it arrives.  For example, a TLS ClientHello can be altered by the
-"echconfig" value of a SVCB response ({{svcparamkeys-echconfig}}).  Clients
+"echconfig" value of a SVCB response ({{keys-echconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{!HappyEyeballsV2=RFC8305}}.
@@ -703,8 +684,8 @@ some of the associated RRSets.  This is REQUIRED when the chain length limit
 is reached ({{recursive-behavior}} step 1), but might also be appropriate
 when the maximum response size is reached, or when responding before fully
 chasing dependencies would improve performance.  When omitting certain
-RRSets, recursive resolvers SHOULD prioritize information from
-higher priority ServiceForm records over lower priority ServiceForm records.
+RRSets, recursive resolvers SHOULD prioritize information for
+smaller-Priority records.
 
 As discussed in {{client-behavior}}, clients MUST be able to fetch additional
 information that is required to use a SVCB record, if it is not included
@@ -715,19 +696,19 @@ the client MAY prefer those records, regardless of their priorities.
 ## Structuring zones for performance
 
 To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD use a single SVCB record whose SvcDomainName is
+domain owners SHOULD set Target to
 "." if possible.  This will ensure that the required
 address records are already present in the client's DNS cache as part of the
 responses to the address queries that were issued in parallel.
 
-# Initial SvcParamKeys {#keys}
+# Initial keys {#keys}
 
-A few initial SvcParamKeys are defined here.  These keys are useful for
+A few initial keys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
 
 ## "alpn" and "no-default-alpn" {#alpn-key}
 
-The "alpn" and "no-default-alpn" SvcParamKeys together
+The "alpn" and "no-default-alpn" keys together
 indicate the set of Application Layer Protocol Negotation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
 and associated transport protocols supported by this service endpoint.
@@ -752,27 +733,27 @@ by a backslash:
     escaped-id = 1*(escaped-octet)
     alpn-value = escaped-id *("," escaped-id)
 
-The wire format value for "alpn" consists of at least one ALPN identifier
-(`alpn-id`) prefixed by its length as a single octet, and these length-value
-pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
-fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
+The wire format value for "alpn" consists of one or more ALPN identifiers
+(`alpn-id`), each prefixed by its length as a single octet.  These length-value
+pairs are concatenated to form the value.  These pairs MUST exactly
+fill the value; otherwise, the value is malformed.
 
 For "no-default-alpn", the presentation and wire format values MUST be
 empty.
 
-Each scheme that uses this SvcParamKey defines a
+Each scheme that uses this key defines a
 "default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
 endpoint (the "ALPN set"), the client parses the set of ALPN identifiers in
 the "alpn" parameter, and then adds the default set unless the
-"no-default-alpn" SvcParamKey is present.  The presence of a value in
+"no-default-alpn" key is present.  The presence of a value in
 the alpn set indicates that this service endpoint, described by
-SvcDomainName and the other parameters (e.g. "port") offers service with
+Target and the other parameters (e.g. "port") offers service with
 the protocol suite associated with the ALPN ID.
 
 ALPN IDs that do not uniquely identify a protocol suite (e.g. an ID that
 can be used with both TLS and DTLS) are not compatible with this
-SvcParamKey and MUST NOT be included in the ALPN set.
+key and MUST NOT be included in the ALPN set.
 
 Clients SHOULD NOT attempt connection to a service endpoint whose
 ALPN set does not contain any compatible protocol suites.  To ensure
@@ -799,30 +780,30 @@ MUST consolidate all compatible ALPN IDs into a single ProtocolNameList.
 
 ## "port"
 
-The "port" SvcParamKey defines the TCP or UDP port
+The "port" key defines the TCP or UDP port
 that should be used to contact this alternative service.
 If this key is not present, clients SHALL use the origin server's port number.
 
-The presentation format of the SvcParamValue is a numeric value
+The presentation format of the value is an integer
 between 0 and 65535 inclusive.  Any other values (e.g. the empty value)
 are syntax errors.
 
-The wire format of the SvcParamValue
+The wire format of the value
 is the corresponding 2 octet numeric value in network byte order.
 
 If a port-restricting firewall is in place between some client and the service
 endpoint, changing the port number might cause that client to lose access to
-the service, so operators should exercise caution when using this SvcParamKey
+the service, so operators should exercise caution when using this key
 to specify a non-default port.
 
-## "echconfig" {#svcparamkeys-echconfig}
+## "echconfig" {#keys-echconfig}
 
-The SvcParamKey to enable Encrypted ClientHello (ECH) is "echconfig".  Its
+The key to enable Encrypted ClientHello (ECH) is "echconfig".  Its
 value is defined in {{echconfig}}.  It is applicable to most TLS-based
 protocols.
 
 When publishing a record containing an "echconfig" parameter, the publisher
-MUST ensure that all IP addresses of SvcDomainName correspond to servers
+MUST ensure that all IP addresses of Target correspond to servers
 that have access to the corresponding private key or are authoritative
 for the public name. (See Section 7.2.2 of {{!ECH}} for more
 details about the public name.) This yields an anonymity set of cardinality
@@ -834,16 +815,16 @@ correct SNI with probability at least 1/K, where K is the size of this
 ECH-enabled server anonymity set. This probability may be increased via
 traffic analysis or other mechanisms.
 
-## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
+## "ipv4hint" and "ipv6hint" {#keys-iphints}
 
 The "ipv4hint" and "ipv6hint" keys convey IP addresses that clients MAY use to
-reach the service.  If A and AAAA records for SvcDomainName are locally
+reach the service.  If A and AAAA records for Target are locally
 available, the client SHOULD ignore these hints.  Otherwise, clients
-SHOULD perform A and/or AAAA queries for SvcDomainName as in
+SHOULD perform A and/or AAAA queries for Target as in
 {{client-behavior}}, and clients SHOULD use the IP address in those
 responses for future connections. Clients MAY opt to terminate any
 connections using the addresses in hints and instead switch to the
-addresses in response to the SvcDomainName query. Failure to use A and/or
+addresses in response to the Target query. Failure to use A and/or
 AAAA response addresses could negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
@@ -867,35 +848,35 @@ IP addresses in standard textual format {{!RFC5952}}.
 These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
 {{server-behavior}}, and SHOULD NOT be included if most clients are using
-compliant recursive resolvers.  When SvcDomainName is ".", server operators
+compliant recursive resolvers.  When Target is ".", server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
 ## "mandatory" {#mandatory}
 
-In a ServiceForm RR, a SvcParamKey is considered "mandatory" if the RR will not
-function correctly for clients that ignore this SvcParamKey.  Each SVCB
+In a ServiceMode RR, a key is considered "mandatory" if the RR will not
+function correctly for clients that ignore this key.  Each SVCB
 protocol mapping SHOULD specify a set of keys that are "automatically
-mandatory", i.e. mandatory if they are present in an RR.  The SvcParamKey
+mandatory", i.e. mandatory if they are present in an RR.  The key
 "mandatory" is used to indicate any mandatory keys for this RR, in addition to
 any automatically mandatory keys that are present.
 
-A ServiceForm RR is considered "compatible" with a client if the client
+A ServiceMode RR is considered "compatible" with a client if the client
 implements support for all its mandatory keys.  If the SVCB RRSet contains
 no compatible RRs, the client will generally act as if the RRSet is empty.
 
 In presentation format, "mandatory" contains a list of one or more valid
-SvcParamKeys, either by their registered name or in the unknown-key format
+keys, either by their registered name or in the unknown-key format
 ({{svcfieldvalue}}).  Keys MAY appear in any order, but MUST NOT appear more
-than once.  Any listed keys MUST also appear in the SvcFieldValue.
-For example, the following is a valid SvcFieldValue:
+than once.  Any listed keys MUST also appear in the SvcParams.
+For example, the following is a valid list of SvcParams:
 
     echconfig=... key65333=ex1 key65444=ex2 mandatory=key65444,echconfig
 
 In wire format, the keys are represented by their numeric values in
 network byte order, concatenated in ascending order.
 
-This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
+This key is always automatically mandatory, and MUST NOT appear in its
 own value list.  Other automatically mandatory keys SHOULD NOT appear in the
 list either.  (Including them wastes space and otherwise has no effect.)
 
@@ -911,16 +892,16 @@ perform SVCB queries or accept SVCB responses for "https"
 or "http" schemes.
 
 The HTTPS RR wire format and presentation format are
-identical to SVCB, and both share the SvcParamKey registry.  SVCB
+identical to SVCB, and both share the key registry.  SVCB
 semantics apply equally to HTTPS RRs unless specified otherwise.
 The presentation format of the record is:
 
-    Name TTL IN HTTPS SvcFieldPriority SvcDomainName SvcFieldValue
+    Name TTL IN HTTPS SvcPriority TargetName SvcParams
 
 As with SVCB, the record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
 
-All the SvcParamKeys defined in {{keys}} are permitted for use in
+All the keys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
 The "automatically mandatory" keys ({{mandatory}}) are "port", "alpn",
 and "no-default-alpn".
@@ -951,7 +932,7 @@ origin hostname also allows the targets of existing CNAME chains
 requiring origin domains to configure and maintain an additional
 delegation.
 
-Following of HTTPS RR AliasForm and CNAME aliases is unchanged from SVCB.
+Following of HTTPS RR aliases and CNAME aliases is unchanged from SVCB.
 
 Clients always convert "http" URLs to "https" before performing an
 HTTPS RR query using the process described in {{hsts}}, so domain owners
@@ -963,7 +944,7 @@ hostnames based on the origin host.
 
 ## Relationship to Alt-Svc
 
-Publishing a ServiceForm HTTPS RR in DNS is intended
+Publishing a Service Mode HTTPS RR in DNS is intended
 to be similar to transmitting an Alt-Svc field value over
 HTTPS, and receiving an HTTPS RR is intended to be similar to
 receiving that field value over HTTPS.  However, there are some
@@ -988,13 +969,13 @@ only the QNAME, and is prevented from mounting any attack beyond denial of
 service.
 
 Alt-Svc parameters that cannot be safely received in this model MUST NOT
-have a corresponding defined SvcParamKey.  For example, there is no
-SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
+have a corresponding defined key.  For example, there is no
+key corresponding to the Alt-Svc "persist" parameter, because
 this parameter is not safe to accept over an untrusted channel.
 
 ### TTL and granularity
 
-There is no SvcParamKey corresponding to the Alt-Svc "ma" (max age) parameter.
+There is no key corresponding to the Alt-Svc "ma" (max age) parameter.
 Instead, server operators encode the expiration time in the DNS TTL.
 
 The appropriate TTL value will typically be similar to the "ma" value
@@ -1010,7 +991,7 @@ that nearly all connections have migrated to the new configuration.
 
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPS RR,
-groups of clients will necessarily receive the same SvcFieldValue.
+groups of clients will necessarily receive the same Dictionary.
 Therefore, HTTPS RRs are not suitable for uses that require
 single-client granularity.
 
@@ -1125,7 +1106,7 @@ before they are needed.
 An HTTPS RRSet containing some RRs with "echconfig" and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-"echconfig" as more preferred (i.e. smaller SvcFieldPriority) than those
+"echconfig" as more preferred (i.e. smaller Priority) than those
 without, in order to maximize the likelihood that ECH will be used in the
 absence of an active adversary.
 
@@ -1197,10 +1178,10 @@ each server pool can have its own protocol, ECH configuration, etc.
 
 For services other than HTTPS, the SVCB RR and an {{?Attrleaf}} label
 will be used.  For example, to reach an example resource of
-"baz://api.example.com:8765", the following Alias Form
-SVCB record would be used to delegate to "svc4-baz.example.net."
+"baz://api.example.com:8765", the following SVCB 
+record would be used to alias it to "svc4-baz.example.net."
 which in-turn could return AAAA/A records and/or SVCB
-records in ServiceForm:
+records in Service Mode:
 
     _8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
 
@@ -1286,7 +1267,7 @@ Reference: This document
 
 The "Service Binding (SVCB) Parameter Registry" defines the namespace
 for parameters, including string representations and numeric
-SvcParamKey values.  This registry is shared with other SVCB-compatible
+key values.  This registry is shared with other SVCB-compatible
 RR types, such as the HTTPS RR.
 
 ACTION: create and include a reference to this registry.
@@ -1295,8 +1276,8 @@ ACTION: create and include a reference to this registry.
 
 A registration MUST include the following fields:
 
+* Number: Service parameter key numeric identifier (range 0-65535)
 * Name: Service parameter key name
-* SvcParamKey: Service parameter key numeric identifier (range 0-65535)
 * Meaning: a short description
 * Pointer to specification text
 
@@ -1320,7 +1301,7 @@ name MUST NOT start with "key".
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| SvcParamKey | NAME            | Meaning                         | Reference       |
+| Number      | Name            | Meaning                         | Reference       |
 | ----------- | ------          | ----------------------          | --------------- |
 | 0           | mandatory       | Mandatory keys in this RR       | (This document) |
 | 1           | alpn            | Additional supported protocols  | (This document) |
@@ -1423,16 +1404,16 @@ should fall.  Server operators can easily observe how much traffic reaches this
 legacy endpoint, and may remove the apex's address records if the observed legacy
 traffic has fallen to negligible levels.
 
-## Comparison with separate RR types for AliasForm and ServiceForm
+## Comparison with separate RR types for Alias Mode and Service Mode
 
-Abstractly, functions of AliasForm and ServiceForm are independent,
+Abstractly, functions of Alias Mode and Service Mode are independent,
 so it might be tempting to specify them as separate RR types.  However,
 this would result in a serious performance impairment, because clients
 cannot rely on their recursive resolver to follow SVCB aliases (unlike
 CNAME).  Thus, clients would have to issue queries for both RR types
 in parallel, potentially at each step of the alias chain.  Recursive
 resolvers that implement the specification would, upon receipt of a
-ServiceForm query, emit both a ServiceForm and an AliasForm query to
+Service Mode query, emit both a Service Mode and an Alias Mode query to
 the authoritative.  Thus, splitting the RR type would double, or in
 some cases triple, the load on clients and servers, and would not
 reduce implementation complexity.
