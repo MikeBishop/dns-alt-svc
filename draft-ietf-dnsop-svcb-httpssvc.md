@@ -1040,8 +1040,8 @@ of {{HSTS}}.
 We define an "HTTP-based protocol" as one that involves connecting to an "http:"
 or "https:" URL.  When implementing an HTTP-based protocol, clients that use
 HTTPSSVC for HTTP SHOULD also use it for this URL.  For example, clients that
-support HTTPSSVC and implement {{!WebSocket=RFC6455}} SHOULD use HTTPSSVC for
-the `requestURL`, as defined in {{!FETCH}}.
+support HTTPSSVC and implement the altered {{!WebSocket=RFC6455}} opening
+handshake from {{!FETCH}} SHOULD use HTTPSSVC for the `requestURL`.
 
 An HTTP-based protocol MAY define its own SVCB mapping.  Such mappings MAY
 be defined to take precedence over HTTPSSVC.
