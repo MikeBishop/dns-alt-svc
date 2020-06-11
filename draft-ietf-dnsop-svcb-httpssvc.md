@@ -1001,6 +1001,17 @@ HTTPSSVC and Alt-Svc is described in {{ech-client-behavior}}.
 This specification does not alter the DNS queries performed when connecting
 to an Alt-Svc hostname (typically A and/or AAAA only).
 
+## Requiring Server Name Indication
+
+Clients MUST NOT use an HTTPSSVC response unless the
+client supports TLS Server Name Indication (SNI) and 
+indicate the origin name when negotiating TLS.
+This supports the conservation of IP addresses.
+
+Note that the SNI information provided in TLS by the client will be
+that of the origin, not the SvcDomainName (as will the Host HTTP header
+field value).
+
 ## HTTP Strict Transport Security {#hsts}
 
 By publishing an HTTPSSVC record, the server
