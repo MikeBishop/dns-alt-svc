@@ -1008,7 +1008,7 @@ all "http" scheme requests for that origin SHOULD logically be redirected
 to "https".
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
-to determine if any HTTPSSVC records exists for that origin.  To do so,
+to determine if any HTTPSSVC records exist for that origin.  To do so,
 the client SHOULD construct a corresponding "https" URL as follows:
 
 1. Replace the "http" scheme with "https".
