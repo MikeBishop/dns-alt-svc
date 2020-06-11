@@ -270,7 +270,7 @@ The presentation format of the record is:
 The SVCB record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
 SvcFieldPriority is a number in the range 0-65535,
-SvcDomainName is a domain name,
+SvcDomainName is a domain name (absolute or relative),
 and SvcFieldValue is a set of key=value pairs present for the ServiceForm.
 Each key SHALL appear at most once in an SvcFieldValue.
 The SvcFieldValue is empty for the AliasForm.
@@ -444,9 +444,9 @@ they would publish a record such as:
 
     example.com. 3600 IN SVCB 0 svc.example.net.
 
-The SvcDomainName MUST point to a domain name that contains
-another SVCB record, address (AAAA and/or A) records,
-or both address records and a ServiceForm SVCB record.
+In AliasForm, SvcDomainName MUST be the name of a domain that has SVCB, AAAA,
+or A records.  It MUST NOT be equal to the owner name, as this would cause a
+loop.
 
 Note that the SVCB record's owner name MAY be the canonical name
 of a CNAME record, and the SvcDomainName MAY be the owner of a CNAME
@@ -487,10 +487,10 @@ not recognize.
 
 ### Special handling of "." for SvcDomainName in ServiceForm {#svcdomainnamedot}
 
-For ServiceForm SVCB RRs, if SvcDomainName has the value ".", then the
+For ServiceForm SVCB RRs, if SvcDomainName has the value "." (represented in
+the wire format as a zero-length label), then the
 owner name of this record MUST be used as the effective
-SvcDomainName.  (The SvcDomainName of an SVCB RR in AliasForm MUST NOT have
-this value.)
+SvcDomainName.
 
 For example, in the following example "svc2.example.net"
 is the effective SvcDomainName:
