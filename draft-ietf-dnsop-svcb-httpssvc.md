@@ -1227,9 +1227,20 @@ A registration MUST include the following fields:
 * Meaning: a short description
 * Pointer to specification text
 
-Values to be added to this namespace require Expert Review (see
-{{!RFC5226}}, Section 4.1).  Apart from the initial contents, the name
-MUST NOT start with "key".
+SvcParamKey values to be added to this namespace 
+have different policies ({{!RFC5226}}, Section 4.1)
+based on their range:
+
+| SvcParamKey | IANA Policy             |
+| ----------- | ----------------------  |
+| 0-255       | Standards Action        |
+| 256-32767   | Expert Review           |
+| 32768-65280 | First Come First Served |
+| 65280-65534 | Private Use             |
+| 65535       | Standards Action        |
+
+Apart from the initial contents, the SvcParamKey
+name MUST NOT start with "key".
 
 ### Initial contents {#iana-keys}
 
