@@ -1008,9 +1008,8 @@ client supports TLS Server Name Indication (SNI) and
 indicate the origin name when negotiating TLS.
 This supports the conservation of IP addresses.
 
-Note that the SNI information provided in TLS by the client will be
-that of the origin, not the SvcDomainName (as will the Host HTTP header
-field value).
+Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate 
+the origin, not the SvcDomainName.
 
 ## HTTP Strict Transport Security {#hsts}
 
