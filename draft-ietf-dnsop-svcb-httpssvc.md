@@ -987,6 +987,17 @@ record, groups of clients will necessarily receive the same
 SvcFieldValue.  Therefore, HTTPSSVC is not suitable for uses that
 require single-client granularity.
 
+## SVCB-Used header
+
+When making HTTPS requests to a server discovered through 
+HTTPSSVC records, clients SHOULD send a "SVCB-Used" HTTP 
+request header.  This is intended to help server operators
+with operational tasks and diagnostics.  The value of the
+"SVCB-Used" header SHOULD be the last SvcDomainName.
+Clients concerned about privacy leakage from the full SvcDomainName
+MAY instead send a value derifed from either the last SvcPriority
+or the minimum of 1 and the SvcPriority.
+
 ## Interaction with Alt-Svc
 
 Clients that do not implement support for Encrypted ClientHello MAY
@@ -1206,6 +1217,18 @@ Clients MUST ensure that their DNS cache is partitioned for each local
 network, or flushed on network changes, to prevent a local adversary in one
 network from implanting a forged DNS record that allows them to
 track users or hinder their connections after they leave that network.
+
+The SVCB-Used header allows information to be conveyed from 
+the DNS lookup and into an HTTPS request.  This presents some 
+opportunities for linkability, so privacy-sensitive clients may 
+wish to just send a SVCB-Used value of SvcPriority, or even "0"/"1".
+DNS operators have other ways to encode similar information (such
+as in IPv6 addresses or ECH configuration parameters sent in 
+the TLS handshake) which leak this information in cleartext to 
+passive observers, whereas SVCB-Used is strictly better in that it 
+allows server operators to understand SVCB usage without exposing this
+information to third-parties.
+
 
 # IANA Considerations
 
