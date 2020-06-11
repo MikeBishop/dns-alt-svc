@@ -1035,6 +1035,17 @@ connection if there are any errors with the underlying secure transport, such as
 errors in certificate validation. This aligns with Section 8.4 and Section 12.1
 of {{HSTS}}.
 
+### Disabling HTTPS upgrade behavior
+
+A SvcParamKey of "disable-https-upgrade" disables this automatic upgrade 
+behavior.  It MUST be used in-conjunction with an "echconfig" parameter.
+Clients encountering Service Form records with both "disable-https-upgrade"
+and "echconfig" parameters for URLs that were originally "http" scheme 
+should ignore the HTTPSSVC record entirely and remove it from the RR set.
+
+For "disable-https-upgrade", the presentation and wire format values MUST be
+empty.
+
 ## HTTP-based protocols
 
 We define an "HTTP-based protocol" as one that involves connecting to an "http:"
@@ -1207,6 +1218,11 @@ network, or flushed on network changes, to prevent a local adversary in one
 network from implanting a forged DNS record that allows them to
 track users or hinder their connections after they leave that network.
 
+The use of "disable-https-upgrade" is strongly discouraged.
+It exists only to allow multi-tennt server operators to deploy {{ECH}}
+without requiring all tenants to switch to HTTPS-only (which might
+otherwise be a blocker to ECH deployment).
+
 # IANA Considerations
 
 ## New registry for Service Parameters {#svcparamregistry}
@@ -1256,6 +1272,7 @@ be populated with the registrations below:
 | 4           | ipv4hint        | IPv4 address hints              | (This document) |
 | 5           | echconfig      | Encrypted ClientHello info      | (This document) |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
+| 7           | disable-https-upgrade | Disables HTTPS upgrade    | (This document) |
 | 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
 | 65535       | key65535        | Reserved                        | (This document) |
 
