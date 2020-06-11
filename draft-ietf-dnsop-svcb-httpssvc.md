@@ -374,14 +374,17 @@ ignore-just-param-if-unknown.
 
 ## SVCB owner names {#svcb-names}
 
-When querying the SVCB RR, an origin is typically translated into a QNAME
-by prefixing the port and scheme with "_", then concatenating them with the
-hostname, resulting in a domain name like "_8004._examplescheme.api.example.com.".
+When querying the SVCB RR, an origin is translated into a QNAME by prepending
+the hostname with a label indicating the scheme, prefixed with an underscore,
+resulting in a domain name like "_examplescheme.api.example.com.".
 
-Protocol mappings for SVCB MAY remove the port or replace it with other
-protocol-specific information, but MUST retain the scheme in the QNAME.
-RR types other than SVCB can define additional behavior for translating
-origins to QNAMEs.  See {{httpsnames}} for the HTTPSSVC behavior.
+Protocol mapping documents MAY specify additional underscore-prefixed labels
+to be prepended.  For schemes that specify a port (Section 3.2.3
+of {{?URI=RFC3986}}), one reasonable possibility is to prepend the indicated port
+number (or the default if no port number is specified).  We term this behavior
+"Port Prefix Naming", and use it in the examples throughout this document.
+
+See {{httpsnames}} for the HTTPSSVC behavior.
 
 When a prior CNAME or SVCB record has aliased to
 an SVCB record, each RR shall be returned under its own owner name.
@@ -802,6 +805,7 @@ MUST consolidate all compatible ALPN IDs into a single ProtocolNameList.
 
 The "port" SvcParamKey defines the TCP or UDP port
 that should be used to contact this alternative service.
+If this key is not present, clients SHALL use the origin server's port number.
 
 The presentation format of the SvcParamValue is a numeric value
 between 0 and 65535 inclusive.  Any other values (e.g. the empty value)
@@ -904,11 +908,10 @@ REQUIRED to implement Alt-Svc.
 
 ## Owner names for HTTPSSVC records {#httpsnames}
 
-The HTTPSSVC RR extends the behavior for determining
-a QNAME specified above in {{svcb-names}}.
-In particular, if the scheme is "https" with port 443
+The HTTPSSVC RR uses Port Prefix Naming ({{svcb-names}}),
+with one modification: if the scheme is "https" and the port is 443,
 then the client's original QNAME is
-equal to the origin hostname.
+equal to the origin hostname, without any prefix labels.
 
 By removing the {{?Attrleaf}} labels
 used in SVCB, this construction enables offline DNSSEC signing of
@@ -918,12 +921,9 @@ origin hostname also allows the targets of existing CNAME chains
 requiring origin domains to configure and maintain an additional
 delegation.
 
-For HTTPS origins with ports other than 443,
-the port and scheme continue to be prefixed to the hostname
-as described in {{svcb-names}}.  Following of HTTPSSVC AliasForm and
-CNAME aliases is also unchanged from SVCB.
+Following of HTTPSSVC AliasForm and CNAME aliases is unchanged from SVCB.
 
-Clients always convert "http" URLS to "https" before performing an
+Clients always convert "http" URLs to "https" before performing an
 HTTPSSVC query using the process described in {{hsts}}, so domain owners
 MUST NOT publish HTTPSSVC records with a prefix of "_http".
 
