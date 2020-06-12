@@ -1409,6 +1409,27 @@ added as an optional SVCB parameter.
 
 # Change history
 
+* draft-ietf-dnsop-svcb-httpssvc-03
+    * Revised chain length limit requirements
+    * Revised IANA registry rules for SvcParamKeys
+    * Require HTTPS clients to implement SNI
+    * Update terminology for Encrypted ClientHello
+    * Clarifications: non-default ports, transport proxies, HSTS procedure, WebSocket behavior, wire format, IP hints, inner/outer ClientHello with ECH
+    * Various textual and ABNF corrections
+
+* draft-ietf-dnsop-svcb-httpssvc-02
+    * All changes to Alt-Svc have been removed
+    * Expanded and reorganized examples
+    * Priority zero is now the definition of AliasForm
+    * Repeated SvcParamKeys are no longer allowed
+    * The "=" sign may be omitted in a key=value pair if the value is also empty
+    * In the wire format, SvcParamKeys must be in sorted order
+    * New text regarding how to handle resolution timeouts
+    * Expanded description of recursive resolver behavior
+    * Much more precise description of the intended ALPN behavior
+    * Match the HSTS specification's language on HTTPS enforcement
+    * Removed 'esniconfig=""' mechanism and simplified ESNI connection logic
+
 * draft-ietf-dnsop-svcb-httpssvc-01
     * Reduce the emphasis on conversion between HTTPSSVC and Alt-Svc
     * Make the "untrusted channel" concept more precise.
