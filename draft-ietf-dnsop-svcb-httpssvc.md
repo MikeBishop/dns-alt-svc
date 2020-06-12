@@ -1413,6 +1413,7 @@ added as an optional SVCB parameter.
     * Revised chain length limit requirements
     * Revised IANA registry rules for SvcParamKeys
     * Require HTTPS clients to implement SNI
+    * Update terminology for Encrypted ClientHello
     * Clarifications: non-default ports, transport proxies, HSTS procedure, WebSocket behavior, wire format, IP hints, inner/outer ClientHello with ECH
     * Various textual and ABNF corrections
 
