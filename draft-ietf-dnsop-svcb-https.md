@@ -1187,7 +1187,7 @@ are possible without the use of those standards.
 Any specification for use of SVCB with a protocol MUST have an entry
 for its scheme under the SVCB RR type in
 the IANA DNS Underscore Global Scoped Entry Registry
-{{!Attrleaf=I-D.ietf-dnsop-attrleaf}}.  The scheme SHOULD have an
+{{!Attrleaf=RFC8552}}.  The scheme SHOULD have an
 entry in the IANA URI Schemes Registry {{!RFC7595}}.  The scheme
 SHOULD have a defined specification for use with SVCB.
 
