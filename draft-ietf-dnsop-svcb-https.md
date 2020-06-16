@@ -1333,7 +1333,7 @@ address records at the zone apex for legacy clients.
 Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
 cover Alt-Svc and ECH use-cases.  This approach also does not
 require any changes or special handling on either authoritative or
-master servers, beyond optionally returning in-bailiwick additional records.
+primary servers, beyond optionally returning in-bailiwick additional records.
 
 Like that proposal, this addresses the zone apex CNAME challenge
 for clients that implement this.
