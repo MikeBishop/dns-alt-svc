@@ -1,0 +1,189 @@
+
+Template from https://tools.ietf.org/html/rfc6895#appendix-A
+
+DNS RRTYPE PARAMETER ALLOCATION TEMPLATE
+
+When ready for formal consideration, this template is to be submitted
+to IANA for processing by emailing the template to dns-rrtype-
+applications@ietf.org.
+
+A. Submission Date:  2020-06-18
+
+B.1 Submission Type:  [ X ] New RRTYPE  [ ] Modification to RRTYPE
+B.2 Kind of RR:  [ X ] Data RR  [ ] Meta-RR
+
+C. Contact Information for submitter (will be publicly posted):
+   Name: Erik Nygren                       Email Address: erik+ietf@nygren.org
+   International telephone number:  +1 617 444 3938
+   Other contact handles:
+
+D. Motivation for the new RRTYPE application.
+   Please keep this part at a high level to inform the Expert and
+   reviewers about uses of the RRTYPE.  Most reviewers will be DNS
+   experts that may have limited knowledge of your application space.
+
+   The "SVCB" RR type facilitates the lookup of information needed to
+   make connections for origin resources.  SVCB records allow an
+   origin to be served from multiple network locations, each with
+   associated parameters (such as transport protocol configuration and
+   keys for encrypting the TLS ClientHello).  They also enable
+   aliasing of apex domains, which is not possible with CNAME.  By
+   providing more information to the client before it attempts to
+   establish a connection, these records offer potential benefits to
+   both performance and privacy.
+
+E. Description of the proposed RR type.
+   This description can be provided in-line in the template, as an
+   attachment, or with a publicly available URL.
+
+   See https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-svcb-https-00
+   
+F. What existing RRTYPE or RRTYPEs come closest to filling that need
+   and why are they unsatisfactory?
+
+   (from I-D.draft-ietf-dnsop-svcb-https-00 #appendix-A)
+
+   The SRV record [RFC2782] can perform a similar function to the SVCB
+   record, informing a client to look in a different location for a
+   service.  However, there are several differences:
+   o  SRV records are typically mandatory, whereas clients will always
+      continue to function correctly without making use of SVCB RRs.
+   o  SRV records cannot instruct the client to switch or upgrade
+      protocols, whereas SVCB can signal such an upgrade (e.g. to
+      HTTP/2).
+   o  SRV records are not extensible, whereas SVCB RRs can be
+      extended with new parameters, such as for
+      TLS Encrypted Client Hello keys.
+
+G. What mnemonic is requested for the new RRTYPE (optional)?
+
+   SVCB
+
+H. Does the requested RRTYPE make use of any existing IANA registry
+   or require the creation of a new IANA subregistry in DNS
+   Parameters?  If so, please indicate which registry is to be used
+   or created.  If a new subregistry is needed, specify the
+   allocation policy for it and its initial contents.  Also include
+   what the modification procedures will be.
+
+   Yes, per I-D.draft-ietf-dnsop-svcb-https-00#section-12:
+
+   * Create a new "Service Binding (SVCB) Parameter Registry"
+     with an initial population of entries.  This would
+     be shared with the HTTPS RR type.
+
+I. Does the proposal require/expect any changes in DNS
+   servers/resolvers that prevent the new type from being processed
+   as an unknown RRTYPE (see [RFC3597])?
+
+   No.  While DNS servers and resolvers may perform performance
+   optimizations described in the I-D, these are optional
+   and do not preclude processing as an unknown RRTYPE.
+
+J. Comments:
+
+   The plan is to bring draft-ietf-dnsop-svcb-https to Working Group
+   Last Call during Summer 2020.  A early code point allocation
+   for the SVCB RRtype and HTTPS RRtype is requested to enable interop
+   testing between multiple implementations that are in-progress.
+
+
+======================================================================
+======================================================================
+======================================================================
+
+
+Template from https://tools.ietf.org/html/rfc6895#appendix-A
+
+DNS RRTYPE PARAMETER ALLOCATION TEMPLATE
+
+When ready for formal consideration, this template is to be submitted
+to IANA for processing by emailing the template to dns-rrtype-
+applications@ietf.org.
+
+A. Submission Date:  2020-06-18
+
+B.1 Submission Type:  [ X ] New RRTYPE  [ ] Modification to RRTYPE
+B.2 Kind of RR:  [ X ] Data RR  [ ] Meta-RR
+
+C. Contact Information for submitter (will be publicly posted):
+   Name: Erik Nygren                       Email Address: erik+ietf@nygren.org
+   International telephone number:  +1 617 444 3938
+   Other contact handles:
+
+D. Motivation for the new RRTYPE application.
+   Please keep this part at a high level to inform the Expert and
+   reviewers about uses of the RRTYPE.  Most reviewers will be DNS
+   experts that may have limited knowledge of your application space.
+
+   The "HTTPS" DNS RR type facilitates the lookup of information
+   needed to make connections for origin resources, such as for HTTPS
+   URLs.  HTTPS RRs allow an origin to be served from multiple network
+   locations, each with associated parameters (such as transport
+   protocol configuration and keys for encrypting the TLS
+   ClientHello).  They also enable aliasing of apex domains, which is
+   not possible with CNAME.  By providing more information to the
+   client before it attempts to establish a connection, these records
+   offer potential benefits to both performance and privacy.
+   For example, the presence of an HTTPS RR indicates that clients
+   should upgrade insecure "http" URLs to secure "https" URLs prior
+   to establishing a connection.
+   
+
+E. Description of the proposed RR type.
+   This description can be provided in-line in the template, as an
+   attachment, or with a publicly available URL.
+
+   See https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-svcb-https-00
+   
+F. What existing RRTYPE or RRTYPEs come closest to filling that need
+   and why are they unsatisfactory?
+
+   (from I-D.draft-ietf-dnsop-svcb-https-00 #appendix-A)
+
+   The SRV record [RFC2782] can perform a similar function to the SVCB
+   record, informing a client to look in a different location for a
+   service.  However, there are several differences:
+   o  SRV records are typically mandatory, whereas clients will always
+      continue to function correctly without making use of HTTPS RRs.
+   o  SRV records cannot instruct the client to switch or upgrade
+      protocols, whereas HTTPS RRs can signal such an upgrade (e.g. to
+      HTTP/2).
+   o  SRV records are not extensible, whereas HTTPS RRs can be
+      extended with new parameters, such as for
+      TLS Encrypted Client Hello keys.
+
+G. What mnemonic is requested for the new RRTYPE (optional)?
+
+   HTTPS
+
+H. Does the requested RRTYPE make use of any existing IANA registry
+   or require the creation of a new IANA subregistry in DNS
+   Parameters?  If so, please indicate which registry is to be used
+   or created.  If a new subregistry is needed, specify the
+   allocation policy for it and its initial contents.  Also include
+   what the modification procedures will be.
+
+   Yes, per I-D.draft-ietf-dnsop-svcb-https-00#section-12:
+
+   * Create a new "Service Binding (SVCB) Parameter Registry"
+     with an initial population of entries.  This would
+     be shared with the SVCB RR type.
+   * Add an _https entry to the  DNS Underscore
+     Global Scoped Entry Registry.
+
+I. Does the proposal require/expect any changes in DNS
+   servers/resolvers that prevent the new type from being processed
+   as an unknown RRTYPE (see [RFC3597])?
+
+   No.  While DNS servers and resolvers may perform performance
+   optimizations described in the I-D, these are optional
+   and do not preclude processing as an unknown RRTYPE.
+
+J. Comments:
+
+   The plan is to bring draft-ietf-dnsop-svcb-https to Working Group
+   Last Call during Summer 2020.  A early code point allocation
+   for the SVCB RRtype and HTTPS RRtype is requested to enable interop
+   testing between multiple implementations that are in-progress.
+
