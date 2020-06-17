@@ -81,7 +81,7 @@ public keys.
 For example, when clients need to make a connection to fetch resources
 associated with an HTTPS URI, they currently resolve only A and/or AAAA
 records for the origin hostname.  This is adequate for services that use
-basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}).
+basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni-07}}).
 Going beyond basic HTTPS confers privacy, performance, and operational
 advantages, but it requires the client to learn additional
 information, and it is highly
@@ -147,7 +147,7 @@ additional DNS RR in a way that:
 
 Additional goals specific to HTTPS RRs and the HTTPS use-case include:
 
-* Connect directly to {{!HTTP3=I-D.draft-ietf-quic-http-20}} (QUIC transport)
+* Connect directly to {{!HTTP3=I-D.draft-ietf-quic-http-29}} (QUIC transport)
   alternative service endpoints
 * Obtain the {{!ECH}} keys associated with an alternative service endpoint
 * Support non-default TCP and UDP ports
@@ -1284,7 +1284,7 @@ Global Scoped Entry Registry:
 There have been a wide range of proposed solutions over the years to
 the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.draft-bellis-dnsop-http-record-00}},
-{{?I-D.draft-ietf-dnsop-aname-03}}, and others.
+{{?I-D.draft-ietf-dnsop-aname-04}}, and others.
 
 Thank you to Ian Swett, Ralf Weber, Jon Reed,
 Martin Thomson, Lucas Pardue, Ilari Liusvaara,
@@ -1330,7 +1330,7 @@ address records at the zone apex for legacy clients.
 
 ## Differences from the proposed ANAME record
 
-Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
+Unlike {{?I-D.draft-ietf-dnsop-aname-04}}, this approach is extensible to
 cover Alt-Svc and ECH use-cases.  This approach also does not
 require any changes or special handling on either authoritative or
 master servers, beyond optionally returning in-bailiwick additional records.
