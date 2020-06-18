@@ -81,7 +81,7 @@ public keys.
 For example, when clients need to make a connection to fetch resources
 associated with an HTTPS URI, they currently resolve only A and/or AAAA
 records for the origin hostname.  This is adequate for services that use
-basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni-07}}).
+basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}).
 Going beyond basic HTTPS confers privacy, performance, and operational
 advantages, but it requires the client to learn additional
 information, and it is highly
