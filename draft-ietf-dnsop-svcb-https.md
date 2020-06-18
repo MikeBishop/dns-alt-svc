@@ -895,8 +895,8 @@ secure and authenticated HTTPS connection.
 
 The HTTPS RR parallels the concepts
 introduced in the HTTP Alternative Services proposed standard
-{{AltSvc}}.  Clients and servers that implement HTTPS RRs are NOT
-REQUIRED to implement Alt-Svc.
+{{AltSvc}}.  Clients and servers that implement HTTPS RRs are 
+not required to implement Alt-Svc.
 
 ## Owner names for HTTPS RRs {#httpsnames}
 
