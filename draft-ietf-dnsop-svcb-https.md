@@ -245,10 +245,14 @@ appear in all capitals, as shown here.
 
 The SVCB DNS resource record (RR) type (RR type ???)
 is used to locate endpoints that can service an origin.
-There is special handling for the case of "https" origins.
 
 The algorithm for resolving SVCB records and associated
 address records is specified in {{client-behavior}}.
+
+Other resource record types in the same form as SVCB
+can also be defined as-needed.  In particular, the 
+HTTPS RR (RR type ???) provides special handling 
+for the case of "https" origins as described in {{https}}.
 
 ## Presentation format
 
@@ -883,6 +887,12 @@ or "http" schemes.
 The HTTPS RR wire format and presentation format are
 identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPS RRs unless specified otherwise.
+The presentation format of the record is:
+
+    Name TTL IN HTTPS SvcFieldPriority SvcDomainName SvcFieldValue
+
+As with SVCB, the record is defined specifically within
+the Internet ("IN") Class ({{!RFC1035}}).
 
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
