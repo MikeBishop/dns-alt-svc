@@ -1038,7 +1038,8 @@ of {{HSTS}}.
 ### Disabling HTTPS upgrade behavior
 
 A SvcParamKey of "disable-https-upgrade" disables this automatic upgrade 
-behavior.  It MUST be used in-conjunction with an "echconfig" parameter.
+behavior.  It MUST be used in-conjunction with an "echconfig" parameter
+on a Service Form record (and MUST NOT appear in an Alias Form record).
 Clients encountering Service Form records with both "disable-https-upgrade"
 and "echconfig" parameters for URLs that were originally "http" scheme 
 should ignore the HTTPSSVC record entirely and remove it from the RR set.
