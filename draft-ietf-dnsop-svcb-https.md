@@ -101,7 +101,7 @@ This document first describes the SVCB RR as a general-purpose resource
 record that can be applied directly and efficiently to a wide range
 of services ({{svcb}}).  The HTTPS RR is then defined as a special
 case of SVCB that improves efficiency and convenience for use with HTTPS
-({{https}}) by avoiding the need for an {{?Attrleaf}} label
+({{https}}) by avoiding the need for an {{?Attrleaf=RFC8552}} label
 ({{httpsnames}}).  Other protocols with similar needs may
 follow the pattern of HTTPS and assign their own
 SVCB-compatible RR types.
@@ -147,7 +147,7 @@ additional DNS RR in a way that:
 
 Additional goals specific to HTTPS RRs and the HTTPS use-case include:
 
-* Connect directly to {{!HTTP3=I-D.draft-ietf-quic-http-20}} (QUIC transport)
+* Connect directly to {{!HTTP3=I-D.ietf-quic-http}} (QUIC transport)
   alternative service endpoints
 * Obtain the {{!ECH}} keys associated with an alternative service endpoint
 * Support non-default TCP and UDP ports
@@ -516,7 +516,7 @@ following procedure:
 
 2. If a SVCB record of AliasForm SvcRecordType is returned for HOST,
    clients MUST loop back to step 1 replacing HOST with SvcDomainName,
-   subject to chain length limits and loop detection heuristics (see 
+   subject to chain length limits and loop detection heuristics (see
    {{client-failures}}).
 
 3. If one or more SVCB records of ServiceForm SvcRecordType are returned
@@ -993,11 +993,11 @@ to an Alt-Svc hostname (typically A and/or AAAA only).
 ## Requiring Server Name Indication
 
 Clients MUST NOT use an HTTPS RR response unless the
-client supports TLS Server Name Indication (SNI) and 
+client supports TLS Server Name Indication (SNI) and
 indicate the origin name when negotiating TLS.
 This supports the conservation of IP addresses.
 
-Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate 
+Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate
 the origin, not the SvcDomainName.
 
 ## HTTP Strict Transport Security {#hsts}
@@ -1040,7 +1040,7 @@ We define an "HTTP-based protocol" as one that involves connecting to an "http:"
 or "https:" URL.  When implementing an HTTP-based protocol, clients that use
 HTTPS RRs for HTTP SHOULD also use it for this URL.  For example, clients that
 support HTTPS RRs and implement the altered {{!WebSocket=RFC6455}} opening
-handshake from {{!FETCH}} SHOULD use HTTPS RRs for the `requestURL`.
+handshake from {{FETCH}} SHOULD use HTTPS RRs for the `requestURL`.
 
 An HTTP-based protocol MAY define its own SVCB mapping.  Such mappings MAY
 be defined to take precedence over HTTPS RRs.
@@ -1184,12 +1184,11 @@ use over a privacy-preserving DNS transport (like DNS over TLS
 However, performance improvements, and some modest privacy improvements,
 are possible without the use of those standards.
 
-Any specification for use of SVCB with a protocol MUST have an entry
-for its scheme under the SVCB RR type in
-the IANA DNS Underscore Global Scoped Entry Registry
-{{!Attrleaf=I-D.ietf-dnsop-attrleaf}}.  The scheme SHOULD have an
-entry in the IANA URI Schemes Registry {{!RFC7595}}.  The scheme
-SHOULD have a defined specification for use with SVCB.
+Any specification for use of SVCB with a protocol MUST have an entry for its
+scheme under the SVCB RR type in the IANA DNS Underscore Global Scoped Entry
+Registry {{!Attrleaf}}.  The scheme SHOULD have an entry in the IANA URI Schemes
+Registry {{!RFC7595}}.  The scheme SHOULD have a defined specification for use
+with SVCB.
 
 
 
@@ -1226,7 +1225,7 @@ A registration MUST include the following fields:
 * Meaning: a short description
 * Pointer to specification text
 
-SvcParamKey values to be added to this namespace 
+SvcParamKey values to be added to this namespace
 have different policies ({{!RFC5226}}, Section 4.1)
 based on their range:
 
