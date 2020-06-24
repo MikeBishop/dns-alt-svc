@@ -639,7 +639,7 @@ resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
 follow (e.g. CNAME, {{!DNAME}}).
 
-See {{#incomplete-responses}} for possible optimizations of this procedure.
+See {{incomplete-responses}} for possible optimizations of this procedure.
 
 ## General requirements
 
