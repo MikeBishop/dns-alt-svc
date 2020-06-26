@@ -784,14 +784,14 @@ default transports.
 Clients MUST include an `application_layer_protocol_negotiation` extension
 in their ClientHello with a ProtocolNameList that includes at least one ID
 from the ALPN set.  Clients SHOULD also include any other values that they
-support and could negotiate on that connection with equivalent or better
-security properties.  For example, if the ALPN set only contains "http/1.1",
+are willing to negotiate on that connection.
+For example, if the ALPN set only contains "http/1.1",
 the client could include "http/1.1" and "h2" in the ProtocolNameList.
 
 Once the client has formulated the ClientHello, protocol negotiation
 on that connection proceeds as specified in {{!ALPN}}, without regard to the
 SVCB ALPN set.  To preserve the security guarantees of this process, clients
-MUST consolidate all compatible ALPN IDs into a single ProtocolNameList.
+MUST consolidate all compatible ALPN IDs into a single ClientHello.
 
 ## "port"
 
