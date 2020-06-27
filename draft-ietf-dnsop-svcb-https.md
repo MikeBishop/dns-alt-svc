@@ -264,10 +264,10 @@ and SvcFieldValue is a set of key=value pairs present for the ServiceForm.
 Each key SHALL appear at most once in an SvcFieldValue.
 The SvcFieldValue is empty for the AliasForm.
 
-### Presentation format for SvcFieldValue key=value pairs {#svcfieldvalue}
+### Presentation format for SvcFieldValue {#svcfieldvalue}
 
-In ServiceForm, the SvcFieldValue consists of zero or more elements separated
-by whitespace.  Each element represents a key=value pair.
+In ServiceForm, the SvcFieldValue is an associative array of keys
+and values.
 
 Keys are IANA-registered SvcParamKeys ({{svcparamregistry}})
 with both a lower-case string representation and
@@ -279,28 +279,24 @@ Registered key names should only contain characters from the ranges
     key         = 1*(alpha-lc / DIGIT / "-")
 
 The presentation format for the SvcFieldValue is a whitespace-separated
-list of `key=value` pairs.  The `value` is an arbitrary octet sequence,
-represented in the zone file as an escaped character-string.  When the
-"=" is omitted, the `value` is empty (i.e. `0OCTET`).
+list of `key=value-list` pairs.  When the "=" is omitted, the `value-list`
+is interpreted as empty.
 
-    pair  = key ["=" char-string]
-    value = *OCTET
+    pair  = key ["=" value-list]
 
-To compute the `value`, the implementation applies the character-string
-decoding algorithm to the `char-string`.  (See {{decoding}} for the definition
-of `char-string`, which is intended to match `<character-string>` from 
-{{!RFC1035}} Section 5.1, though not limited to 255 octets.)
-
-The wire format encoding of a presentation `value` is specific to each key.
-The initial keys and their encodings are defined in {{keys}}.
+The `value-list` is a comma-separated list of values, represented in the zone
+file with appropriate escaping ({{decoding}}).  To decode the `value-list`, the
+implementation applies the value-list decoding algorithm , and then performs
+key-specific processing to validate the input and produce the wire-format
+encoding.  The initial keys and their encodings are defined in {{keys}}.
 
 Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
-The decoded `value` corresponding to an unrecognized key
-SHALL be used as its wire format encoding.
+The `value-list` corresponding to a key in this form
+SHALL contain a single value, which is the wire format encoded value.
 
-Elements in presentation format MAY appear in any order, but keys MUST NOT be
+Pairs in presentation format MAY appear in any order, but keys MUST NOT be
 repeated.
 
 ## SVCB RDATA Wire Format
@@ -724,24 +720,7 @@ ALPNs are identified by their registered "Identification Sequence"
 
     alpn-id = 1*255OCTET
 
-The presentation `value` of "alpn" is a comma-separated list of one or
-more `alpn-id`s, each represented as a character-string:
-
-    alpn-value = char-string *("," char-string)
-
-To decode an `alpn-value`, the parser MUST split the `value` at each ","
-character, and then apply the character-string decoding algorithm to each
-segment.  (See {{decoding}} for the definition of `char-string`.)  Accordingly,
-literal commas cannot be used in these `char-string`s, and MUST be represented
-by their decimal escape sequence ("\044") instead.
-Thus, a valid `pair` for the "alpn" key could look like
-
-    alpn="example1,\"weird\\044 why?\",example2"
-
-This would be decoded as three `alpn-id`s: "example1", "weird, why?", and
-"example2".
-
-At the time of writing, all registered ALPN IDs can appear verbatim, without any escaping.
+Each decoded value in the "alpn" value list SHALL be an `alpn-id`.
 
 The wire format value for "alpn" consists of at least one ALPN identifier
 (`alpn-id`) prefixed by its length as a single octet.  These length-value
@@ -794,8 +773,8 @@ The "port" SvcParamKey defines the TCP or UDP port
 that should be used to contact this alternative service.
 If this key is not present, clients SHALL use the origin server's port number.
 
-The presentation `value` of the SvcParamValue is a decimal number
-between 0 and 65535 in ASCII.  Any other `value` (e.g. an empty value)
+The value list of "port" SHALL contain a single value: a decimal number
+between 0 and 65535 in ASCII.  Any other value (e.g. an empty list)
 is a syntax error.
 
 The wire format of the SvcParamValue
@@ -838,8 +817,8 @@ addresses in response to the SvcDomainName query. Failure to use A and/or
 AAAA response addresses could negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
-The presentation `value` for each parameter is a comma-separated list of
-IP addresses in standard textual format {{!RFC5952}}.
+Each decoded value in the value list SHALL be an IP address of the appropriate
+family in standard textual format {{!RFC5952}}.
 
 The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
@@ -1290,9 +1269,13 @@ and others for their feedback and suggestions on this draft.
 
 # Decoding text in zone files {#decoding}
 
-DNS zone files are capable of representing arbitrary octet sequences in
-basic ASCII text, using various delimiters and encodings.  The algorithm
-for decoding these character-strings is defined in Section 5.1 of {{RFC1035}}.
+In order to represent lists of values in zone files, this specification uses
+an extended version of the `<character-string>` decoding algorithm described
+in Section 5.1 of {{RFC1035}}.  The algorithm used here is identical except
+for the use of "," as a delimiter.  When "," is not escaped by a preceding
+"\\", it separates values in the output, which is a list.  We refer to this
+modified procedure as "value-list decoding".
+
 Here we summarize the allowed input to that algorithm, using ABNF:
 
     ; non-special is VCHAR minus DQUOTE, ";", "(", ")", and "\".
@@ -1306,12 +1289,13 @@ Here we summarize the allowed input to that algorithm, using ABNF:
     escaped     = "\" ( non-digit / dec-octet )
     contiguous  = 1*( non-special / escaped )
     quoted      = DQUOTE *( contiguous / ( ["\"] WSP ) ) DQUOTE
-    char-string = contiguous / quoted
+    value-list  = contiguous / quoted
 
-The decoding algorithm is a surjection from `char-string` to `*OCTET`.
-In this document, this algorithm is referred to as "character-string decoding".
-The algorithm is the same as used by `<character-string>` in RFC 1035,
-although the output length in this document is not limited to 255 octets.
+Decoding a `value-list` produces 0 or more `decoded-val`s as output.
+
+    decoded-val = 1*OCTET
+
+For simplicity, empty values are not allowed.
 
 # Comparison with alternatives
 
