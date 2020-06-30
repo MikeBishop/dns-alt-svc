@@ -124,7 +124,7 @@ TO BE REMOVED: If we use this for providing configuration for DNS
 authorities, it is likely we'd specify a distinct "NS2" RR type that is
 an instantiation of SVCB for authoritative nameserver delegation and
 parameter specification, similar to HTTPS.
-See {{?I-D.draft-tapril-ns2-00}} as one example.
+See {{?I-D.tapril-ns2}} as one example.
 
 ## Goals of the SVCB RR
 
@@ -346,7 +346,7 @@ SvcParamKey=SvcParamValue pairs, represented as:
 
 SvcParamKeys SHALL appear in increasing numeric order.
 
-Clients MUST consider an RR malformed if
+Clients MUST consider an RR malformed if:
 
 * the parser reaches the end of the RDATA while parsing an SvcFieldValue.
 * SvcParamKeys are not in strictly increasing numeric order.
@@ -386,12 +386,12 @@ purposes.
 For example, clients MUST continue to validate TLS certificate
 hostnames based on the origin host.
 
-As an example, the owner of example.com could publish this record
+As an example, the owner of example.com could publish this record:
 
     _8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
 
 to indicate that "foo://api.example.com:8443" is aliased to "svc4.example.net".
-The owner of example.net, in turn, could publish this record
+The owner of example.net, in turn, could publish this record:
 
     svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
         alpn="bar" port="8004" echconfig="..." )
@@ -895,7 +895,7 @@ secure and authenticated HTTPS connection.
 
 The HTTPS RR parallels the concepts
 introduced in the HTTP Alternative Services proposed standard
-{{AltSvc}}.  Clients and servers that implement HTTPS RRs are 
+{{AltSvc}}.  Clients and servers that implement HTTPS RRs are
 not required to implement Alt-Svc.
 
 ## Owner names for HTTPS RRs {#httpsnames}
@@ -1070,7 +1070,7 @@ fails, including falling back to a direct connection if all SVCB options fail.
 This behavior is
 not suitable for ECH, because fallback would negate the privacy benefits of
 ECH.  Accordingly, ECH-capable clients SHALL implement the following
-behavior for connection establishment.
+behavior for connection establishment:
 
 1. Perform connection establishment using HTTPS RRs as described in
    {{client-behavior}}, but do not fall back to the origin's A/AAAA records.
@@ -1096,12 +1096,12 @@ absence of an active adversary.
 
 ## Protocol enhancements
 
-Consider a simple zone of the form
+Consider a simple zone of the form:
 
     simple.example. 300 IN A    192.0.2.1
                            AAAA 2001:db8::1
 
-The domain owner could add this record
+The domain owner could add this record:
 
     simple.example. 7200 IN HTTPS 1 . alpn=h3 ...
 
@@ -1163,7 +1163,7 @@ will be used.  For example, to reach an example resource of
 "baz://api.example.com:8765", the following Alias Form
 SVCB record would be used to delegate to "svc4-baz.example.net."
 which in-turn could return AAAA/A records and/or SVCB
-records in ServiceForm.
+records in ServiceForm:
 
     _8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
 
@@ -1310,8 +1310,8 @@ Global Scoped Entry Registry:
 
 There have been a wide range of proposed solutions over the years to
 the "CNAME at the Zone Apex" challenge proposed.  These include
-{{?I-D.draft-bellis-dnsop-http-record-00}},
-{{?I-D.draft-ietf-dnsop-aname-03}}, and others.
+{{?I-D.bellis-dnsop-http-record}},
+{{?I-D.ietf-dnsop-aname}}, and others.
 
 Thank you to Ian Swett, Ralf Weber, Jon Reed,
 Martin Thomson, Lucas Pardue, Ilari Liusvaara,
@@ -1347,7 +1347,7 @@ However, there are several differences:
 
 ## Differences from the proposed HTTP record
 
-Unlike {{?I-D.draft-bellis-dnsop-http-record-00}}, this approach is
+Unlike {{?I-D.bellis-dnsop-http-record}}, this approach is
 extensible to cover Alt-Svc and Encrypted ClientHello use-cases.  Like that
 proposal, this addresses the zone apex CNAME challenge.
 
@@ -1357,7 +1357,7 @@ address records at the zone apex for legacy clients.
 
 ## Differences from the proposed ANAME record
 
-Unlike {{?I-D.draft-ietf-dnsop-aname-03}}, this approach is extensible to
+Unlike {{?I-D.ietf-dnsop-aname}}, this approach is extensible to
 cover Alt-Svc and ECH use-cases.  This approach also does not
 require any changes or special handling on either authoritative or
 primary servers, beyond optionally returning in-bailiwick additional records.
