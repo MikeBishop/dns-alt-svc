@@ -266,8 +266,8 @@ The SvcFieldValue is empty for the AliasForm.
 
 ### Presentation format for SvcFieldValue {#svcfieldvalue}
 
-In ServiceForm, the SvcFieldValue is an associative array of keys
-and values.
+In presentation format, the SvcFieldValue is represented as zero or more
+key=value pairs separated by whitespace.
 
 Keys are IANA-registered SvcParamKeys ({{svcparamregistry}})
 with both a lower-case string representation and
@@ -275,26 +275,26 @@ a numeric representation in the range 0-65535.
 Registered key names should only contain characters from the ranges
 "a"-"z", "0"-"9", and "-".  In ABNF {{!RFC5234}},
 
-    alpha-lc    = %x61-7A   ;  a-z
-    key         = 1*(alpha-lc / DIGIT / "-")
+    alpha-lc = %x61-7A   ;  a-z
+    key      = 1*(alpha-lc / DIGIT / "-")
+    pair     = key ["=" char-string]
+    value    = *OCTET
 
-The presentation format for the SvcFieldValue is a whitespace-separated
-list of `key=value-list` pairs.  When the "=" is omitted, the `value-list`
-is interpreted as empty.
+The definition of each key indicates that it is either single-valued or
+multi-valued.  To parse a single-valued key, the parser applies the
+character-string decoding algorithm ({{decoding}}), producing a `value`,
+and then performs key-specific processing to validate the input and produce
+the wire-format encoding.  To parse a multi-valued key, the parser applies
+the value-list decoding algorithm to the `char-string` ({{value-list}}),
+splitting on commas to produce a list of zero or more values.
 
-    pair  = key ["=" value-list]
-
-The `value-list` is a comma-separated list of values, represented in the zone
-file with appropriate escaping ({{decoding}}).  To decode the `value-list`, the
-implementation applies the value-list decoding algorithm , and then performs
-key-specific processing to validate the input and produce the wire-format
-encoding.  The initial keys and their encodings are defined in {{keys}}.
+When the "=" is omitted, the `value` or value list is interpreted as empty.
 
 Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
-The `value-list` corresponding to a key in this form
-SHALL contain a single value, which is the wire format encoded value.
+Keys in this form are always treated as single-valued, and
+the decoded `value` SHALL be used as its wire format encoding.
 
 Pairs in presentation format MAY appear in any order, but keys MUST NOT be
 repeated.
@@ -720,7 +720,8 @@ ALPNs are identified by their registered "Identification Sequence"
 
     alpn-id = 1*255OCTET
 
-Each decoded value in the "alpn" value list SHALL be an `alpn-id`.
+"alpn" is a multi-valued key.  Each decoded value in the "alpn" value list
+SHALL be an `alpn-id`.  The value list MUST NOT be empty.
 
 The wire format value for "alpn" consists of at least one ALPN identifier
 (`alpn-id`) prefixed by its length as a single octet.  These length-value
@@ -773,8 +774,8 @@ The "port" SvcParamKey defines the TCP or UDP port
 that should be used to contact this alternative service.
 If this key is not present, clients SHALL use the origin server's port number.
 
-The value list of "port" SHALL contain a single value: a decimal number
-between 0 and 65535 in ASCII.  Any other value (e.g. an empty list)
+The presentation `value` of the SvcParamValue is a single decimal number
+between 0 and 65535 in ASCII.  Any other `value` (e.g. an empty value)
 is a syntax error.
 
 The wire format of the SvcParamValue
@@ -1025,7 +1026,7 @@ The SVCB "echconfig" parameter is defined for
 conveying the ECH configuration of an alternative service.
 In wire format, the value of the parameter is an ECHConfigs vector
 {{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is encoded in {{!base64=RFC4648}}.
+the value is a single ECHConfigs encoded in {{!base64=RFC4648}}.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
 and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
@@ -1269,13 +1270,9 @@ and others for their feedback and suggestions on this draft.
 
 # Decoding text in zone files {#decoding}
 
-In order to represent lists of values in zone files, this specification uses
-an extended version of the `<character-string>` decoding algorithm described
-in Section 5.1 of {{RFC1035}}.  The algorithm used here is identical except
-for the use of "," as a delimiter.  When "," is not escaped by a preceding
-"\\", it separates values in the output, which is a list.  We refer to this
-modified procedure as "value-list decoding".
-
+DNS zone files are capable of representing arbitrary octet sequences in
+basic ASCII text, using various delimiters and encodings.  The algorithm
+for decoding these character-strings is defined in Section 5.1 of {{RFC1035}}.
 Here we summarize the allowed input to that algorithm, using ABNF:
 
     ; non-special is VCHAR minus DQUOTE, ";", "(", ")", and "\".
@@ -1289,13 +1286,37 @@ Here we summarize the allowed input to that algorithm, using ABNF:
     escaped     = "\" ( non-digit / dec-octet )
     contiguous  = 1*( non-special / escaped )
     quoted      = DQUOTE *( contiguous / ( ["\"] WSP ) ) DQUOTE
-    value-list  = contiguous / quoted
+    char-string = contiguous / quoted
 
-Decoding a `value-list` produces 0 or more `decoded-val`s as output.
+The decoding algorithm allows `char-string` to represent any `*OCTET`.
+In this document, this algorithm is referred to as "character-string decoding".
+The algorithm is the same as used by `<character-string>` in RFC 1035,
+although the output length in this document is not limited to 255 octets.
 
-    decoded-val = 1*OCTET
+## Decoding a value list {#value-list}
 
-For simplicity, empty values are not allowed.
+In order to represent lists of values in zone files, this specification uses
+an extended version of character-string decoding that adds the use of ","
+as a delimiter.  When "," is not escaped by a preceding "\\", it separates
+values in the output, which is a list of 1*OCTET.  (For simplicity, empty
+values are not allowed.)  We refer to this modified procedure as "value-list
+decoding".
+
+    value-list = char-string
+    list-value = 1*OCTET
+
+For example, consider this `char-string`:
+
+    "part1,part2\,part3"
+
+Character-string decoding would produce a single `*OCTET` output:
+
+    part1,part2,part3
+
+Value-list decoding would instead convert it to a list of two `list-value`s:
+
+    part1
+    part2,part3
 
 # Comparison with alternatives
 
