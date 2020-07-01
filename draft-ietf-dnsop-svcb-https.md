@@ -286,7 +286,7 @@ character-string decoding algorithm ({{decoding}}), producing a `value`,
 and then performs key-specific processing to validate the input and produce
 the wire-format encoding.  To parse a multi-valued key, the parser applies
 the value-list decoding algorithm to the `char-string` ({{value-list}}),
-splitting on commas to produce a list of zero or more values.
+splitting on unescaped commas to produce a list of zero or more values.
 
 When the "=" is omitted, the `value` or value list is interpreted as empty.
 
@@ -776,7 +776,8 @@ If this key is not present, clients SHALL use the origin server's port number.
 
 The presentation `value` of the SvcParamValue is a single decimal number
 between 0 and 65535 in ASCII.  Any other `value` (e.g. an empty value)
-is a syntax error.
+is a syntax error.  To enable simpler parsing, this `pair` MUST NOT contain
+escape sequences.
 
 The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
@@ -819,7 +820,8 @@ AAAA response addresses could negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
 Each decoded value in the value list SHALL be an IP address of the appropriate
-family in standard textual format {{!RFC5952}}.
+family in standard textual format {{!RFC5952}}.  To enable simpler parsing,
+this `pair` MUST NOT contain escape sequences.
 
 The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
