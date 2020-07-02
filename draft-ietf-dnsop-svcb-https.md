@@ -1282,9 +1282,8 @@ Here we summarize the allowed input to that algorithm, using ABNF:
     ; non-digit is VCHAR minus DIGIT
     non-digit   = %x21-2F / %x3A-7E
     ; dec-octet is a number 0-255 as a three-digit decimal number.
-    below-200   = ( "0" / "1" ) 2DIGIT
-    above-200   = "2" ( ( %x30-34 DIGIT ) / ( "5" %x30-35 ) )
-    dec-octet   = below-200 / above-200
+    dec-octet  = ( "0" / "1" ) 2DIGIT /
+                 "2" ( ( %x30-34 DIGIT ) / ( "5" %x30-35 ) )
     escaped     = "\" ( non-digit / dec-octet )
     contiguous  = 1*( non-special / escaped )
     quoted      = DQUOTE *( contiguous / ( ["\"] WSP ) ) DQUOTE
