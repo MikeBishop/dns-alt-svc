@@ -869,27 +869,29 @@ performance benefit.
 
 ## "mandatory" {#mandatory}
 
-In a ServiceForm RR, a SvcParamKey is considered "essential" if the RR will not
+In a ServiceForm RR, a SvcParamKey is considered "mandatory" if the RR will not
 function correctly for clients that ignore this SvcParamKey.  Each SVCB
-protocol mapping SHOULD specify a default set of essential keys.  The
-SvcParamKey "mandatory" is used to indicate the set of essential keys for this
-RR (overriding the default set).
+protocol mapping SHOULD specify a set of keys that are "automatically
+mandatory", i.e. mandatory if they are present in an RR.  The SvcParamKey
+"mandatory" is used to indicate any mandatory keys for this RR, in addition to
+any automatically mandatory keys that are present.
 
 A ServiceForm RR is considered "compatible" with a client if the client
-implements support for all its essential keys.
+implements support for all its mandatory keys.  If the SVCB RRSet contains
+no compatible RRs, the client will generally act as if the RRSet is empty.
 
-In presentation format, "mandatory" contains a list of zero or more valid
+In presentation format, "mandatory" contains a list of one or more valid
 SvcParamKeys, either by their registered name or in the unknown-key format
 ({{svcfieldvalue}}).  Keys MAY appear in any order, but MUST NOT appear more
 than once.  Any listed keys MUST also appear in the SvcFieldValue.
 For example, the following is a valid SvcFieldValue:
 
-    port=1234 key65333=ex1 key65444=ex2 mandatory=key65444,port
+    echconfig=... key65333=ex1 key65444=ex2 mandatory=key65444,echconfig
 
-In wire format, the essential keys are represented by their numeric values in
+In wire format, the keys are represented by their numeric values in
 network byte order, concatenated in ascending order.
 
-This SvcParamKey is always implicitly essential, and MUST NOT appear in its
+This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
 own value list.
 
 # Using SVCB with HTTPS and HTTP {#https}
@@ -909,7 +911,8 @@ semantics apply equally to HTTPS RRs unless specified otherwise.
 
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
-By default, the essential keys are "port", "alpn", and "no-default-alpn".
+The "automatically mandatory" keys ({{mandatory}}) are "port", "alpn",
+and "no-default-alpn".
 
 The presence of an HTTPS RR for an origin also indicates
 that all HTTP resources are available over HTTPS, as
@@ -1044,8 +1047,9 @@ This construction is equivalent to Section 8.3 of {{HSTS}}, point 5.
 
 If an HTTPS RR query for this "https" URL returns any AliasForm HTTPS RRs,
 or any compatible ServiceForm HTTPS RRs (see {{mandatory}}), the client
-SHOULD act as if it has received an
-HTTP "307 Temporary Redirect" redirect to this "https" URL.
+SHOULD act as if it has received an HTTP "307 Temporary Redirect" redirect
+to this "https" URL.  (Receipt of an incompatible ServiceForm RR does not
+trigger the redirect behavior.)
 Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
@@ -1269,16 +1273,15 @@ be populated with the registrations below:
 
 | SvcParamKey | NAME            | Meaning                         | Reference       |
 | ----------- | ------          | ----------------------          | --------------- |
-| 0           | (no name)       | Reserved for internal use       | (This document) |
+| 0           | mandatory       | Mandatory keys in this RR       | (This document) |
 | 1           | alpn            | Additional supported protocols  | (This document) |
 | 2           | no-default-alpn | No support for default protocol | (This document) |
 | 3           | port            | Port for alternative service    | (This document) |
 | 4           | ipv4hint        | IPv4 address hints              | (This document) |
 | 5           | echconfig       | Encrypted ClientHello info      | (This document) |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
-| 7           | mandatory       | Essential keys in this RR       | (This document) |
 | 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
-| 65535       | key65535        | Reserved                        | (This document) |
+| 65535       | key65535        | Reserved ("Invalid key")        | (This document) |
 
 TODO: do we also want to reserve a range for greasing?
 
