@@ -770,8 +770,27 @@ ALPN IDs that do not uniquely identify a protocol suite (e.g. an ID that
 can be used with both TLS and DTLS) are not compatible with this
 SvcParamKey and MUST NOT be included in the ALPN set.
 
+To establish a connection to the endpoint, clients MUST
+
+1. Identify all supported IDs in the ALPN set.
+2. Collect the set of transports (e.g. TLS, DTLS, QUIC) implied by those IDs.
+3. For each transport in this set, construct a ProtocolNameList containing all
+the client's supported IDs for that transport, without regard to the ALPN set
+from SVCB.
+
+For example, if the ALPN set is \["http/1.1", "h3"\], the client could attempt
+to connect using TLS over TCP with a ProtocolNameList of \["http/1.1", "h2"\],
+and could also attempt a connection using QUIC, with a ProtocolNameList of
+\["h3"\].
+
+This procedure prevents downgrade attacks within a transport and ensures that
+each ProtocolNameList includes at least one ID that the server supports.
+Once the client has formulated the ClientHello, protocol negotiation
+on that connection proceeds as specified in {{!ALPN}}, without regard to the
+SVCB ALPN set.
+
 Clients SHOULD NOT attempt connection to a service endpoint whose
-ALPN set does not contain any compatible protocol suites.  To ensure
+ALPN set does not contain any supported IDs.  To ensure
 consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
 back to basic connection establishment if all of the RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
@@ -780,18 +799,6 @@ non-default alpn.
 For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
-
-Clients MUST include an `application_layer_protocol_negotiation` extension
-in their ClientHello with a ProtocolNameList that includes at least one ID
-from the ALPN set.  Clients SHOULD also include any other values that they
-are willing to negotiate on that connection.
-For example, if the ALPN set only contains "http/1.1",
-the client could include "http/1.1" and "h2" in the ProtocolNameList.
-
-Once the client has formulated the ClientHello, protocol negotiation
-on that connection proceeds as specified in {{!ALPN}}, without regard to the
-SVCB ALPN set.  To preserve the security guarantees of this process, clients
-MUST consolidate all compatible ALPN IDs into a single ClientHello.
 
 ## "port"
 
