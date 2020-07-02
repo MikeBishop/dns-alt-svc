@@ -783,11 +783,14 @@ to connect using TLS over TCP with a ProtocolNameList of \["http/1.1", "h2"\],
 and could also attempt a connection using QUIC, with a ProtocolNameList of
 \["h3"\].
 
-This procedure prevents downgrade attacks within a transport and ensures that
+Once the client has constructed a ClientHello, protocol negotiation in that
+handshake proceeds as specified in {{!ALPN}}, without regard to the SVCB ALPN
+set.
+
+With this procedure in place, an attacker who can modify DNS and network
+traffic can prevent a successful transport connection, but cannot otherwise
+interfere with ALPN ID selection.  This procedure also ensures that
 each ProtocolNameList includes at least one ID that the server supports.
-Once the client has formulated the ClientHello, protocol negotiation
-on that connection proceeds as specified in {{!ALPN}}, without regard to the
-SVCB ALPN set.
 
 Clients SHOULD NOT attempt connection to a service endpoint whose
 ALPN set does not contain any supported IDs.  To ensure
