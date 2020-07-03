@@ -892,7 +892,8 @@ In wire format, the keys are represented by their numeric values in
 network byte order, concatenated in ascending order.
 
 This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
-own value list.
+own value list.  Other automatically mandatory keys SHOULD NOT appear in the
+list either.  (Including them wastes space and otherwise has no effect.)
 
 # Using SVCB with HTTPS and HTTP {#https}
 
