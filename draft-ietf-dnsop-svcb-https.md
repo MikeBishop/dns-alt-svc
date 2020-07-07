@@ -716,6 +716,9 @@ domain owners SHOULD use a single SVCB record whose SvcDomainName is
 address records are already present in the client's DNS cache as part of the
 responses to the address queries that were issued in parallel.
 
+Domain owners SHOULD avoid using a SvcDomainName that is below a DNAME, as
+this is likely unnecessary and makes responses slower and larger.
+
 # Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for
