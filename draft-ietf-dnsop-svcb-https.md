@@ -249,7 +249,7 @@ is used to locate endpoints that can service an origin.
 The algorithm for resolving SVCB records and associated
 address records is specified in {{client-behavior}}.
 
-Other resource record types in the same form as SVCB
+Other SVCB-compatible resource record types
 can also be defined as-needed.  In particular, the 
 HTTPS RR (RR type ???) provides special handling 
 for the case of "https" origins as described in {{https}}.
