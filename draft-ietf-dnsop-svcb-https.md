@@ -1353,6 +1353,8 @@ However, there are several differences:
   HTTP/2).
 * SRV records are not extensible, whereas SVCB and HTTPS RRs
   can be extended with new parameters.
+* SVCB records use 16 bit for SvcPriority for consistency
+  with SRV and other RR types that also use 16 bit priorities.
 
 ## Differences from the proposed HTTP record
 
