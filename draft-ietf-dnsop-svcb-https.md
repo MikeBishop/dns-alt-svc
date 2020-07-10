@@ -478,23 +478,6 @@ Unless specified otherwise by the
 protocol mapping, clients MUST ignore SvcFieldValue parameters that they do
 not recognize.
 
-### Special handling of "." for SvcDomainName in ServiceForm {#svcdomainnamedot}
-
-For ServiceForm SVCB RRs, if SvcDomainName has the value "." (represented in
-the wire format as a zero-length label), then the
-owner name of this record MUST be used as the effective
-SvcDomainName.
-
-For example, in the following example "svc2.example.net"
-is the effective SvcDomainName:
-
-    www.example.com.  7200  IN HTTPS 0 svc.example.net.
-    svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPS 1 . port=8002 echconfig="..."
-    svc2.example.net. 300   IN A        192.0.2.2
-    svc2.example.net. 300   IN AAAA     2001:db8::2
-
-
 ### SvcFieldPriority {#pri}
 
 As RRs within an RRSet are explicitly unordered collections, the
@@ -506,6 +489,34 @@ When receiving an RRSet containing multiple SVCB records with the
 same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure uniform
 load-balancing.
+
+## Special handling of "." {#dot}
+
+If SvcDomainName has the value "." (represented in the wire format as a
+zero-length label), special rules apply.
+
+### AliasForm
+
+For AliasForm SVCB RRs, a SvcDomainName of "." indicates that the origin
+is not available or does not exist.  This indication is advisory:
+clients encountering this indication MAY ignore it and attempt to connect
+without the use of SVCB.
+
+### ServiceForm
+
+For ServiceForm SVCB RRs, if SvcDomainName has the value ".", then the
+owner name of this record MUST be used as the effective
+SvcDomainName.
+
+For example, in the following example "svc2.example.net"
+is the effective SvcDomainName:
+
+    example.com.      7200  IN HTTPS 0 svc.example.net.
+    svc.example.net.  7200  IN CNAME svc2.example.net.
+    svc2.example.net. 7200  IN HTTPS 1 . port=8002 echconfig="..."
+    svc2.example.net. 300   IN A     192.0.2.2
+    svc2.example.net. 300   IN AAAA  2001:db8::2
+
 
 
 # Client behavior {#client-behavior}
@@ -715,10 +726,10 @@ the client MAY prefer those records, regardless of their priorities.
 ## Structuring zones for performance
 
 To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD use a single SVCB record whose SvcDomainName is
-"." if possible.  This will ensure that the required
-address records are already present in the client's DNS cache as part of the
-responses to the address queries that were issued in parallel.
+domain owners SHOULD minimize the use of AliasForm records, and choose
+SvcDomainName to be a domain for which the client will have already issued
+address queries (see {{client-behavior}}).  The simplest such configuration
+would be a single SVCB record whose SvcDomainName is the origin hostname.
 
 # Initial SvcParamKeys {#keys}
 
@@ -867,7 +878,8 @@ IP addresses in standard textual format {{!RFC5952}}.
 These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
 {{server-behavior}}, and SHOULD NOT be included if most clients are using
-compliant recursive resolvers.  When SvcDomainName is ".", server operators
+compliant recursive resolvers.  When SvcDomainName is the origin hostname
+or the owner name (which can be written as "."), server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
