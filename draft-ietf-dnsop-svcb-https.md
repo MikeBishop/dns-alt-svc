@@ -549,8 +549,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If a SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
 cryptographically protected (e.g. using TLS {{!RFC7858}} or HTTPS
-{{!RFC8484}}), the client MUST NOT fall back to non-SVCB connection
-establishment.  This ensures that an active attacker cannot mount a
+{{!RFC8484}}), the client SHOULD NOT fall back to non-SVCB connection
+establishment.  Otherwise, an active attacker could mount a
 downgrade attack by denying the user access to the SVCB information.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -561,7 +561,7 @@ selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it MUST NOT fall back to non-SVCB connection establishment if the SVCB
+it SHOULD NOT fall back to non-SVCB connection establishment if the SVCB
 response fails to validate.
 
 If the client is unable to complete SVCB resolution due to its chain length
@@ -1241,6 +1241,16 @@ Clients MUST ensure that their DNS cache is partitioned for each local
 network, or flushed on network changes, to prevent a local adversary in one
 network from implanting a forged DNS record that allows them to
 track users or hinder their connections after they leave that network.
+
+An attacker who can prevent SVCB resolution can deny clients any associated
+security benefits.  A hostile recursive resolver can always deny service to
+SVCB queries, but network intermediaries can often prevent resolution as well,
+even when the client and recursive resolver validate DNSSEC and use a secure
+transport.  These downgrade attacks can prevent the HTTPS upgrade provided by
+the HTTPS RR ({{hsts}}), and disable the encryption enabled by the echconfig
+SvcParamKey ({{echconfig}}).  To prevent downgrades, {{client-failures}}
+recommends that clients abandon the connection attempt when such an attack is
+detected.
 
 # IANA Considerations
 
