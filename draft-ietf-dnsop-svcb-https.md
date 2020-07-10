@@ -534,7 +534,8 @@ using the following procedure:
    If that fails, the client SHOULD fall back to $HOST.
 
 5. If a SVCB record for $SVCB_QNAME does not exist, the received AAAA and/or A
-   records are the preferred IP addresses and there is no SvcFieldValue.
+   records from $HOST_QNAME are the preferred IP addresses 
+   and there is no SvcFieldValue.
 
 This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
