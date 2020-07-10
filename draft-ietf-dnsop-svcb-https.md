@@ -441,8 +441,7 @@ nor vice-versa.
 
 ### ServiceMode
 
-In ServiceMode, the
-TargetName and SvcParams within each resource record
+In ServiceMode, the TargetName and SvcParams within each resource record
 associate an alternative service location with its connection parameters.
 
 Each protocol scheme that uses SVCB MUST define a protocol mapping that
@@ -694,9 +693,9 @@ domain owners SHOULD set TargetName to
 address records are already present in the client's DNS cache as part of the
 responses to the address queries that were issued in parallel.
 
-# Initial keys {#keys}
+# Initial SvcParam keys {#keys}
 
-A few initial keys are defined here.  These keys are useful for
+A few initial SvcParam keys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
 
 ## "alpn" and "no-default-alpn" {#alpn-key}
