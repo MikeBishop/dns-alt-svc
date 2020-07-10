@@ -131,7 +131,7 @@ See {{?I-D.tapril-ns2}} as one example.
 The goal of the SVCB RR is to allow clients to resolve a single
 additional DNS RR in a way that:
 
-* Provides endpoints that are authoritative for the service,
+* Provides alternative endpoints that are authoritative for the service,
   along with parameters associated with each of these endpoints.
 * Does not assume that all alternative endpoints have the same parameters
   or capabilities, or are even
@@ -194,7 +194,7 @@ records in the Additional Section to responses for a SVCB query.
 When in the ServiceForm, the SvcFieldValue of the SVCB RR
 provides an extensible data model for describing alternative
 endpoints that are authoritative for the origin, including
-parameters associated with each of these endpoints.
+parameters associated with each of these alternative endpoints.
 
 For the HTTPS use-case, the HTTPS RR enables many of the benefits of {{?AltSvc=RFC7838}}
 without waiting for a full HTTP connection initiation (multiple roundtrips)
@@ -220,7 +220,7 @@ hostname as the `host`.
 * The "authority address" is the authority's hostname and a port number implied
   by the scheme or specified in the URI.
 * An "alternative endpoint" is a hostname, port number, and other associated
-  instructions to the client on how to reach the service.
+  instructions to the client on how to reach an instance of service.
 
 Additional DNS terminology intends to be consistent
 with {{?DNSTerm=RFC8499}}.
@@ -507,20 +507,19 @@ load-balancing.
 
 # Client behavior {#client-behavior}
 
-An SVCB-aware client resolves a service with hostname $HOST by attempting
-to determine
-the preferred SvcFieldValue and IP addresses for its service, using the
-following procedure:
+A SVCB-aware client resolves a service with hostname $HOST by attempting
+to determine endpoint (the preferred SvcFieldValue and IP addresses for its service),
+using the following procedure:
 
 1. Let $SVCB_QNAME be $HOST, plus appropriate prefixes for the scheme
-   (see {{svcb-names}}).
+   (see {{svcb-names}}).  Let $HOST_QNAME be $HOST.
 
-2. Issue parallel AAAA/A queries for $HOST and a SVCB query for $SVCB_QNAME.
+2. Issue parallel AAAA/A queries for $HOST_QNAME and a SVCB query for $SVCB_QNAME.
    The answers for these may or may not include CNAME pointers
    before reaching one or more of these records.
 
 3. If a SVCB record of AliasForm SvcRecordType is returned for $SVCB_QNAME,
-   clients MUST set $HOST and $SVCB_QNAME to SvcDomainName (without
+   clients MUST set $HOST_QNAME and $SVCB_QNAME to SvcDomainName (without
    additional prefixes) and loop back to step 2,
    subject to chain length limits and loop detection heuristics (see
    {{client-failures}}).
@@ -531,8 +530,8 @@ following procedure:
    SvcDomainName if they are not already available.  These are the
    preferred SvcFieldValue and IP addresses.  If the connection fails, the
    client MAY try to connect using values from a lower-priority record.
-   If none of the options succeed, the client SHOULD connect to the authority
-   address directly.
+   If none of the options succeed, the client SHOULD connect to $HOST_QNAME directly.
+   If that fails, the client SHOULD fall back to $HOST.
 
 5. If a SVCB record for $SVCB_QNAME does not exist, the received AAAA and/or A
    records are the preferred IP addresses and there is no SvcFieldValue.
