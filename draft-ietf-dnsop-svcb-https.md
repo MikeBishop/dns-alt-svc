@@ -1254,6 +1254,34 @@ detected.
 
 # IANA Considerations
 
+## SVCB RRType
+
+This document defines a new DNS RR type, SVCB, whose value 64 has
+been allocated by IANA from the "Resource Record (RR) TYPEs"
+subregistry of the "Domain Name System (DNS) Parameters" registry:
+
+Type: SVCB
+
+Value: 64
+
+Meaning: General Purpose Service Endpoints
+
+Reference: This document
+
+## HTTPS RRType
+
+This document defines a new DNS RR type, HTTPS, whose value 65 has
+been allocated by IANA from the "Resource Record (RR) TYPEs"
+subregistry of the "Domain Name System (DNS) Parameters" registry:
+
+Type: HTTPS
+
+Value: 65
+
+Meaning: HTTPS Specific Service Endpoints
+
+Reference: This document
+
 ## New registry for Service Parameters {#svcparamregistry}
 
 The "Service Binding (SVCB) Parameter Registry" defines the namespace
