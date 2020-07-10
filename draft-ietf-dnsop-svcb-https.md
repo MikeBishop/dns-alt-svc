@@ -216,8 +216,10 @@ access a resource identified by a URI whose `authority` field contains a DNS
 hostname as the `host`.
 
 * The "service" is the information source identified by the `authority` and
-  `scheme` of the URI, capable of providing access to the resource.
-* The "authority address" is the authority's hostname and a port number implied
+  `scheme` of the URI, capable of providing access to the resource.  For HTTPS
+  URIs, the "service" corresponds to an HTTPS "origin" {{?RFC6454}}.
+* The "service name" is the `host` portion of the authority.
+* The "authority endpoint" is the authority's hostname and a port number implied
   by the scheme or specified in the URI.
 * An "alternative endpoint" is a hostname, port number, and other associated
   instructions to the client on how to reach an instance of service.
@@ -239,7 +241,7 @@ appear in all capitals, as shown here.
 
 # The SVCB record type {#svcb}
 
-The SVCB DNS resource record (RR) type (RR type ???)
+The SVCB DNS resource record (RR) type (RR type 64)
 is used to locate alternative endpoints for a service.
 
 The algorithm for resolving SVCB records and associated
@@ -247,7 +249,7 @@ address records is specified in {{client-behavior}}.
 
 Other SVCB-compatible resource record types
 can also be defined as-needed.  In particular, the 
-HTTPS RR (RR type ???) provides special handling 
+HTTPS RR (RR type 65) provides special handling
 for the case of "https" origins as described in {{https}}.
 
 ## Presentation format
@@ -367,7 +369,7 @@ ignore-just-param-if-unknown.
 ## SVCB owner names {#svcb-names}
 
 When querying the SVCB RR, a service is translated into a QNAME by prepending
-the hostname with a label indicating the scheme, prefixed with an underscore,
+the service name with a label indicating the scheme, prefixed with an underscore,
 resulting in a domain name like "_examplescheme.api.example.com.".
 
 Protocol mapping documents MAY specify additional underscore-prefixed labels
@@ -507,35 +509,35 @@ load-balancing.
 
 # Client behavior {#client-behavior}
 
-A SVCB-aware client resolves a service with hostname $HOST by attempting
-to determine endpoint (the preferred SvcFieldValue and IP addresses for its service),
-using the following procedure:
+A SVCB-aware client selects an endpoint for a service using the following
+procedure:
 
-1. Let $SVCB_QNAME be $HOST, plus appropriate prefixes for the scheme
-   (see {{svcb-names}}).  Let $HOST_QNAME be $HOST.
+1. Let $ADDR_QNAME be the service name.  Let $SVCB_QNAME be the service name
+   plus appropriate prefixes for the scheme (see {{svcb-names}}).
 
-2. Issue parallel AAAA/A queries for $HOST_QNAME and a SVCB query for $SVCB_QNAME.
+2. In parallel, issue AAAA/A queries for $ADDR_QNAME
+   and a SVCB query for $SVCB_QNAME.
    The answers for these may or may not include CNAME pointers
    before reaching one or more of these records.
 
 3. If a SVCB record of AliasForm SvcRecordType is returned for $SVCB_QNAME,
-   clients MUST set $HOST_QNAME and $SVCB_QNAME to SvcDomainName (without
+   clients MUST set $ADDR_QNAME and $SVCB_QNAME to its SvcDomainName (without
    additional prefixes) and loop back to step 2,
    subject to chain length limits and loop detection heuristics (see
    {{client-failures}}).
 
 4. If one or more SVCB records of ServiceForm SvcRecordType are returned
    for $SVCB_QNAME, clients should select the highest-priority compatible record with
-   acceptable parameters, and resolve AAAA and/or A records for its
-   SvcDomainName if they are not already available.  These are the
-   preferred SvcFieldValue and IP addresses.  If the connection fails, the
+   acceptable parameters.  This SvcDomainName and SvcFieldValue represent the
+   preferred endpoint.  If connection to this endpoint fails, the
    client MAY try to connect using values from a lower-priority record.
-   If none of the options succeed, the client SHOULD connect to $HOST_QNAME directly.
-   If that fails, the client SHOULD fall back to $HOST.
+   If all attempts fail, clients SHOULD go to step 5.
 
-5. If a SVCB record for $SVCB_QNAME does not exist, the received AAAA and/or A
-   records from $HOST_QNAME are the preferred IP addresses 
-   and there is no SvcFieldValue.
+5. Try to use the endpoint consisting of $ADDR_QNAME, the authority endpoint's
+   port number, and no SvcFieldValue.
+
+6. If all of the above connection attempts fail, clients MAY connect to the
+   authority endpoint.
 
 This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
@@ -551,9 +553,9 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If a SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
 cryptographically protected (e.g. using TLS {{!RFC7858}} or HTTPS
-{{!RFC8484}}), the client SHOULD NOT fall back to the authority address.
-Otherwise, an active attacker could mount a
-downgrade attack by denying the user access to the SVCB information.
+{{!RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME or the
+authority endpoint (steps 5 and 6 above).  Otherwise, an active attacker
+could mount a downgrade attack by denying the user access to the SvcFieldValue.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
 resolver is DNSSEC-validating, and the attacker is between the recursive
@@ -563,11 +565,11 @@ selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it SHOULD NOT fall back to the authority address if the SVCB
+it SHOULD NOT fall back to steps 5 or 6 if the SVCB
 response fails to validate.
 
 If the client is unable to complete SVCB resolution due to its chain length
-limit, the client SHOULD fall back to the authority address, as if the
+limit, the client SHOULD fall back to the authority endpoint, as if the
 origin's SVCB record did not exist.
 
 ## Clients using a Proxy
@@ -803,7 +805,8 @@ MUST consolidate all compatible ALPN IDs into a single ProtocolNameList.
 
 The "port" SvcParamKey defines the TCP or UDP port
 that should be used to reach this alternative endpoint.
-If this key is not present, clients SHALL use the authority address's port number.
+If this key is not present, clients SHALL use the authority endpoint's port
+number.
 
 The presentation format of the SvcParamValue is a numeric value
 between 0 and 65535 inclusive.  Any other values (e.g. the empty value)
@@ -943,12 +946,13 @@ not required to implement Alt-Svc.
 The HTTPS RR uses Port Prefix Naming ({{svcb-names}}),
 with one modification: if the scheme is "https" and the port is 443,
 then the client's original QNAME is
-equal to the origin hostname, without any prefix labels.
+equal to the service name (i.e. the origin's hostname),
+without any prefix labels.
 
 By removing the {{?Attrleaf}} labels
 used in SVCB, this construction enables offline DNSSEC signing of
 wildcard domains, which are commonly used with HTTPS.  Reusing the
-origin hostname also allows the targets of existing CNAME chains
+service name also allows the targets of existing CNAME chains
 (e.g. CDN hosts) to start returning HTTPS RR responses without
 requiring origin domains to configure and maintain an additional
 delegation.
@@ -961,7 +965,7 @@ MUST NOT publish HTTPS RRs with a prefix of "_http".
 
 Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
-hostnames based on the origin host.
+hostnames based on the origin.
 
 ## Relationship to Alt-Svc
 
@@ -1112,12 +1116,13 @@ ECH.  Accordingly, ECH-capable clients SHALL implement the following
 behavior for connection establishment:
 
 1. Perform connection establishment using HTTPS RRs as described in
-   {{client-behavior}}, but do not fall back to the authority address.
+   {{client-behavior}}, but do not fall back to address records (steps 5 and 6).
    If there are compatible HTTPS RRs, they all have an "echconfig" key, and
    attempts to connect to them all fail, terminate connection establishment.
 2. If the client implements Alt-Svc, try to connect using any entries from
    the Alt-Svc cache.
-3. Fall back to the authority address if necessary.
+3. Fall back to address records (steps 5 and 6 of {{client-behavior}}) if
+   necessary.
 
 As a latency optimization, clients MAY prefetch DNS records for later steps
 before they are needed.
@@ -1234,8 +1239,8 @@ with SVCB.
 # Security Considerations
 
 SVCB/HTTPS RRs are intended for distribution over untrusted
-channels, and clients are REQUIRED to verify that the alternative
-endpoint is authoritative for the service (similar to Section 2.1 of {{AltSvc}}).
+channels, and clients are REQUIRED to verify that the alternative endpoint
+is authoritative for the service (similar to Section 2.1 of {{AltSvc}}).
 Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using SVCB and HTTPS RRs.
 
