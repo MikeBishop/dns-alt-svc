@@ -443,7 +443,7 @@ they would publish a record such as:
 Using AliasForm maintains a separation of concerns: the owner of
 foosvc.example.net can add or remove ServiceForm SVCB records without
 requiring a corresponding change to example.com.  Note that if
-foosvc.example.net. promises to always publish a SVCB record, this AliasForm
+foosvc.example.net promises to always publish a SVCB record, this AliasForm
 record can be replaced by a CNAME, which would likely improve performance.
 
 AliasForm is especially useful for SVCB-compatible RR types that do not
