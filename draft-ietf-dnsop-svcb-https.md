@@ -276,11 +276,11 @@ key=value pairs separated by whitespace.
 Keys are IANA-registered SvcParamKeys ({{svcparamregistry}})
 with both a lower-case string representation and
 a numeric representation in the range 0-65535.
-Registered key names should only contain characters from the ranges
+Registered key names should contain 1 to 63 characters from the ranges
 "a"-"z", "0"-"9", and "-".  In ABNF {{!RFC5234}},
 
     alpha-lc = %x61-7A   ;  a-z
-    key      = 1*(alpha-lc / DIGIT / "-")
+    key      = 1*63(alpha-lc / DIGIT / "-")
     pair     = key ["=" char-string]
     value    = *OCTET
 
