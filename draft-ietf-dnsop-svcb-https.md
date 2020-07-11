@@ -743,20 +743,20 @@ support, and this informs the underlying transport protocol used (such
 as QUIC-over-UDP or TLS-over-TCP).
 
 ALPNs are identified by their registered "Identification Sequence"
-(alpn-id), which is a sequence of 1-255 octets.
+(`alpn-id`), which is a sequence of 1-255 octets.
 
     alpn-id = 1*255(OCTET)
 
 The presentation value of "alpn" is a comma-separated list of one or
-more `alpn-id`s.  Any commas present in the protocol-id are escaped
+more `alpn-id`s.  Any commas present in the Identification Sequence are escaped
 by a backslash:
 
     escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %x5D-FF
     escaped-id = 1*(escaped-octet)
     alpn-value = escaped-id *("," escaped-id)
 
-The wire format value for "alpn" consists of at least one ALPN identifier
-(`alpn-id`) prefixed by its length as a single octet, and these length-value
+The wire format value for "alpn" consists of at least one
+`alpn-id` prefixed by its length as a single octet, and these length-value
 pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
 fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
 
@@ -766,19 +766,44 @@ empty.
 Each scheme that uses this SvcParamKey defines a
 "default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
-endpoint (the "ALPN set"), the client parses the set of ALPN identifiers in
-the "alpn" parameter, and then adds the default set unless the
-"no-default-alpn" SvcParamKey is present.  The presence of a value in
-the alpn set indicates that this service endpoint, described by
+endpoint (the "SVCB ALPN set"), the client parses the `alpn-value` to produce
+a set of `alpn-id`s, and then adds the default set unless the
+"no-default-alpn" SvcParamKey is present.  The presence of an ALPN protocol in
+the SVCB ALPN set indicates that this service endpoint, described by
 SvcDomainName and the other parameters (e.g. "port") offers service with
-the protocol suite associated with the ALPN ID.
+the protocol suite associated with this ALPN protocol.
 
-ALPN IDs that do not uniquely identify a protocol suite (e.g. an ID that
+ALPN protocol names that do not uniquely identify a protocol suite (e.g. an
+Identification Sequence that
 can be used with both TLS and DTLS) are not compatible with this
-SvcParamKey and MUST NOT be included in the ALPN set.
+SvcParamKey and MUST NOT be included in the SVCB ALPN set.
 
-Clients SHOULD NOT attempt connection to a service endpoint whose
-ALPN set does not contain any compatible protocol suites.  To ensure
+To establish a connection to the endpoint, clients MUST
+
+1. Let SVCB-ALPN-Intersection be the set of protocols in the SVCB ALPN set
+that the client supports.
+2. Let Intersection-Transports be the set of transports (e.g. TLS, DTLS, QUIC)
+implied by the protocols in SVCB-ALPN-Intersection.
+3. For each transport in Intersection-Transports, construct a ProtocolNameList
+containing the Identification Sequences of all the client's supported ALPN
+protocols for that transport, without regard to the SVCB ALPN set.
+
+For example, if the SVCB ALPN set is \["http/1.1", "h3"\], and the client
+supports HTTP/1.1, HTTP/2, and HTTP/3, the client could attempt to connect using
+TLS over TCP with a ProtocolNameList of \["http/1.1", "h2"\], and could also
+attempt a connection using QUIC, with a ProtocolNameList of \["h3"\].
+
+Once the client has constructed a ClientHello, protocol negotiation in that
+handshake proceeds as specified in {{!ALPN}}, without regard to the SVCB ALPN
+set.
+
+With this procedure in place, an attacker who can modify DNS and network
+traffic can prevent a successful transport connection, but cannot otherwise
+interfere with ALPN protocol selection.  This procedure also ensures that
+each ProtocolNameList includes at least one protocol from the SVCB ALPN set.
+
+Clients SHOULD NOT attempt connection to a service endpoint whose SVCB
+ALPN set does not contain any supported protocols.  To ensure
 consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
 back to basic connection establishment if all of the RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
@@ -787,18 +812,6 @@ non-default alpn.
 For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
-
-Clients MUST include an `application_layer_protocol_negotiation` extension
-in their ClientHello with a ProtocolNameList that includes at least one ID
-from the ALPN set.  Clients SHOULD also include any other values that they
-support and could negotiate on that connection with equivalent or better
-security properties.  For example, if the ALPN set only contains "http/1.1",
-the client could include "http/1.1" and "h2" in the ProtocolNameList.
-
-Once the client has formulated the ClientHello, protocol negotiation
-on that connection proceeds as specified in {{!ALPN}}, without regard to the
-SVCB ALPN set.  To preserve the security guarantees of this process, clients
-MUST consolidate all compatible ALPN IDs into a single ProtocolNameList.
 
 ## "port"
 
