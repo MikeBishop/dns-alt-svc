@@ -736,7 +736,7 @@ this might look like:
     _8080._foo.foo.example.com. 3600 IN CNAME foosvc.example.net.
     ; Service provider zone
     foosvc.example.net. 3600 IN SVCB 1 . key65333=...
-    foosvc.example.net. 300  IN AAAA 2001:db8::1
+    foosvc.example.net.  300 IN AAAA 2001:db8::1
 
 # Initial SvcParamKeys {#keys}
 
