@@ -527,7 +527,7 @@ procedure:
    {{client-failures}}).
 
 4. If one or more SVCB records of ServiceForm SvcRecordType are returned
-   for $SVCB_QNAME, clients should select the highest-priority compatible record with
+   for $SVCB_QNAME, clients SHOULD select the highest-priority compatible record with
    acceptable parameters.  This SvcDomainName and SvcFieldValue represent the
    preferred endpoint.  If connection to this endpoint fails, the
    client MAY try to connect using values from a lower-priority record.
