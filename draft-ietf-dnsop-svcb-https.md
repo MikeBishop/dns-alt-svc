@@ -490,12 +490,12 @@ same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure uniform
 load-balancing.
 
-## Special handling of "." {#dot} in SvcDomainName
+## Special handling of "." in SvcDomainName {#dot}
 
 If SvcDomainName has the value "." (represented in the wire format as a
 zero-length label), special rules apply.
 
-### AliasForm
+### AliasForm {#aliasdot}
 
 For AliasForm SVCB RRs, a SvcDomainName of "." indicates that the origin
 is not available or does not exist.  This indication is advisory:
@@ -1270,6 +1270,13 @@ the HTTPS RR ({{hsts}}), and disable the encryption enabled by the echconfig
 SvcParamKey ({{echconfig}}).  To prevent downgrades, {{client-failures}}
 recommends that clients abandon the connection attempt when such an attack is
 detected.
+
+A hostile DNS intermediary might forge AliasForm "." records ({{aliasdot}}) as
+a way to block clients from accessing particular origins.  Such an adversary
+could already block entire domains by forging erroneous responses, but this
+mechanism allows them to target particular protocols or ports within a domain.
+Clients that might be subject to such attacks SHOULD ignore AliasForm "."
+records.
 
 # IANA Considerations
 
