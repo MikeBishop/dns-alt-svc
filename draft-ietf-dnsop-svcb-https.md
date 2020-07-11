@@ -573,20 +573,21 @@ Providing the proxy with the final TargetName has several benefits:
 ## Authoritative servers
 
 When replying to a SVCB query, authoritative DNS servers SHOULD return
-A, AAAA, and SVCB records (as well as any relevant CNAME or
-{{!DNAME=RFC6672}} records) in the Additional Section for any
-in-bailiwick TargetNames.
+A, AAAA, and SVCB records in the Additional Section for any
+in-bailiwick TargetNames.  If the zone is signed, the server SHOULD also
+include positive or negative DNSSEC responses for these records in the Additional
+section.
 
 ## Recursive resolvers {#recursive-behavior}
 
-Recursive resolvers that are aware of SVCB SHOULD ensure that the client can
-execute the procedure in {{client-behavior}} without issuing a second
-round of queries, by incorporating all the necessary information into a
-single response.  For the initial SVCB record query, this is just the normal
+Recursive resolvers that are aware of SVCB SHOULD help the client to
+execute the procedure in {{client-behavior}} with minimum overall
+latency, by incorporating additional useful information into the
+response.  For the initial SVCB record query, this is just the normal
 response construction process (i.e. unknown RR type resolution under
 {{!RFC3597}}).  For followup resolutions performed during this procedure,
-we define incorporation as adding all Answer and Additional RRs to the
-Additional section, and all Authority RRs to the Authority section,
+we define incorporation as adding all useful RRs from the response to the
+Additional section
 without altering the response code.
 
 Upon receiving a SVCB query, recursive resolvers SHOULD start with the
@@ -612,7 +613,9 @@ construct the full response to the stub resolver:
 In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
-follow (e.g. CNAME, {{!DNAME}}).
+follow (e.g. CNAME, {{!DNAME=RFC6672}}).
+
+See {{incomplete-response}} for possible optimizations of this procedure.
 
 ## General requirements
 
@@ -1009,7 +1012,7 @@ indicate the origin name when negotiating TLS.
 This supports the conservation of IP addresses.
 
 Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate
-the origin, not the SvcDomainName.
+the origin, not the TargetName.
 
 ## HTTP Strict Transport Security {#hsts}
 
@@ -1029,10 +1032,10 @@ the client SHOULD construct a corresponding "https" URL as follows:
 
 This construction is equivalent to Section 8.3 of {{HSTS}}, point 5.
 
-If an HTTPS RR query for this "https" URL returns any AliasForm HTTPS RRs,
-or any compatible ServiceForm HTTPS RRs (see {{mandatory}}), the client
+If an HTTPS RR query for this "https" URL returns any AliasMode HTTPS RRs,
+or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
 SHOULD act as if it has received an HTTP "307 Temporary Redirect" redirect
-to this "https" URL.  (Receipt of an incompatible ServiceForm RR does not
+to this "https" URL.  (Receipt of an incompatible ServiceMode RR does not
 trigger the redirect behavior.)
 Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
