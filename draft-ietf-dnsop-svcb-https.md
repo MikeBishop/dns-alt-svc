@@ -693,9 +693,9 @@ connection C, the client MAY prefer that record and use C as its connection.
 For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
-    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
+    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net. (
         echconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
-                                   SVCB 2 svc2.example.net (
+                                   SVCB 2 svc2.example.net. (
         echconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
@@ -728,8 +728,15 @@ the client MAY prefer those records, regardless of their priorities.
 To avoid a delay for clients using a nonconforming recursive resolver,
 domain owners SHOULD minimize the use of AliasForm records, and choose
 SvcDomainName to be a domain for which the client will have already issued
-address queries (see {{client-behavior}}).  The simplest such configuration
-would be a single SVCB record whose SvcDomainName is the origin hostname.
+address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
+this might look like:
+
+    ; Origin zone
+    foo.example.com.            3600 IN CNAME foosvc.example.net.
+    _8080._foo.foo.example.com. 3600 IN CNAME foosvc.example.net.
+    ; Service provider zone
+    foosvc.example.net. 3600 IN SVCB 1 . key65333=...
+    foosvc.example.net. 300  IN AAAA 2001:db8::1
 
 # Initial SvcParamKeys {#keys}
 
