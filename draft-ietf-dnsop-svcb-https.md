@@ -155,8 +155,8 @@ Additional goals specific to HTTPS RRs and the HTTPS use-case include:
   implementing support for SRV records, as well as due to a limitation
   that a DNS name can not have both CNAME and NS RRs
   (as is the case for zone apex names)
-* Provide an HSTS-like indication signaling
-  for the duration of the DNS RR TTL that the HTTPS scheme should
+* Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling
+  that the HTTPS scheme should
   be used instead of HTTP (see {{hsts}}).
 
 ## Overview of the SVCB RR
@@ -1058,7 +1058,7 @@ the origin, not the SvcDomainName.
 
 By publishing a usable HTTPS RR, the server operator indicates that all
 useful HTTP resources on that origin are reachable over HTTPS, similar to
-HTTP Strict Transport Security {{!HSTS=RFC6797}}.
+HTTP Strict Transport Security {{HSTS}}.
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
 to determine if any HTTPS RRs exist for that origin.  To do so,
