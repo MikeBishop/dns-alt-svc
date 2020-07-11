@@ -490,7 +490,7 @@ same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure uniform
 load-balancing.
 
-## Special handling of "." {#dot}
+## Special handling of "." {#dot} in SvcDomainName
 
 If SvcDomainName has the value "." (represented in the wire format as a
 zero-length label), special rules apply.
