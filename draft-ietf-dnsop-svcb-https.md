@@ -258,10 +258,10 @@ the Internet ("IN") Class ({{!RFC1035}}).
 
 SvcPriority is a number in the range 0-65535,
 TargetName is a domain name,
-and the SvcParams are represented as a whitespace-separated list.
+and the SvcParams are key=value pairs separated by whitespace.
 Keys are subject to IANA control ({{svcparamregistry}}).
 
-Each key SHALL appear at most once in a SvcParams.
+Each key SHALL appear at most once in the SvcParams.
 In presentation format, keys are case-insensitive alphanumeric strings.
 Key names should only contain characters from the ranges "a"-"z", "0"-"9", and "-".
 In ABNF {{!RFC5234}},
