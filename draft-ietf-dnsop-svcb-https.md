@@ -451,24 +451,6 @@ Unless specified otherwise by the
 protocol mapping, clients MUST ignore any SvcParam that they do
 not recognize.
 
-#### Special handling of "." for TargetName in ServiceMode {#dot}
-
-In ServiceMode, if TargetName has the value "." (represented in
-the wire format as a zero-length label), then the
-owner name of this record MUST be used as the effective
-TargetName.  (In AliasMode, TargetName MUST NOT have
-this value.)
-
-For example, in the following example "svc2.example.net"
-is the effective TargetName:
-
-    www.example.com.  7200  IN HTTPS 0 svc.example.net.
-    svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPS 1 . port=8002 echconfig="..."
-    svc2.example.net. 300   IN A        192.0.2.2
-    svc2.example.net. 300   IN AAAA     2001:db8::2
-
-
 ### SvcPriority {#pri}
 
 RRSets are explicitly unordered collections, so the
@@ -480,6 +462,33 @@ When receiving an RRSet containing multiple SVCB records with the
 same SvcPriority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure uniform
 load-balancing.
+
+## Special handling of "." in TargetName {#dot}
+
+If TargetName has the value "." (represented in the wire format as a
+zero-length label), special rules apply.
+
+### AliasMode {#aliasdot}
+
+For AliasMode SVCB RRs, a TargetName of "." indicates that the origin
+is not available or does not exist.  This indication is advisory:
+clients encountering this indication MAY ignore it and attempt to connect
+without the use of SVCB.
+
+### ServiceMode
+
+For ServiceMode SVCB RRs, if TargetName has the value ".", then the
+owner name of this record MUST be used as the effective TargetName.
+
+For example, in the following example "svc2.example.net"
+is the effective TargetName:
+
+    example.com.      7200  IN HTTPS 0 svc.example.net.
+    svc.example.net.  7200  IN CNAME svc2.example.net.
+    svc2.example.net. 7200  IN HTTPS 1 . port=8002 echconfig="..."
+    svc2.example.net. 300   IN A     192.0.2.2
+    svc2.example.net. 300   IN AAAA  2001:db8::2
+
 
 
 # Client behavior {#client-behavior}
@@ -545,12 +554,16 @@ origin's SVCB record did not exist.
 ## Clients using a Proxy
 
 Clients using a domain-oriented transport proxy like HTTP CONNECT
-({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) SHOULD disable
-SVCB support if performing SVCB queries would violate the
-client's privacy intent.
+({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) have the option to
+use named destinations, in which case the client does not perform
+any A or AAAA queries for destination domains.  If the client is using named
+destinations with a proxy that does not provide SVCB query capability
+(e.g. through an affiliated DNS resolver), the client would have to perform
+SVCB queries though a separate resolver.  This might disclose the client's
+destinations to an additional party, creating privacy concerns.  If these
+concerns apply, the client SHOULD disable SVCB resolution.
 
-If the client can safely perform SVCB queries (e.g. via the
-proxy or an affiliated resolver), the client SHOULD follow
+If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the smallest-SvcPriority
 option that is compatible with the client and the proxy.  The client
 SHOULD provide the final TargetName and port to the
@@ -659,9 +672,9 @@ connection C, the client MAY prefer that record and use C as its connection.
 For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
-    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
+    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net. (
         echconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
-                                   SVCB 2 svc2.example.net (
+                                   SVCB 2 svc2.example.net. (
         echconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
@@ -692,10 +705,17 @@ the client MAY prefer those records, regardless of their priorities.
 ## Structuring zones for performance
 
 To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD set TargetName to
-"." if possible.  This will ensure that the required
-address records are already present in the client's DNS cache as part of the
-responses to the address queries that were issued in parallel.
+domain owners SHOULD minimize the use of AliasMode records, and choose
+TargetName to be a domain for which the client will have already issued
+address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
+this might look like:
+
+    ; Origin zone
+    foo.example.com.            3600 IN CNAME foosvc.example.net.
+    _8080._foo.foo.example.com. 3600 IN CNAME foosvc.example.net.
+    ; Service provider zone
+    foosvc.example.net. 3600 IN SVCB 1 . key65333=...
+    foosvc.example.net.  300 IN AAAA 2001:db8::1
 
 # Initial SvcParamKeys {#keys}
 
@@ -857,7 +877,8 @@ IP addresses in standard textual format {{!RFC5952}}.
 These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
 {{server-behavior}}, and SHOULD NOT be included if most clients are using
-compliant recursive resolvers.  When TargetName is "." ({{dot}}), server operators
+compliant recursive resolvers.  When TargetName is the origin hostname
+or the owner name (which can be written as "."), server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
@@ -1241,6 +1262,13 @@ the HTTPS RR ({{hsts}}), and disable the encryption enabled by the echconfig
 SvcParamKey ({{echconfig}}).  To prevent downgrades, {{client-failures}}
 recommends that clients abandon the connection attempt when such an attack is
 detected.
+
+A hostile DNS intermediary might forge AliasForm "." records ({{aliasdot}}) as
+a way to block clients from accessing particular origins.  Such an adversary
+could already block entire domains by forging erroneous responses, but this
+mechanism allows them to target particular protocols or ports within a domain.
+Clients that might be subject to such attacks SHOULD ignore AliasForm "."
+records.
 
 # IANA Considerations
 
