@@ -151,8 +151,8 @@ Additional goals specific to HTTPS RRs and the HTTPS use-case include:
   alternative service endpoints
 * Obtain the {{!ECH}} keys associated with an alternative service endpoint
 * Support non-default TCP and UDP ports
-* Enable SRV-like benefits for HTTP(S), where SRV {{?SRV=RFC2782}} has not
-  been widely adopted
+* Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP(S),
+  where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication signaling
   for the duration of the DNS RR TTL that the HTTPS scheme should
   be used instead of HTTP (see {{hsts}}).
