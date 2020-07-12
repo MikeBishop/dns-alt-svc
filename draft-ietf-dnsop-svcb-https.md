@@ -175,7 +175,7 @@ The SVCB RR has two mandatory fields and one optional.  The fields are:
 3. SvcParams (optional): A list of key=value pairs
    describing the alternative endpoint at
    TargetName (only used in ServiceMode and otherwise ignored). 
-   Described in {{svcparams}}.
+   Described in {{presentation}}.
 
 Cooperating DNS recursive resolvers will perform subsequent record
 resolution (for SVCB, A, and AAAA records) and return them in the
@@ -259,16 +259,16 @@ the Internet ("IN") Class ({{!RFC1035}}).
 
 SvcPriority is a number in the range 0-65535,
 TargetName is a domain name,
-and the SvcParams are key=value pairs separated by whitespace.
-Keys are subject to IANA control ({{svcparamregistry}}).
+and the SvcParams are SvcParamKey=SvcParamValue pairs separated by whitespace.
+SvcParamKeys are subject to IANA control ({{svcparamregistry}}).
 
-Each key SHALL appear at most once in the SvcParams.
-In presentation format, keys are case-insensitive alphanumeric strings.
+Each SvcParamKey SHALL appear at most once in the SvcParams.
+In presentation format, SvcParamKeys are case-insensitive alphanumeric strings.
 Key names should only contain characters from the ranges "a"-"z", "0"-"9", and "-".
 In ABNF {{!RFC5234}},
 
     ALPHA-LC    = %x61-7A   ;  a-z
-    key         = 1*(ALPHA-LC / DIGIT / "-")
+    SvcParamKey = 1*(ALPHA-LC / DIGIT / "-")
     display-key = 1*(ALPHA / DIGIT / "-")
 
 Values are in a format specific to the key.
@@ -283,14 +283,14 @@ the "=" are omitted, the presentation value is the empty string.
     escaped-char  = "\" (VCHAR / WSP)
     contiguous    = 1*(basic-visible / escaped-char)
     quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
-    value         = quoted-string / contiguous
-    pair          = display-key "=" value
+    SvcParamValue = quoted-string / contiguous
+    pair          = display-key "=" SvcParamValue
     SvcParam      = display-key / pair
     SvcParams     = [SvcParam *(WSP SvcParam)]
 
-The `value` format is intended to match the definition of &lt;character-string&gt;
+The SvcParamValue format is intended to match the definition of &lt;character-string&gt;
 in {{!RFC1035}} Section 5.1.  (Unlike &lt;character-string&gt;, the length
-of a `value` is not limited to 255 characters.)
+of a SvcParamValue is not limited to 255 characters.)
 
 Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
@@ -323,26 +323,26 @@ The RDATA for the SVCB RR consists of:
   and DNS message sizes).
 
 When the list of SvcParams is non-empty (ServiceMode), it contains a series of
-key=value pairs, represented as:
+SvcParamKey=SvcParamValue pairs, represented as:
 
-* a 2 octet field containing the key as an
+* a 2 octet field containing the SvcParamKey as an
   integer in network byte order.  (See {{iana-keys}} for the defined values.)
-* a 2 octet field containing the length of the value
+* a 2 octet field containing the length of the SvcParamValue
   as an integer between 0 and 65535 in network byte order
   (but constrained by the RDATA and DNS message sizes).
 * an octet string of this length whose contents are in a format determined
-  by the key.
+  by the SvcParamKey.
 
-Keys SHALL appear in increasing numeric order.
+SvcParamKeys SHALL appear in increasing numeric order.
 
 Clients MUST consider an RR malformed if:
 
 * the parser reaches the end of the RDATA while parsing the SvcParams.
-* SvcParam keys are not in strictly increasing numeric order.
-* the value for a key does not have the expected format.
+* SvcParamKeys are not in strictly increasing numeric order.
+* the SvcParamValue for an SvcParamKey does not have the expected format.
 
 Note that the second condition implies that there are no duplicate
-keys.
+SvcParamKeys.
 
 If any RRs are malformed, the client MUST reject the entire RRSet and
 fall back to non-SVCB connection establishment.
@@ -647,7 +647,7 @@ If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
 until it arrives.  For example, a TLS ClientHello can be altered by the
-"echconfig" value of a SVCB response ({{keys-echconfig}}).  Clients
+"echconfig" value of a SVCB response ({{svcparamkeys-echconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{!HappyEyeballsV2=RFC8305}}.
@@ -697,14 +697,14 @@ domain owners SHOULD set TargetName to
 address records are already present in the client's DNS cache as part of the
 responses to the address queries that were issued in parallel.
 
-# Initial SvcParam keys {#keys}
+# Initial SvcParamKeys {#keys}
 
-A few initial SvcParam keys are defined here.  These keys are useful for
+A few initial SvcParamKeys are defined here.  These keys are useful for
 HTTPS, and most are applicable to other protocols as well.
 
 ## "alpn" and "no-default-alpn" {#alpn-key}
 
-The "alpn" and "no-default-alpn" keys together
+The "alpn" and "no-default-alpn" SvcParamKeys together
 indicate the set of Application Layer Protocol Negotation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
 and associated transport protocols supported by this service endpoint.
@@ -731,18 +731,18 @@ by a backslash:
 
 The wire format value for "alpn" consists of at least one
 `alpn-id` prefixed by its length as a single octet, and these length-value
-pairs are concatenated to form the value.  These pairs MUST exactly
-fill the value; otherwise, the value is malformed.
+pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
+fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
 
 For "no-default-alpn", the presentation and wire format values MUST be
 empty.
 
-Each scheme that uses this key defines a
+Each scheme that uses this SvcParamKey defines a
 "default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
 endpoint (the "SVCB ALPN set"), the client parses the `alpn-value` to produce
 a set of `alpn-id`s, and then adds the default set unless the
-"no-default-alpn" key is present.  The presence of an ALPN protocol in
+"no-default-alpn" SvcParamKey is present.  The presence of an ALPN protocol in
 the SVCB ALPN set indicates that this service endpoint, described by
 TargetName and the other parameters (e.g. "port") offers service with
 the protocol suite associated with this ALPN protocol.
@@ -750,7 +750,7 @@ the protocol suite associated with this ALPN protocol.
 ALPN protocol names that do not uniquely identify a protocol suite (e.g. an
 Identification Sequence that
 can be used with both TLS and DTLS) are not compatible with this
-key and MUST NOT be included in the SVCB ALPN set.
+SvcParamKey and MUST NOT be included in the SVCB ALPN set.
 
 To establish a connection to the endpoint, clients MUST
 
@@ -789,25 +789,25 @@ default transports.
 
 ## "port"
 
-The "port" key defines the TCP or UDP port
+The "port" SvcParamKey defines the TCP or UDP port
 that should be used to contact this alternative service.
 If this key is not present, clients SHALL use the origin server's port number.
 
-The presentation format of the value is an integer
+The presentation format of the SvcParamValue is an integer
 between 0 and 65535 inclusive.  Any other values (e.g. the empty value)
 are syntax errors.
 
-The wire format of the value
+The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
 
 If a port-restricting firewall is in place between some client and the service
 endpoint, changing the port number might cause that client to lose access to
-the service, so operators should exercise caution when using this key
+the service, so operators should exercise caution when using this SvcParamKey
 to specify a non-default port.
 
-## "echconfig" {#keys-echconfig}
+## "echconfig" {#svcparamkeys-echconfig}
 
-The key to enable Encrypted ClientHello (ECH) is "echconfig".  Its
+The SvcParamKey to enable Encrypted ClientHello (ECH) is "echconfig".  Its
 value is defined in {{echconfig}}.  It is applicable to most TLS-based
 protocols.
 
@@ -824,7 +824,7 @@ correct SNI with probability at least 1/K, where K is the size of this
 ECH-enabled server anonymity set. This probability may be increased via
 traffic analysis or other mechanisms.
 
-## "ipv4hint" and "ipv6hint" {#keys-iphints}
+## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
 
 The "ipv4hint" and "ipv6hint" keys convey IP addresses that clients MAY use to
 reach the service.  If A and AAAA records for TargetName are locally
@@ -863,10 +863,10 @@ performance benefit.
 
 ## "mandatory" {#mandatory}
 
-In a ServiceMode RR, a key is considered "mandatory" if the RR will not
-function correctly for clients that ignore this key.  Each SVCB
+In a ServiceMode RR, a SvcParamKey is considered "mandatory" if the RR will not
+function correctly for clients that ignore this SvcParamKey.  Each SVCB
 protocol mapping SHOULD specify a set of keys that are "automatically
-mandatory", i.e. mandatory if they are present in an RR.  The key
+mandatory", i.e. mandatory if they are present in an RR.  The SvcParamKey
 "mandatory" is used to indicate any mandatory keys for this RR, in addition to
 any automatically mandatory keys that are present.
 
@@ -875,7 +875,7 @@ implements support for all its mandatory keys.  If the SVCB RRSet contains
 no compatible RRs, the client will generally act as if the RRSet is empty.
 
 In presentation format, "mandatory" contains a list of one or more valid
-keys, either by their registered name or in the unknown-key format
+SvcParamKeys, either by their registered name or in the unknown-key format
 ({{presentation}}).  Keys MAY appear in any order, but MUST NOT appear more
 than once.  Any listed keys MUST also appear in the SvcParams.
 For example, the following is a valid list of SvcParams:
@@ -885,7 +885,7 @@ For example, the following is a valid list of SvcParams:
 In wire format, the keys are represented by their numeric values in
 network byte order, concatenated in ascending order.
 
-This key is always automatically mandatory, and MUST NOT appear in its
+This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
 own value list.  Other automatically mandatory keys SHOULD NOT appear in the
 list either.  (Including them wastes space and otherwise has no effect.)
 
@@ -901,7 +901,7 @@ perform SVCB queries or accept SVCB responses for "https"
 or "http" schemes.
 
 The HTTPS RR wire format and presentation format are
-identical to SVCB, and both share the key registry.  SVCB
+identical to SVCB, and both share the SvcParamKey registry.  SVCB
 semantics apply equally to HTTPS RRs unless specified otherwise.
 The presentation format of the record is:
 
@@ -910,7 +910,7 @@ The presentation format of the record is:
 As with SVCB, the record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
 
-All the keys defined in {{keys}} are permitted for use in
+All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
 The "automatically mandatory" keys ({{mandatory}}) are "port", "alpn",
 and "no-default-alpn".
@@ -978,13 +978,13 @@ only the QNAME, and is prevented from mounting any attack beyond denial of
 service.
 
 Alt-Svc parameters that cannot be safely received in this model MUST NOT
-have a corresponding defined key.  For example, there is no
-key corresponding to the Alt-Svc "persist" parameter, because
+have a corresponding defined SvcParamKey.  For example, there is no
+SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
 this parameter is not safe to accept over an untrusted channel.
 
 ### TTL and granularity
 
-There is no key corresponding to the Alt-Svc "ma" (max age) parameter.
+There is no SvcParamKey corresponding to the Alt-Svc "ma" (max age) parameter.
 Instead, server operators encode the expiration time in the DNS TTL.
 
 The appropriate TTL value will typically be similar to the "ma" value
@@ -1238,7 +1238,7 @@ SVCB queries, but network intermediaries can often prevent resolution as well,
 even when the client and recursive resolver validate DNSSEC and use a secure
 transport.  These downgrade attacks can prevent the HTTPS upgrade provided by
 the HTTPS RR ({{hsts}}), and disable the encryption enabled by the echconfig
-SvcParam key ({{echconfig}}).  To prevent downgrades, {{client-failures}}
+SvcParamKey ({{echconfig}}).  To prevent downgrades, {{client-failures}}
 recommends that clients abandon the connection attempt when such an attack is
 detected.
 
@@ -1276,7 +1276,7 @@ Reference: This document
 
 The "Service Binding (SVCB) Parameter Registry" defines the namespace
 for parameters, including string representations and numeric
-key values.  This registry is shared with other SVCB-compatible
+SvcParamKey values.  This registry is shared with other SVCB-compatible
 RR types, such as the HTTPS RR.
 
 ACTION: create and include a reference to this registry.
@@ -1290,11 +1290,11 @@ A registration MUST include the following fields:
 * Meaning: a short description
 * Pointer to specification text
 
-SvcParam key values to be added to this namespace
+SvcParamKey values to be added to this namespace
 have different policies ({{!RFC5226}}, Section 4.1)
 based on their range:
 
-| Number     | IANA Policy             |
+| Number      | IANA Policy             |
 | ----------- | ----------------------  |
 | 0-255       | Standards Action        |
 | 256-32767   | Expert Review           |
@@ -1302,7 +1302,7 @@ based on their range:
 | 65280-65534 | Private Use             |
 | 65535       | Standards Action        |
 
-Apart from the initial contents, the SvcParam key
+Apart from the initial contents, the SvcParamKey
 name MUST NOT start with "key".
 
 ### Initial contents {#iana-keys}
