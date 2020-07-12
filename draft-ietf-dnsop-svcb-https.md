@@ -173,8 +173,9 @@ The SVCB RR has two mandatory fields and one optional.  The fields are:
 2. TargetName: The domain name of either the alias target (for
    AliasMode) or the alternative service endpoint (for ServiceMode).
 3. SvcParams (optional): A list of key=value pairs
-   describing the alternative service endpoint at
-   TargetName (only used in ServiceMode and otherwise ignored).
+   describing the alternative endpoint at
+   TargetName (only used in ServiceMode and otherwise ignored). 
+   Described in {{svcparams}}.
 
 Cooperating DNS recursive resolvers will perform subsequent record
 resolution (for SVCB, A, and AAAA records) and return them in the
@@ -940,7 +941,7 @@ origin hostname also allows the targets of existing CNAME chains
 requiring origin domains to configure and maintain an additional
 delegation.
 
-Following of HTTPS RR aliases and CNAME aliases is unchanged from SVCB.
+Following of HTTPS AliasMode RRs and CNAME aliases is unchanged from SVCB.
 
 Clients always convert "http" URLs to "https" before performing an
 HTTPS RR query using the process described in {{hsts}}, so domain owners
