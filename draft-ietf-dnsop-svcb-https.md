@@ -423,7 +423,7 @@ any records in the set with ServiceForm.
 
 ## SVCB records: AliasForm
 
-When SvcRecordType is AliasForm, the SVCB record aliases an origin to a
+When SvcRecordType is AliasForm, the SVCB record aliases a service to a
 SvcDomainName.  SVCB RRSets SHOULD only have a single resource
 record in this form.  If multiple are present, clients or recursive
 resolvers SHOULD pick one at random.
@@ -434,9 +434,9 @@ In AliasForm, SvcDomainName MUST be the name of a domain that has SVCB, AAAA,
 or A records.  It MUST NOT be equal to the owner name, as this would cause a
 loop.
 
-For example, if the operator of foo://example.com:8080 wanted to
-point requests to a service operating at foosvc.example.net,
-they would publish a record such as:
+For example, the operator of foo://example.com:8080 could
+point requests to a service operating at foosvc.example.net
+by publishing:
 
     _8080._foo.example.com. 3600 IN SVCB 0 foosvc.example.net.
 
