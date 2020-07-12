@@ -571,12 +571,16 @@ origin's SVCB record did not exist.
 ## Clients using a Proxy
 
 Clients using a domain-oriented transport proxy like HTTP CONNECT
-({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) SHOULD disable
-SVCB support if performing SVCB queries would violate the
-client's privacy intent.
+({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) have the option to
+use named destinations, in which case the client does not perform
+any A or AAAA queries for destination domains.  If the client is using named
+destinations with a proxy that does not provide SVCB query capability
+(e.g. through an affiliated DNS resolver), the client would have to perform
+SVCB queries though a separate resolver.  This might disclose the client's
+destinations to an additional party, creating privacy concerns.  If these
+concerns apply, the client SHOULD disable SVCB resolution.
 
-If the client can safely perform SVCB queries (e.g. via the
-proxy or an affiliated resolver), the client SHOULD follow
+If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the highest priority
 option that is compatible with the client and the proxy.  The client
 SHOULD provide the final SvcDomainName and port to the
