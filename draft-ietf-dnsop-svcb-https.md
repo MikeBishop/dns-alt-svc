@@ -251,6 +251,13 @@ can also be defined as-needed.  In particular, the
 HTTPS RR (RR type 65) provides special handling
 for the case of "https" origins as described in {{https}}.
 
+SVCB RRs are extensible by a list of SvcParams, which are pairs consisting of a
+SvcParamKey and a SvcParamValue. Each SvcParamKey has a presentation name and a
+registered number. Values are in a format specific to the SvcParamKey. Their
+definition should specify both their presentation format and wire encoding
+(e.g., domain names, binary data, or numeric values). The initial SvcParamKeys
+and formats are defined in {{keys}}.
+
 ## Zone file presentation format {#presentation}
 
 The presentation format of the record is:
@@ -267,49 +274,32 @@ consisting of a SvcParamKey=SvcParamValue pair or a standalone SvcParamKey.
 SvcParamKeys are subject to IANA control ({{svcparamregistry}}).
 
 Each SvcParamKey SHALL appear at most once in the SvcParams.
-In presentation format, SvcParamKeys are case-insensitive alphanumeric strings.
-Key names should only contain characters from the ranges "a"-"z", "0"-"9", and "-".
+In presentation format, SvcParamKeys are lower-case alphanumeric strings.
+Key names should contain 1-63 characters from the ranges "a"-"z", "0"-"9", and "-".
 In ABNF {{!RFC5234}},
 
-    ALPHA-LC    = %x61-7A   ;  a-z
-    SvcParamKey = 1*(ALPHA-LC / DIGIT / "-")
-    display-key = 1*(ALPHA / DIGIT / "-")
+    alpha-lc      = %x61-7A   ;  a-z
+    SvcParamKey   = 1*63(alpha-lc / DIGIT / "-")
+    SvcParam      = SvcParamKey ["=" SvcParamValue]
+    SvcParamValue = char-string
+    value         = *OCTET
 
-Values are in a format specific to the SvcParamKey.
-Their definition should specify both their presentation format
-and wire encoding (e.g., domain names, binary data, or numeric values).
-The initial keys and formats are defined in {{keys}}.
-When the value is omitted, or both the value and
-the "=" are omitted, the presentation value is the empty string.
+The definition of each SvcParamKey indicates that its SvcParamValue is empty,
+single-valued, or multi-valued.  To parse a single-valued SvcParam, the
+parser applies the
+character-string decoding algorithm ({{decoding}}), producing a `value`,
+and then performs key-specific processing to validate the input and produce
+the wire-format encoding.  To parse a multi-valued SvcParam, the parser applies
+the value-list decoding algorithm to the `char-string` ({{value-list}}),
+splitting on unescaped commas to produce a list of zero or more values.
 
-    ; basic-visible is VCHAR minus DQUOTE, ";", "(", ")", and "\".
-    basic-visible = %x21 / %x23-27 / %x2A-3A / %x3C-5B / %x5D-7E
-    escaped-char  = "\" (VCHAR / WSP)
-    contiguous    = 1*(basic-visible / escaped-char)
-    quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
-    SvcParamValue = quoted-string / contiguous
-    pair          = display-key "=" SvcParamValue
-    SvcParam      = display-key / pair
-    SvcParams     = [SvcParam *(WSP SvcParam)]
-
-The SvcParamValue format is intended to match the definition of &lt;character-string&gt;
-in {{!RFC1035}} Section 5.1.  (Unlike &lt;character-string&gt;, the length
-of a SvcParamValue is not limited to 255 characters.)
+When the "=" is omitted, the `value` or value list is interpreted as empty.
 
 Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
-In presentation format, values corresponding to unrecognized keys
-SHALL be represented in wire format, using decimal escape codes
-(e.g. \255) when necessary.
-
-When decoding values of unrecognized keys in the presentation format:
-
-* a character other than "\\" represents its ASCII value in wire format.
-* the character "\\" followed by three decimal digits, up to 255, represents
-  an octet in the wire format.
-* the character "\\" followed by any allowed character, except a decimal digit,
-  represents the subsequent character's ASCII value.
+SvcParams in this form are always treated as single-valued, and
+the decoded `value` SHALL be used as its wire format encoding.
 
 SvcParams in presentation format MAY appear in any order, but keys MUST NOT be
 repeated.
@@ -765,15 +755,10 @@ as QUIC-over-UDP or TLS-over-TCP).
 ALPNs are identified by their registered "Identification Sequence"
 (`alpn-id`), which is a sequence of 1-255 octets.
 
-    alpn-id = 1*255(OCTET)
+    alpn-id = 1*255OCTET
 
-The presentation value of "alpn" is a comma-separated list of one or
-more `alpn-id`s.  Any commas present in the Identification Sequence are escaped
-by a backslash:
-
-    escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %x5D-FF
-    escaped-id = 1*(escaped-octet)
-    alpn-value = escaped-id *("," escaped-id)
+"alpn" is a multi-valued SvcParamKey.  Each decoded value in the "alpn" value list
+SHALL be an `alpn-id`.  The value list MUST NOT be empty.
 
 The wire format value for "alpn" consists of at least one
 `alpn-id` prefixed by its length as a single octet, and these length-value
@@ -786,8 +771,8 @@ empty.
 Each scheme that uses this SvcParamKey defines a
 "default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
-endpoint (the "SVCB ALPN set"), the client parses the `alpn-value` to produce
-a set of `alpn-id`s, and then adds the default set unless the
+endpoint (the "SVCB ALPN set"), the client adds the default set to
+the list of `alpn-id`s unless the
 "no-default-alpn" SvcParamKey is present.  The presence of an ALPN protocol in
 the SVCB ALPN set indicates that this service endpoint, described by
 TargetName and the other parameters (e.g. "port") offers service with
@@ -840,9 +825,10 @@ that should be used to reach this alternative endpoint.
 If this key is not present, clients SHALL use the authority endpoint's port
 number.
 
-The presentation format of the SvcParamValue is an integer
-between 0 and 65535 inclusive.  Any other values (e.g. the empty value)
-are syntax errors.
+The presentation `value` of the SvcParamValue is a single decimal integer
+between 0 and 65535 in ASCII.  Any other `value` (e.g. an empty value)
+is a syntax error.  To enable simpler parsing, this SvcParam MUST NOT contain
+escape sequences.
 
 The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
@@ -884,6 +870,10 @@ addresses in response to the TargetName query. Failure to use A and/or
 AAAA response addresses could negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
+Each decoded value in the value list SHALL be an IP address of the appropriate
+family in standard textual format {{!RFC5952}}.  To enable simpler parsing,
+this SvcParam MUST NOT contain escape sequences.
+
 The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection, and clients SHOULD pick addresses to use in a random order.
@@ -897,9 +887,6 @@ wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
 perform DNS64 ({{!RFC6147}}) on parameters within a SVCB record.
 For best performance, server operators SHOULD include an "ipv6hint" parameter
 whenever they include an "ipv4hint" parameter.
-
-The presentation format for each parameter is a comma-separated list of
-IP addresses in standard textual format {{!RFC5952}}.
 
 These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
@@ -1128,7 +1115,9 @@ The SVCB "echconfig" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigs vector
 {{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is encoded in Base64 {{!BASE64=RFC4648}}.
+the value is a single ECHConfigs encoded in Base64 {{!base64=RFC4648}}.
+Base64 is used here to simplify integration with TLS server software.
+To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
 and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
@@ -1415,6 +1404,59 @@ and others for their feedback and suggestions on this draft.
 
 
 --- back
+
+# Decoding text in zone files {#decoding}
+
+DNS zone files are capable of representing arbitrary octet sequences in
+basic ASCII text, using various delimiters and encodings.  The algorithm
+for decoding these character-strings is defined in Section 5.1 of {{RFC1035}}.
+Here we summarize the allowed input to that algorithm, using ABNF:
+
+    ; non-special is VCHAR minus DQUOTE, ";", "(", ")", and "\".
+    non-special = %x21 / %x23-27 / %x2A-3A / %x3C-5B / %x5D-7E
+    ; non-digit is VCHAR minus DIGIT
+    non-digit   = %x21-2F / %x3A-7E
+    ; dec-octet is a number 0-255 as a three-digit decimal number.
+    dec-octet   = ( "0" / "1" ) 2DIGIT /
+                  "2" ( ( %x30-34 DIGIT ) / ( "5" %x30-35 ) )
+    escaped     = "\" ( non-digit / dec-octet )
+    contiguous  = 1*( non-special / escaped )
+    quoted      = DQUOTE *( contiguous / ( ["\"] WSP ) ) DQUOTE
+    char-string = contiguous / quoted
+
+The decoding algorithm allows `char-string` to represent any `*OCTET`.
+In this document, this algorithm is referred to as "character-string decoding".
+The algorithm is the same as used by `<character-string>` in RFC 1035,
+although the output length in this document is not limited to 255 octets.
+
+## Decoding a value list {#value-list}
+
+In order to represent lists of values in zone files, this specification uses
+an extended version of character-string decoding that adds the use of ","
+as a delimiter after double-quote processing.  When "," is not escaped
+(by a preceding "\\" or as the escape sequence "\\044"), it separates
+values in the output, which is a list of 1*OCTET.  (For simplicity, empty
+values are not allowed.)  We refer to this modified procedure as "value-list
+decoding".
+
+    value-list = char-string
+    list-value = 1*OCTET
+
+For example, consider these `char-string` SvcParamValues:
+
+    "part1,part2\,part3"
+    part1,part2\044part3
+
+Character-string decoding either of these inputs would produce a single `*OCTET`
+output:
+
+    part1,part2,part3
+
+Value-list decoding either of these inputs would instead convert it to a list of
+two `list-value`s:
+
+    part1
+    part2,part3
 
 # Comparison with alternatives
 
