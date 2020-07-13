@@ -253,6 +253,13 @@ can also be defined as-needed.  In particular, the
 HTTPS RR (RR type ???) provides special handling 
 for the case of "https" origins as described in {{https}}.
 
+SVCB RRs are extensible by a list of SvcParams, which are pairs consisting of a
+SvcParamKey and a SvcParamValue. Each SvcParamKey has a presentation name and a
+registered number. Values are in a format specific to the SvcParamKey. Their
+definition should specify both their presentation format and wire encoding
+(e.g., domain names, binary data, or numeric values). The initial SvcParamKeys
+and formats are defined in {{keys}}.
+
 ## Zone file presentation format {#presentation}
 
 The presentation format of the record is:
