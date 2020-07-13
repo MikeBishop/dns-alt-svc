@@ -271,7 +271,7 @@ In ABNF {{!RFC5234}},
     SvcParamKey = 1*(ALPHA-LC / DIGIT / "-")
     display-key = 1*(ALPHA / DIGIT / "-")
 
-Values are in a format specific to the key.
+Values are in a format specific to the SvcParamKey.
 Their definition should specify both their presentation format
 and wire encoding (e.g., domain names, binary data, or numeric values).
 The initial keys and formats are defined in {{keys}}.
@@ -1313,7 +1313,7 @@ ACTION: create and include a reference to this registry.
 
 A registration MUST include the following fields:
 
-* Number: Service parameter key numeric identifier (range 0-65535)
+* Number: SvcParamKey wire format numeric identifier (range 0-65535)
 * Name: Service parameter key name
 * Meaning: a short description
 * Pointer to specification text
