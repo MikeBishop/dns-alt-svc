@@ -813,7 +813,7 @@ If this key is not present, clients SHALL use the origin server's port number.
 
 The presentation `value` of the SvcParamValue is a single decimal integer
 between 0 and 65535 in ASCII.  Any other `value` (e.g. an empty value)
-is a syntax error.  To enable simpler parsing, this `pair` MUST NOT contain
+is a syntax error.  To enable simpler parsing, this SvcParam MUST NOT contain
 escape sequences.
 
 The wire format of the SvcParamValue
@@ -858,7 +858,7 @@ geo-aware features and thereby degrade client performance.
 
 Each decoded value in the value list SHALL be an IP address of the appropriate
 family in standard textual format {{!RFC5952}}.  To enable simpler parsing,
-this `pair` MUST NOT contain escape sequences.
+this SvcParam MUST NOT contain escape sequences.
 
 The wire format for each parameter is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
