@@ -151,10 +151,8 @@ Additional goals specific to HTTPS RRs and the HTTPS use-case include:
   alternative service endpoints
 * Obtain the {{!ECH}} keys associated with an alternative service endpoint
 * Support non-default TCP and UDP ports
-* Address a set of long-standing issues due to HTTP(S) clients not
-  implementing support for SRV records, as well as due to a limitation
-  that a DNS name can not have both CNAME and NS RRs
-  (as is the case for zone apex names)
+* Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP(S),
+  where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication signaling
   for the duration of the DNS RR TTL that the HTTPS scheme should
   be used instead of HTTP (see {{hsts}}).
@@ -1426,7 +1424,7 @@ to achieve client implementation.
 
 ## Differences from the SRV RR type
 
-An SRV record {{?RFC2782}} can perform a similar function to the SVCB record,
+An SRV record {{SRV}} can perform a similar function to the SVCB record,
 informing a client to look in a different location for a service.
 However, there are several differences:
 
