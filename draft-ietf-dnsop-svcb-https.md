@@ -1342,7 +1342,7 @@ A registration MUST include the following fields:
 * Meaning: a short description
 * Pointer to specification text
 
-SvcParamKey values to be added to this namespace
+SvcParamKey entries to be added to this namespace
 have different policies ({{!RFC5226}}, Section 4.1)
 based on their range:
 
