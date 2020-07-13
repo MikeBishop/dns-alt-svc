@@ -114,6 +114,12 @@ and introductory examples, much of this document refers only to the SVCB RR,
 but those references should be taken to apply to SVCB, HTTPS,
 and any future SVCB-compatible RR types.
 
+The SVCB RR has two modes: 1) "AliasMode" simply delegates operational
+control for a resource; 2) "ServiceMode" binds together
+configuration information for a service endpoint.
+ServiceMode provides additional key=value parameters
+within each RDATA set.
+
 TO BE REMOVED: If we use this for providing configuration for DNS
 authorities, it is likely we'd specify a distinct "NS2" RR type that is
 an instantiation of SVCB for authoritative nameserver delegation and
@@ -259,7 +265,8 @@ the Internet ("IN") Class ({{!RFC1035}}).
 
 SvcPriority is a number in the range 0-65535,
 TargetName is a domain name,
-and the SvcParams are SvcParamKey=SvcParamValue pairs separated by whitespace.
+and the SvcParams are a whitespace-separated list, with each SvcParam
+consisting of a SvcParamKey=SvcParamValue pair or a standalone SvcParamKey.
 SvcParamKeys are subject to IANA control ({{svcparamregistry}}).
 
 Each SvcParamKey SHALL appear at most once in the SvcParams.
@@ -436,7 +443,7 @@ the target of the SVCB record might offer better performance, and
 therefore would be preferable for clients implementing this specification
 to use.
 
-SVCB and SVCB-compatible record types use AliasMode only within the type.
+AliasMode records only apply to queries for the specific RR type.
 For example, a SVCB record cannot alias to an HTTPS record,
 nor vice-versa.
 
@@ -1314,7 +1321,7 @@ ACTION: create and include a reference to this registry.
 A registration MUST include the following fields:
 
 * Number: SvcParamKey wire format numeric identifier (range 0-65535)
-* Name: Service parameter key name
+* Name: SvcParamKey presentation name
 * Meaning: a short description
 * Pointer to specification text
 
