@@ -1435,7 +1435,7 @@ decoding".
     value-list = char-string
     list-value = 1*OCTET
 
-For example, consider this `char-string`:
+For example, consider these `char-string` SvcParamValues:
 
     "part1,part2\,part3"
     part1,part2\044part3
