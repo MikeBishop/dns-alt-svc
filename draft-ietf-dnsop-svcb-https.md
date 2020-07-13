@@ -101,7 +101,7 @@ This document first describes the SVCB RR as a general-purpose resource
 record that can be applied directly and efficiently to a wide range
 of services ({{svcb}}).  The HTTPS RR is then defined as a special
 case of SVCB that improves efficiency and convenience for use with HTTPS
-({{https}}) by avoiding the need for an {{?Attrleaf=RFC8552}} label
+({{https}}) by avoiding the need for an Attrleaf label {{?Attrleaf=RFC8552}}
 ({{httpsnames}}).  Other protocols with similar needs may
 follow the pattern of HTTPS and assign their own
 SVCB-compatible RR types.
@@ -147,9 +147,10 @@ additional DNS RR in a way that:
 
 Additional goals specific to HTTPS RRs and the HTTPS use-case include:
 
-* Connect directly to {{!HTTP3=I-D.ietf-quic-http}} (QUIC transport)
-  alternative service endpoints
-* Obtain the {{!ECH}} keys associated with an alternative service endpoint
+* Connect directly to HTTP3 (QUIC transport)
+  alternative service endpoints {{!HTTP3=I-D.ietf-quic-http}}
+* Obtain the Encrypted ClientHello {{!ECH}} keys associated with an
+  alternative service endpoint
 * Support non-default TCP and UDP ports
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP(S),
   where SRV {{?SRV=RFC2782}} has not been widely adopted
@@ -194,7 +195,8 @@ provides an extensible data model for describing network
 endpoints that are authoritative for the origin, along with
 parameters associated with each of these endpoints.
 
-For the HTTPS use-case, the HTTPS RR enables many of the benefits of {{?AltSvc=RFC7838}}
+For the HTTPS use-case, the HTTPS RR enables many of the benefits of Alt-Svc
+{{?AltSvc=RFC7838}}
 without waiting for a full HTTP connection initiation (multiple roundtrips)
 before learning of the preferred alternative,
 and without necessarily revealing the user's
@@ -560,7 +562,7 @@ This procedure does not rely on any recursive or authoritative server to
 comply with this specification or have any awareness of SVCB.
 
 When selecting between AAAA and A records to use, clients may use an approach
-such as {{!HappyEyeballsV2=RFC8305}}.
+such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
@@ -569,8 +571,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
 If a SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
-cryptographically protected (e.g. using TLS {{!RFC7858}} or HTTPS
-{{!RFC8484}}), the client SHOULD NOT fall back to non-SVCB connection
+cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
+{{!DoH=RFC8484}}), the client SHOULD NOT fall back to non-SVCB connection
 establishment.  Otherwise, an active attacker could mount a
 downgrade attack by denying the user access to the SVCB information.
 
@@ -665,7 +667,7 @@ construct the full response to the stub resolver:
 In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
-follow (e.g. CNAME, {{!DNAME=RFC6672}}).
+follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).
 
 See {{incomplete-response}} for possible optimizations of this procedure.
 
@@ -701,7 +703,7 @@ until it arrives.  For example, a TLS ClientHello can be altered by the
 "echconfig" value of a SVCB response ({{svcparamkeys-echconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
-{{!HappyEyeballsV2=RFC8305}}.
+{{HappyEyeballsV2}}.
 
 An SVCB record is consistent with a connection
 if the client would attempt an equivalent connection when making use of
@@ -770,7 +772,7 @@ indicate the set of Application Layer Protocol Negotation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
 and associated transport protocols supported by this service endpoint.
 
-As with {{AltSvc}}, the ALPN protocol identifier is used to
+As with Alt-Svc {{AltSvc}}, the ALPN protocol identifier is used to
 identify the application protocol and associated suite
 of protocols supported by the endpoint (the "protocol suite").
 Clients filter the set of ALPN identifiers to match the protocol suites they
@@ -904,7 +906,7 @@ unordered collection, and clients SHOULD pick addresses to use in a random order
 An empty list of addresses is invalid.
 
 When selecting between IPv4 and IPv6 addresses to use, clients may use an
-approach such as {{!HappyEyeballsV2=RFC8305}}.
+approach such as Happy Eyeballs {{!HappyEyeballsV2}}.
 When only "ipv4hint" is present, IPv6-only clients may synthesize
 IPv6 addresses as specified in {{!RFC7050}} or ignore the "ipv4hint" key and
 wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
@@ -970,7 +972,7 @@ The presentation format of the record is:
     Name TTL IN HTTPS SvcFieldPriority SvcDomainName SvcFieldValue
 
 As with SVCB, the record is defined specifically within
-the Internet ("IN") Class ({{!RFC1035}}).
+the Internet ("IN") Class {{!RFC1035}}.
 
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
@@ -995,7 +997,7 @@ with one modification: if the scheme is "https" and the port is 443,
 then the client's original QNAME is
 equal to the origin hostname, without any prefix labels.
 
-By removing the {{?Attrleaf}} labels
+By removing the Attrleaf labels {{?Attrleaf}}
 used in SVCB, this construction enables offline DNSSEC signing of
 wildcard domains, which are commonly used with HTTPS.  Reusing the
 origin hostname also allows the targets of existing CNAME chains
@@ -1128,8 +1130,9 @@ of {{HSTS}}.
 We define an "HTTP-based protocol" as one that involves connecting to an "http:"
 or "https:" URL.  When implementing an HTTP-based protocol, clients that use
 HTTPS RRs for HTTP SHOULD also use it for this URL.  For example, clients that
-support HTTPS RRs and implement the altered {{!WebSocket=RFC6455}} opening
-handshake from {{FETCH}} SHOULD use HTTPS RRs for the `requestURL`.
+support HTTPS RRs and implement the altered WebSocket {{!WebSocket=RFC6455}}
+opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RRs
+for the `requestURL`.
 
 An HTTP-based protocol MAY define its own SVCB mapping.  Such mappings MAY
 be defined to take precedence over HTTPS RRs.
@@ -1140,7 +1143,7 @@ The SVCB "echconfig" parameter is defined for
 conveying the ECH configuration of an alternative service.
 In wire format, the value of the parameter is an ECHConfigs vector
 {{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is encoded in {{!base64=RFC4648}}.
+the value is encoded in Base64 {{!BASE64=RFC4648}}.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
 and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
@@ -1247,7 +1250,7 @@ each server pool can have its own protocol, ECH configuration, etc.
 
 ## Non-HTTPS uses
 
-For services other than HTTPS, the SVCB RR and an {{?Attrleaf}} label
+For services other than HTTPS, the SVCB RR and an Attrleaf label {{?Attrleaf}}
 will be used.  For example, to reach an example resource of
 "baz://api.example.com:8765", the following Alias Form
 SVCB record would be used to delegate to "svc4-baz.example.net."
@@ -1256,7 +1259,7 @@ records in ServiceForm:
 
     _8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
 
-HTTPS RRs use similar {{?Attrleaf}} labels if the origin contains
+HTTPS RRs use similar Attrleaf labels if the origin contains
 a non-default port.
 
 # Interaction with other standards
@@ -1269,7 +1272,7 @@ benefits when used in combination with SVCB records.
 
 To realize the greatest privacy benefits, this proposal is intended for
 use over a privacy-preserving DNS transport (like DNS over TLS
-{{!RFC7858}} or DNS over HTTPS {{!RFC8484}}).
+{{DoT}} or DNS over HTTPS {{DoH}}).
 However, performance improvements, and some modest privacy improvements,
 are possible without the use of those standards.
 
