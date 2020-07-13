@@ -154,9 +154,8 @@ Additional goals specific to HTTPS RRs and the HTTPS use-case include:
 * Support non-default TCP and UDP ports
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP(S),
   where SRV {{?SRV=RFC2782}} has not been widely adopted
-* Provide an HSTS-like indication signaling
-  for the duration of the DNS RR TTL that the HTTPS scheme should
-  be used instead of HTTP (see {{hsts}}).
+* Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling that the HTTPS
+  scheme should be used instead of HTTP for this request (see {{hsts}}).
 
 ## Overview of the SVCB RR
 
@@ -1076,7 +1075,7 @@ the origin, not the TargetName.
 
 By publishing a usable HTTPS RR, the server operator indicates that all
 useful HTTP resources on that origin are reachable over HTTPS, similar to
-HTTP Strict Transport Security {{!HSTS=RFC6797}}.
+HTTP Strict Transport Security {{HSTS}}.
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
 to determine if any HTTPS RRs exist for that origin.  To do so,
