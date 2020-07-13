@@ -273,14 +273,15 @@ In presentation format, SvcParamKeys are lower-case alphanumeric strings.
 Key names should contain 1-63 characters from the ranges "a"-"z", "0"-"9", and "-".
 In ABNF {{!RFC5234}},
 
-    alpha-lc    = %x61-7A   ;  a-z
-    SvcParamKey = 1*63(alpha-lc / DIGIT / "-")
-    SvcParam    = SvcParamKey ["=" SvcParamValue]
+    alpha-lc      = %x61-7A   ;  a-z
+    SvcParamKey   = 1*63(alpha-lc / DIGIT / "-")
+    SvcParam      = SvcParamKey ["=" SvcParamValue]
     SvcParamValue = char-string
-    value       = *OCTET
+    value         = *OCTET
 
-The definition of each key indicates that SvcParamValue is either 
-empty, single-valued, or multi-valued.  To parse a single-valued SvcParam, the parser applies the
+The definition of each SvcParamKey indicates that its SvcParamValue is empty,
+single-valued, or multi-valued.  To parse a single-valued SvcParam, the
+parser applies the
 character-string decoding algorithm ({{decoding}}), producing a `value`,
 and then performs key-specific processing to validate the input and produce
 the wire-format encoding.  To parse a multi-valued SvcParam, the parser applies
@@ -292,7 +293,7 @@ When the "=" is omitted, the `value` or value list is interpreted as empty.
 Unrecognized keys are represented in presentation
 format as "keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
-Keys in this form are always treated as single-valued, and
+SvcParams in this form are always treated as single-valued, and
 the decoded `value` SHALL be used as its wire format encoding.
 
 SvcParams in presentation format MAY appear in any order, but keys MUST NOT be
@@ -1102,6 +1103,8 @@ conveying the ECH configuration of an alternative service.
 In wire format, the value of the parameter is an ECHConfigs vector
 {{!ECH}}, including the redundant length prefix.  In presentation format,
 the value is a single ECHConfigs encoded in Base64 {{!base64=RFC4648}}.
+Base64 is used here to simplify integration with TLS server software.
+To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
 and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
@@ -1416,7 +1419,8 @@ although the output length in this document is not limited to 255 octets.
 
 In order to represent lists of values in zone files, this specification uses
 an extended version of character-string decoding that adds the use of ","
-as a delimiter.  When "," is not escaped by a preceding "\\", it separates
+as a delimiter after double-quote processing.  When "," is not escaped
+(by a preceding "\\" or as the escape sequence "\\044"), it separates
 values in the output, which is a list of 1*OCTET.  (For simplicity, empty
 values are not allowed.)  We refer to this modified procedure as "value-list
 decoding".
@@ -1427,12 +1431,15 @@ decoding".
 For example, consider this `char-string`:
 
     "part1,part2\,part3"
+    part1,part2\044part3
 
-Character-string decoding would produce a single `*OCTET` output:
+Character-string decoding either of these inputs would produce a single `*OCTET`
+output:
 
     part1,part2,part3
 
-Value-list decoding would instead convert it to a list of two `list-value`s:
+Value-list decoding either of these inputs would instead convert it to a list of
+two `list-value`s:
 
     part1
     part2,part3
