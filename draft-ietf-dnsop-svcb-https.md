@@ -183,10 +183,10 @@ The SVCB RR has two mandatory fields and one optional.  The fields are:
 
 Cooperating DNS recursive resolvers will perform subsequent record
 resolution (for SVCB, A, and AAAA records) and return them in the
-Additional Section of the response.  Clients must either use responses
+Additional Section of the response.  Clients either use responses
 included in the additional section returned by the recursive resolver
 or perform necessary SVCB, A, and AAAA record resolutions.  DNS
-authoritative servers may attach in-bailiwick SVCB, A, AAAA, and CNAME
+authoritative servers can attach in-bailiwick SVCB, A, AAAA, and CNAME
 records in the Additional Section to responses for a SVCB query.
 
 In ServiceMode, the SvcParams of the SVCB RR
