@@ -1530,6 +1530,15 @@ reduce implementation complexity.
 
 # Change history
 
+* draft-ietf-dnsop-svcb-https-01
+    * Added a "mandatory" SvcParamKey
+    * Added the ability to indicate that a service does not exist
+    * Adjusted resolution and ALPN algorithms
+    * Major terminology revisions for "origin" and CamelCase names
+    * Revised ABNF
+    * Include allocated RR type numbers
+    * Various corrections, explanations, and recommendations
+
 * draft-ietf-dnsop-svcb-https-00
     * Rename HTTPSSVC RR to HTTPS RR
     * Rename "an SVCB" to "a SVCB"
