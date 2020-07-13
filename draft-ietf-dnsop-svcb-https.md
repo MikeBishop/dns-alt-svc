@@ -41,7 +41,7 @@ informative:
 
 This document specifies the "SVCB" and "HTTPS" DNS resource record (RR)
 types to facilitate the lookup of information needed to make connections
-to network services, such as for HTTPS URLs.  SVCB records
+to network services, such as for HTTPS origins.  SVCB records
 allow a service to be provided from multiple alternative endpoints, 
 each with associated parameters (such as transport protocol
 configuration and keys for encrypting the TLS ClientHello).  They also
