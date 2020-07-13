@@ -154,9 +154,8 @@ Additional goals specific to HTTPS RRs and the HTTPS use-case include:
 * Support non-default TCP and UDP ports
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP(S),
   where SRV {{?SRV=RFC2782}} has not been widely adopted
-* Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling
-  that the HTTPS scheme should
-  be used instead of HTTP (see {{hsts}}).
+* Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling that the HTTPS
+  scheme should be used instead of HTTP for this request (see {{hsts}}).
 
 ## Overview of the SVCB RR
 
