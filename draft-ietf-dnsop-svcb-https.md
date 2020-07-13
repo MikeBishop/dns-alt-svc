@@ -755,6 +755,9 @@ this might look like:
     foosvc.example.net. 3600 IN SVCB 1 . key65333=...
     foosvc.example.net.  300 IN AAAA 2001:db8::1
 
+Domain owners SHOULD avoid using a SvcDomainName that is below a DNAME, as
+this is likely unnecessary and makes responses slower and larger.
+
 # Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for
