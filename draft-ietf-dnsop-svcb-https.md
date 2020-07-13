@@ -242,7 +242,7 @@ appear in all capitals, as shown here.
 
 # The SVCB record type {#svcb}
 
-The SVCB DNS resource record (RR) type (RR type ???)
+The SVCB DNS resource record (RR) type (RR type 64)
 is used to locate endpoints that can service an origin.
 
 The algorithm for resolving SVCB records and associated
@@ -250,7 +250,7 @@ address records is specified in {{client-behavior}}.
 
 Other SVCB-compatible resource record types
 can also be defined as-needed.  In particular, the 
-HTTPS RR (RR type ???) provides special handling 
+HTTPS RR (RR type 65) provides special handling 
 for the case of "https" origins as described in {{https}}.
 
 ## Zone file presentation format {#presentation}
