@@ -101,7 +101,7 @@ This document first describes the SVCB RR as a general-purpose resource
 record that can be applied directly and efficiently to a wide range
 of services ({{svcb}}).  The HTTPS RR is then defined as a special
 case of SVCB that improves efficiency and convenience for use with HTTPS
-({{https}}) by avoiding the need for an {{?Attrleaf=RFC8552}} label
+({{https}}) by avoiding the need for an Attrleaf label {{?Attrleaf=RFC8552}}
 ({{httpsnames}}).  Other protocols with similar needs may
 follow the pattern of HTTPS and assign their own
 SVCB-compatible RR types.
@@ -147,14 +147,13 @@ additional DNS RR in a way that:
 
 Additional goals specific to HTTPS RRs and the HTTPS use-case include:
 
-* Connect directly to {{!HTTP3=I-D.ietf-quic-http}} (QUIC transport)
-  alternative endpoints
-* Obtain the {{!ECH}} keys associated with an alternative endpoint
+* Connect directly to HTTP3 (QUIC transport)
+  alternative endpoints {{!HTTP3=I-D.ietf-quic-http}}
+* Obtain the Encrypted ClientHello {{!ECH}} keys associated with an
+  alternative endpoint
 * Support non-default TCP and UDP ports
-* Address a set of long-standing issues due to HTTP(S) clients not
-  implementing support for SRV records, as well as due to a limitation
-  that a DNS name can not have both CNAME and NS RRs
-  (as is the case for zone apex names)
+* Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP(S),
+  where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication signaling
   for the duration of the DNS RR TTL that the HTTPS scheme should
   be used instead of HTTP (see {{hsts}}).
@@ -196,7 +195,8 @@ provides an extensible data model for describing alternative
 endpoints that are authoritative for the origin, including
 parameters associated with each of these alternative endpoints.
 
-For the HTTPS use-case, the HTTPS RR enables many of the benefits of {{?AltSvc=RFC7838}}
+For the HTTPS use-case, the HTTPS RR enables many of the benefits of Alt-Svc
+{{?AltSvc=RFC7838}}
 without waiting for a full HTTP connection initiation (multiple roundtrips)
 before learning of the preferred alternative,
 and without necessarily revealing the user's
@@ -421,23 +421,35 @@ any records in the set with ServiceForm.
 
 ## SVCB records: AliasForm
 
-When SvcRecordType is AliasForm, the SVCB record is to be treated
-similar to a CNAME alias pointing to
+When SvcRecordType is AliasForm, the SVCB record aliases a service to a
 SvcDomainName.  SVCB RRSets SHOULD only have a single resource
 record in this form.  If multiple are present, clients or recursive
 resolvers SHOULD pick one at random.
 
 The AliasForm's primary purpose is to allow aliasing
 at the zone apex, where CNAME is not allowed.
-For example, if an operator of https://example.com wanted to
-point HTTPS requests to a service operating at svc.example.net,
-they would publish a record such as:
-
-    example.com. 3600 IN SVCB 0 svc.example.net.
-
 In AliasForm, SvcDomainName MUST be the name of a domain that has SVCB, AAAA,
 or A records.  It MUST NOT be equal to the owner name, as this would cause a
 loop.
+
+For example, the operator of foo://example.com:8080 could
+point requests to a service operating at foosvc.example.net
+by publishing:
+
+    _8080._foo.example.com. 3600 IN SVCB 0 foosvc.example.net.
+
+Using AliasForm maintains a separation of concerns: the owner of
+foosvc.example.net can add or remove ServiceForm SVCB records without
+requiring a corresponding change to example.com.  Note that if
+foosvc.example.net promises to always publish a SVCB record, this AliasForm
+record can be replaced by a CNAME, which would likely improve performance.
+
+AliasForm is especially useful for SVCB-compatible RR types that do not
+require an underscore prefix, such as the HTTPS RR type.  For example,
+the operator of https://example.com could point requests to a server
+at svc.example.net by publishing this record at the zone apex:
+
+    example.com. 3600 IN HTTPS 0 svc.example.net.
 
 Note that the SVCB record's owner name MAY be the canonical name
 of a CNAME record, and the SvcDomainName MAY be the owner of a CNAME
@@ -477,23 +489,6 @@ Unless specified otherwise by the
 protocol mapping, clients MUST ignore SvcFieldValue parameters that they do
 not recognize.
 
-### Special handling of "." for SvcDomainName in ServiceForm {#svcdomainnamedot}
-
-For ServiceForm SVCB RRs, if SvcDomainName has the value "." (represented in
-the wire format as a zero-length label), then the
-owner name of this record MUST be used as the effective
-SvcDomainName.
-
-For example, in the following example "svc2.example.net"
-is the effective SvcDomainName:
-
-    www.example.com.  7200  IN HTTPS 0 svc.example.net.
-    svc.example.net.  7200  IN CNAME    svc2.example.net.
-    svc2.example.net. 7200  IN HTTPS 1 . port=8002 echconfig="..."
-    svc2.example.net. 300   IN A        192.0.2.2
-    svc2.example.net. 300   IN AAAA     2001:db8::2
-
-
 ### SvcFieldPriority {#pri}
 
 As RRs within an RRSet are explicitly unordered collections, the
@@ -505,6 +500,34 @@ When receiving an RRSet containing multiple SVCB records with the
 same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
 priority level to the records before using them, to ensure uniform
 load-balancing.
+
+## Special handling of "." in SvcDomainName {#dot}
+
+If SvcDomainName has the value "." (represented in the wire format as a
+zero-length label), special rules apply.
+
+### AliasForm {#aliasdot}
+
+For AliasForm SVCB RRs, a SvcDomainName of "." indicates that the service
+is not available or does not exist.  This indication is advisory:
+clients encountering this indication MAY ignore it and attempt to connect
+without the use of SVCB.
+
+### ServiceForm
+
+For ServiceForm SVCB RRs, if SvcDomainName has the value ".", then the
+owner name of this record MUST be used as the effective
+SvcDomainName.
+
+For example, in the following example "svc2.example.net"
+is the effective SvcDomainName:
+
+    example.com.      7200  IN HTTPS 0 svc.example.net.
+    svc.example.net.  7200  IN CNAME svc2.example.net.
+    svc2.example.net. 7200  IN HTTPS 1 . port=8002 echconfig="..."
+    svc2.example.net. 300   IN A     192.0.2.2
+    svc2.example.net. 300   IN AAAA  2001:db8::2
+
 
 
 # Client behavior {#client-behavior}
@@ -543,7 +566,7 @@ This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
 
 When selecting between AAAA and A records to use, clients may use an approach
-such as {{!HappyEyeballsV2=RFC8305}}.
+such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
@@ -552,8 +575,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
 If a SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
-cryptographically protected (e.g. using TLS {{!RFC7858}} or HTTPS
-{{!RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME or the
+cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
+{{!DoH=RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME or the
 authority endpoint (steps 5 and 6 above).  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcFieldValue.
 
@@ -575,12 +598,16 @@ origin's SVCB record did not exist.
 ## Clients using a Proxy
 
 Clients using a domain-oriented transport proxy like HTTP CONNECT
-({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) SHOULD disable
-SVCB support if performing SVCB queries would violate the
-client's privacy intent.
+({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) have the option to
+use named destinations, in which case the client does not perform
+any A or AAAA queries for destination domains.  If the client is using named
+destinations with a proxy that does not provide SVCB query capability
+(e.g. through an affiliated DNS resolver), the client would have to perform
+SVCB queries though a separate resolver.  This might disclose the client's
+destinations to an additional party, creating privacy concerns.  If these
+concerns apply, the client SHOULD disable SVCB resolution.
 
-If the client can safely perform SVCB queries (e.g. via the
-proxy or an affiliated resolver), the client SHOULD follow
+If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the highest priority
 option that is compatible with the client and the proxy.  The client
 SHOULD provide the final SvcDomainName and port to the
@@ -604,20 +631,21 @@ Providing the proxy with the final SvcDomainName has several benefits:
 ## Authoritative servers
 
 When replying to a SVCB query, authoritative DNS servers SHOULD return
-A, AAAA, and SVCB records (as well as any relevant CNAME or
-{{!DNAME=RFC6672}} records) in the Additional Section for any
-in-bailiwick SvcDomainNames.
+A, AAAA, and SVCB records in the Additional Section for any
+in-bailiwick SvcDomainNames.  If the zone is signed, the server SHOULD also
+include positive or negative DNSSEC responses for these records in the Additional
+section.
 
 ## Recursive resolvers {#recursive-behavior}
 
-Recursive resolvers that are aware of SVCB SHOULD ensure that the client can
-execute the procedure in {{client-behavior}} without issuing a second
-round of queries, by incorporating all the necessary information into a
-single response.  For the initial SVCB record query, this is just the normal
+Recursive resolvers that are aware of SVCB SHOULD help the client to
+execute the procedure in {{client-behavior}} with minimum overall
+latency, by incorporating additional useful information into the
+response.  For the initial SVCB record query, this is just the normal
 response construction process (i.e. unknown RR type resolution under
 {{!RFC3597}}).  For followup resolutions performed during this procedure,
-we define incorporation as adding all Answer and Additional RRs to the
-Additional section, and all Authority RRs to the Authority section,
+we define incorporation as adding all useful RRs from the response to the
+Additional section
 without altering the response code.
 
 Upon receiving a SVCB query, recursive resolvers SHOULD start with the
@@ -643,7 +671,9 @@ construct the full response to the stub resolver:
 In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
-follow (e.g. CNAME, {{!DNAME}}).
+follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).
+
+See {{incomplete-response}} for possible optimizations of this procedure.
 
 ## General requirements
 
@@ -677,7 +707,7 @@ until it arrives.  For example, a TLS ClientHello can be altered by the
 "echconfig" value of a SVCB response ({{svcparamkeys-echconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
-{{!HappyEyeballsV2=RFC8305}}.
+{{HappyEyeballsV2}}.
 
 An SVCB record is consistent with a connection
 if the client would attempt an equivalent connection when making use of
@@ -686,9 +716,9 @@ connection C, the client MAY prefer that record and use C as its connection.
 For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
-    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
+    _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net. (
         echconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
-                                   SVCB 2 svc2.example.net (
+                                   SVCB 2 svc2.example.net. (
         echconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
@@ -719,10 +749,20 @@ the client MAY prefer those records, regardless of their priorities.
 ## Structuring zones for performance
 
 To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD use a single SVCB record whose SvcDomainName is
-"." if possible.  This will ensure that the required
-address records are already present in the client's DNS cache as part of the
-responses to the address queries that were issued in parallel.
+domain owners SHOULD minimize the use of AliasForm records, and choose
+SvcDomainName to be a domain for which the client will have already issued
+address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
+this might look like:
+
+    ; Origin zone
+    foo.example.com.            3600 IN CNAME foosvc.example.net.
+    _8080._foo.foo.example.com. 3600 IN CNAME foosvc.example.net.
+    ; Service provider zone
+    foosvc.example.net. 3600 IN SVCB 1 . key65333=...
+    foosvc.example.net.  300 IN AAAA 2001:db8::1
+
+Domain owners SHOULD avoid using a SvcDomainName that is below a DNAME, as
+this is likely unnecessary and makes responses slower and larger.
 
 # Initial SvcParamKeys {#keys}
 
@@ -736,7 +776,7 @@ indicate the set of Application Layer Protocol Negotation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
 and associated transport protocols supported by this service endpoint.
 
-As with {{AltSvc}}, the ALPN protocol identifier is used to
+As with Alt-Svc {{AltSvc}}, the ALPN protocol identifier is used to
 identify the application protocol and associated suite
 of protocols supported by the endpoint (the "protocol suite").
 Clients filter the set of ALPN identifiers to match the protocol suites they
@@ -744,20 +784,20 @@ support, and this informs the underlying transport protocol used (such
 as QUIC-over-UDP or TLS-over-TCP).
 
 ALPNs are identified by their registered "Identification Sequence"
-(alpn-id), which is a sequence of 1-255 octets.
+(`alpn-id`), which is a sequence of 1-255 octets.
 
     alpn-id = 1*255(OCTET)
 
 The presentation value of "alpn" is a comma-separated list of one or
-more `alpn-id`s.  Any commas present in the protocol-id are escaped
+more `alpn-id`s.  Any commas present in the Identification Sequence are escaped
 by a backslash:
 
     escaped-octet = %x00-2b / "\," / %x2d-5b / "\\" / %x5D-FF
     escaped-id = 1*(escaped-octet)
     alpn-value = escaped-id *("," escaped-id)
 
-The wire format value for "alpn" consists of at least one ALPN identifier
-(`alpn-id`) prefixed by its length as a single octet, and these length-value
+The wire format value for "alpn" consists of at least one
+`alpn-id` prefixed by its length as a single octet, and these length-value
 pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
 fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
 
@@ -767,19 +807,44 @@ empty.
 Each scheme that uses this SvcParamKey defines a
 "default set" of supported ALPNs, which SHOULD NOT
 be empty.  To determine the set of protocol suites supported by an
-endpoint (the "ALPN set"), the client parses the set of ALPN identifiers in
-the "alpn" parameter, and then adds the default set unless the
-"no-default-alpn" SvcParamKey is present.  The presence of a value in
-the alpn set indicates that this service endpoint, described by
+endpoint (the "SVCB ALPN set"), the client parses the `alpn-value` to produce
+a set of `alpn-id`s, and then adds the default set unless the
+"no-default-alpn" SvcParamKey is present.  The presence of an ALPN protocol in
+the SVCB ALPN set indicates that this service endpoint, described by
 SvcDomainName and the other parameters (e.g. "port") offers service with
-the protocol suite associated with the ALPN ID.
+the protocol suite associated with this ALPN protocol.
 
-ALPN IDs that do not uniquely identify a protocol suite (e.g. an ID that
+ALPN protocol names that do not uniquely identify a protocol suite (e.g. an
+Identification Sequence that
 can be used with both TLS and DTLS) are not compatible with this
-SvcParamKey and MUST NOT be included in the ALPN set.
+SvcParamKey and MUST NOT be included in the SVCB ALPN set.
 
-Clients SHOULD NOT attempt connection to a service endpoint whose
-ALPN set does not contain any compatible protocol suites.  To ensure
+To establish a connection to the endpoint, clients MUST
+
+1. Let SVCB-ALPN-Intersection be the set of protocols in the SVCB ALPN set
+that the client supports.
+2. Let Intersection-Transports be the set of transports (e.g. TLS, DTLS, QUIC)
+implied by the protocols in SVCB-ALPN-Intersection.
+3. For each transport in Intersection-Transports, construct a ProtocolNameList
+containing the Identification Sequences of all the client's supported ALPN
+protocols for that transport, without regard to the SVCB ALPN set.
+
+For example, if the SVCB ALPN set is \["http/1.1", "h3"\], and the client
+supports HTTP/1.1, HTTP/2, and HTTP/3, the client could attempt to connect using
+TLS over TCP with a ProtocolNameList of \["http/1.1", "h2"\], and could also
+attempt a connection using QUIC, with a ProtocolNameList of \["h3"\].
+
+Once the client has constructed a ClientHello, protocol negotiation in that
+handshake proceeds as specified in {{!ALPN}}, without regard to the SVCB ALPN
+set.
+
+With this procedure in place, an attacker who can modify DNS and network
+traffic can prevent a successful transport connection, but cannot otherwise
+interfere with ALPN protocol selection.  This procedure also ensures that
+each ProtocolNameList includes at least one protocol from the SVCB ALPN set.
+
+Clients SHOULD NOT attempt connection to a service endpoint whose SVCB
+ALPN set does not contain any supported protocols.  To ensure
 consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
 back to basic connection establishment if all of the RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
@@ -788,18 +853,6 @@ non-default alpn.
 For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
-
-Clients MUST include an `application_layer_protocol_negotiation` extension
-in their ClientHello with a ProtocolNameList that includes at least one ID
-from the ALPN set.  Clients SHOULD also include any other values that they
-support and could negotiate on that connection with equivalent or better
-security properties.  For example, if the ALPN set only contains "http/1.1",
-the client could include "http/1.1" and "h2" in the ProtocolNameList.
-
-Once the client has formulated the ClientHello, protocol negotiation
-on that connection proceeds as specified in {{!ALPN}}, without regard to the
-SVCB ALPN set.  To preserve the security guarantees of this process, clients
-MUST consolidate all compatible ALPN IDs into a single ProtocolNameList.
 
 ## "port"
 
@@ -858,7 +911,7 @@ unordered collection, and clients SHOULD pick addresses to use in a random order
 An empty list of addresses is invalid.
 
 When selecting between IPv4 and IPv6 addresses to use, clients may use an
-approach such as {{!HappyEyeballsV2=RFC8305}}.
+approach such as Happy Eyeballs {{!HappyEyeballsV2}}.
 When only "ipv4hint" is present, IPv6-only clients may synthesize
 IPv6 addresses as specified in {{!RFC7050}} or ignore the "ipv4hint" key and
 wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
@@ -872,7 +925,8 @@ IP addresses in standard textual format {{!RFC5952}}.
 These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
 {{server-behavior}}, and SHOULD NOT be included if most clients are using
-compliant recursive resolvers.  When SvcDomainName is ".", server operators
+compliant recursive resolvers.  When SvcDomainName is the origin hostname
+or the owner name (which can be written as "."), server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
@@ -923,7 +977,7 @@ The presentation format of the record is:
     Name TTL IN HTTPS SvcFieldPriority SvcDomainName SvcFieldValue
 
 As with SVCB, the record is defined specifically within
-the Internet ("IN") Class ({{!RFC1035}}).
+the Internet ("IN") Class {{!RFC1035}}.
 
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
@@ -949,7 +1003,7 @@ then the client's original QNAME is
 equal to the service name (i.e. the origin's hostname),
 without any prefix labels.
 
-By removing the {{?Attrleaf}} labels
+By removing the Attrleaf labels {{?Attrleaf}}
 used in SVCB, this construction enables offline DNSSEC signing of
 wildcard domains, which are commonly used with HTTPS.  Reusing the
 service name also allows the targets of existing CNAME chains
@@ -1082,8 +1136,9 @@ of {{HSTS}}.
 We define an "HTTP-based protocol" as one that involves connecting to an "http:"
 or "https:" URL.  When implementing an HTTP-based protocol, clients that use
 HTTPS RRs for HTTP SHOULD also use it for this URL.  For example, clients that
-support HTTPS RRs and implement the altered {{!WebSocket=RFC6455}} opening
-handshake from {{FETCH}} SHOULD use HTTPS RRs for the `requestURL`.
+support HTTPS RRs and implement the altered WebSocket {{!WebSocket=RFC6455}}
+opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RRs
+for the `requestURL`.
 
 An HTTP-based protocol MAY define its own SVCB mapping.  Such mappings MAY
 be defined to take precedence over HTTPS RRs.
@@ -1094,7 +1149,7 @@ The SVCB "echconfig" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigs vector
 {{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is encoded in {{!base64=RFC4648}}.
+the value is encoded in Base64 {{!BASE64=RFC4648}}.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
 and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
@@ -1202,7 +1257,7 @@ each server pool can have its own protocol, ECH configuration, etc.
 
 ## Non-HTTPS uses
 
-For services other than HTTPS, the SVCB RR and an {{?Attrleaf}} label
+For services other than HTTPS, the SVCB RR and an Attrleaf label {{?Attrleaf}}
 will be used.  For example, to reach an example resource of
 "baz://api.example.com:8765", the following Alias Form
 SVCB record would be used to delegate to "svc4-baz.example.net."
@@ -1211,7 +1266,7 @@ records in ServiceForm:
 
     _8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
 
-HTTPS RRs use similar {{?Attrleaf}} labels if the origin contains
+HTTPS RRs use similar Attrleaf labels if the origin contains
 a non-default port.
 
 # Interaction with other standards
@@ -1224,7 +1279,7 @@ benefits when used in combination with SVCB records.
 
 To realize the greatest privacy benefits, this proposal is intended for
 use over a privacy-preserving DNS transport (like DNS over TLS
-{{!RFC7858}} or DNS over HTTPS {{!RFC8484}}).
+{{DoT}} or DNS over HTTPS {{DoH}}).
 However, performance improvements, and some modest privacy improvements,
 are possible without the use of those standards.
 
@@ -1258,6 +1313,13 @@ the HTTPS RR ({{hsts}}), and disable the encryption enabled by the echconfig
 SvcParamKey ({{echconfig}}).  To prevent downgrades, {{client-failures}}
 recommends that clients abandon the connection attempt when such an attack is
 detected.
+
+A hostile DNS intermediary might forge AliasForm "." records ({{aliasdot}}) as
+a way to block clients from accessing particular services.  Such an adversary
+could already block entire domains by forging erroneous responses, but this
+mechanism allows them to target particular protocols or ports within a domain.
+Clients that might be subject to such attacks SHOULD ignore AliasForm "."
+records.
 
 # IANA Considerations
 
@@ -1387,7 +1449,7 @@ to achieve client implementation.
 
 ## Differences from the SRV RR type
 
-An SRV record {{?RFC2782}} can perform a similar function to the SVCB record,
+An SRV record {{SRV}} can perform a similar function to the SVCB record,
 informing a client to look in a different location for a service.
 However, there are several differences:
 
