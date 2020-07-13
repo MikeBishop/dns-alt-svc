@@ -275,14 +275,15 @@ In ABNF {{!RFC5234}},
 
     alpha-lc    = %x61-7A   ;  a-z
     SvcParamKey = 1*63(alpha-lc / DIGIT / "-")
-    SvcParam    = SvcParamKey ["=" char-string]
+    SvcParam    = SvcParamKey ["=" SvcParamValue]
+    SvcParamValue = char-string
     value       = *OCTET
 
-The definition of each key indicates that it is either single-valued or
-multi-valued.  To parse a single-valued key, the parser applies the
+The definition of each key indicates that SvcParamValue is either 
+empty, single-valued, or multi-valued.  To parse a single-valued SvcParam, the parser applies the
 character-string decoding algorithm ({{decoding}}), producing a `value`,
 and then performs key-specific processing to validate the input and produce
-the wire-format encoding.  To parse a multi-valued key, the parser applies
+the wire-format encoding.  To parse a multi-valued SvcParam, the parser applies
 the value-list decoding algorithm to the `char-string` ({{value-list}}),
 splitting on unescaped commas to produce a list of zero or more values.
 
@@ -744,7 +745,7 @@ ALPNs are identified by their registered "Identification Sequence"
 
     alpn-id = 1*255OCTET
 
-"alpn" is a multi-valued key.  Each decoded value in the "alpn" value list
+"alpn" is a multi-valued SvcParamKey.  Each decoded value in the "alpn" value list
 SHALL be an `alpn-id`.  The value list MUST NOT be empty.
 
 The wire format value for "alpn" consists of at least one
