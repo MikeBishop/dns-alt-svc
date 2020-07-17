@@ -913,6 +913,8 @@ In presentation format, "mandatory" contains a list of one or more valid
 SvcParamKeys, either by their registered name or in the unknown-key format
 ({{presentation}}).  Keys MAY appear in any order, but MUST NOT appear more
 than once.  Any listed keys MUST also appear in the SvcParams.
+To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
+
 For example, the following is a valid list of SvcParams:
 
     echconfig=... key65333=ex1 key65444=ex2 mandatory=key65444,echconfig
