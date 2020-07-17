@@ -401,7 +401,7 @@ resolvers SHOULD pick one at random.
 The primary purpose of AliasMode is to allow aliasing
 at the zone apex, where CNAME is not allowed.
 In AliasMode, TargetName MUST be the name of a domain that has SVCB, AAAA,
-or A records.  It MUST NOT be equal to the owner name, as this would cause a
+or A records.  It SHOULD NOT be equal to the owner name, as this would cause a
 loop.
 
 For example, the operator of foo://example.com:8080 could
@@ -641,6 +641,10 @@ In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
 follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).
+
+Recursive resolvers MUST implement reasonable loop prevention,
+such as for handling cases where the TargetName points to a name
+that in-turn points back to the same TargetName.
 
 See {{incomplete-response}} for possible optimizations of this procedure.
 
