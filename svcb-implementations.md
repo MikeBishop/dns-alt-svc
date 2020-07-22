@@ -34,7 +34,11 @@ These were found by some web searches so you milage may vary:
 
 # Clients using and/or announced support for 
 
-(TBD) 
+## iOS & macOS ##
+
+The betas of iOS 14 and macOS 11 contain support for HTTPS/SVCB records. The first three betas
+use type 65479 and implement draft-ietf-dnsop-svcb-httpssvc-02. Support for draft-ietf-dnsop-svcb-https-01
+using types 64/65 is implemented and tested for interoperability, and will be available in an upcoming beta.
 
 # Services using and/or announced support for SVCB/HTTPS records #
 
