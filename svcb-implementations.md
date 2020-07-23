@@ -25,6 +25,10 @@ Please feel free to submit PRs to update this page.
 
 * Prototype of draft-nygren-httpbis-httpssvc-02 during IETF 105 hackathon
 
+## dnspython ##
+
+[Work-in-progress implementation for dnspython](https://github.com/rthalley/dnspython/pull/452).
+
 ## Others ##
 
 These were found by some web searches so you milage may vary:
@@ -42,6 +46,11 @@ using types 64/65 is implemented and tested for interoperability, and will be av
 
 # Services using and/or announced support for SVCB/HTTPS records #
 
-(TBD)
+## Cloudflare ##
 
+Cloudflare's authoritative DNS servers reply to HTTPS queries for domains for
+which Cloudflare provides HTTPS termination.
 
+The following domains can be used for testing (along any other domain served by
+Cloudflare): blog.cloudflare.com, www.cloudflare.com, cdnjs.cloudflare.com,
+cloudflare-http3.com, cloudflare-http2.com, cloudflare-http1.com.
