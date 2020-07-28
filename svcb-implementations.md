@@ -29,6 +29,10 @@ Please feel free to submit PRs to update this page.
 
 [Work-in-progress implementation for dnspython](https://github.com/rthalley/dnspython/pull/452).
 
+## Perl Net::DNS ##
+
+Per Dick Franks <rwfranks@gmail.com>, HTTPS and SVCB will be in Net::DNS 1.25_01 coming soon to CPAN.
+
 ## Others ##
 
 These were found by some web searches so you milage may vary:
