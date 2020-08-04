@@ -33,6 +33,10 @@ Please feel free to submit PRs to update this page.
 
 Per Dick Franks <rwfranks@gmail.com>, HTTPS and SVCB will be in Net::DNS 1.25_01 coming soon to CPAN.
 
+## dnsjava ##
+
+[Work-in-progress implementation for dnsjava](https://github.com/dnsjava/dnsjava/pull/116) by [adam-stoler](https://github.com/adam-stoler)
+
 ## Others ##
 
 These were found by some web searches so you milage may vary:
