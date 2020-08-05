@@ -21,6 +21,10 @@ Please feel free to submit PRs to update this page.
 ** Previous versions implemented draft-nygren-httpbis-httpssvc-02 (and -01) and draft-nygren-dnsop-svcb-httpssvc-00
 ** Previous versions used TYPENN of HTTPS/65482 and SVBC/65481
 
+## PowerDNS ##
+
+[Pull Request](https://github.com/PowerDNS/pdns/pull/9369).
+
 ## Unbound ##
 
 * Prototype of draft-nygren-httpbis-httpssvc-02 during IETF 105 hackathon
