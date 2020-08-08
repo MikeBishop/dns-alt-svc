@@ -31,7 +31,9 @@ Please feel free to submit PRs to update this page.
 
 ## dnspython ##
 
-[Work-in-progress implementation for dnspython](https://github.com/rthalley/dnspython/pull/452).
+Support for draft-ietf-dnsop-svcb-https-01 is available on the master
+branch and will be included in dnspython 2.1, which is currently targeted
+for release around the end of September 2020.
 
 ## Perl Net::DNS ##
 
