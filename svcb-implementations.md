@@ -54,9 +54,9 @@ These were found by some web searches so you milage may vary:
 
 ## iOS & macOS ##
 
-The betas of iOS 14 and macOS 11 contain support for HTTPS/SVCB records. The first three betas
-use type 65479 and implement draft-ietf-dnsop-svcb-httpssvc-02. Support for draft-ietf-dnsop-svcb-https-01
-using types 64/65 is implemented and tested for interoperability, and will be available in an upcoming beta.
+The betas of iOS 14 and macOS 11 contain support for HTTPS/SVCB records. Support for draft-ietf-dnsop-svcb-https-01
+using types 64/65 is enabled starting in Beta 4. Connections that use URLSession or Network.framework automatically
+request HTTPS records alongside A and AAAA records when using an http or https scheme, or on ports 80 or 443. 
 
 # Services using and/or announced support for SVCB/HTTPS records #
 
