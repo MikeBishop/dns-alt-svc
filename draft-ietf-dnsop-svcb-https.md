@@ -400,8 +400,8 @@ resolvers SHOULD pick one at random.
 
 The primary purpose of AliasMode is to allow aliasing
 at the zone apex, where CNAME is not allowed.
-In AliasMode, TargetName MUST be the name of a domain that has SVCB, AAAA,
-or A records.  It MUST NOT be equal to the owner name, as this would cause a
+In AliasMode, TargetName MUST be a name for which SVCB, AAAA, or A records can
+be resolved.  It MUST NOT be equal to the owner name, as this would cause a
 loop.
 
 For example, the operator of foo://example.com:8080 could
@@ -600,10 +600,25 @@ Providing the proxy with the final TargetName has several benefits:
 ## Authoritative servers
 
 When replying to a SVCB query, authoritative DNS servers SHOULD return
-A, AAAA, and SVCB records in the Additional Section for any
-in-bailiwick TargetNames.  If the zone is signed, the server SHOULD also
-include positive or negative DNSSEC responses for these records in the Additional
-section.
+any useful in-bailiwick records in the Additional section.  Authoritative
+servers MAY implement this Additional section processing by applying the
+following procedure to each returned SVCB record:
+
+1. If TargetName is not in-bailiwick and is not ".", terminate the procedure.
+2. If SvcPriority is 0:
+    * If TargetName is ".", terminate the procedure.
+    * Otherwise, perform a SVCB "follow-up" query for TargetName and add all
+      returned records, including any records added by this procedure.
+      If any SVCB records were added, terminate.
+3. Perform A and AAAA follow-up queries for TargetName (or for the owner name if
+   TargetName is "."), and add all returned records.
+
+All follow-up queries MUST retain the original query's "DNSSEC OK" setting.
+
+If the server does not complete this procedure (e.g. due to response size
+limits), it MUST remove any SOA records from the Additional section.
+Recursive resolvers MAY use the presence of an SOA record in the Additional
+section to enable negative caching of the follow-up queries, as in {{?RFC2308}}.
 
 ## Recursive resolvers {#recursive-behavior}
 
