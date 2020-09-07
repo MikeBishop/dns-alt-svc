@@ -244,7 +244,7 @@ The SVCB DNS resource record (RR) type (RR type 64)
 is used to locate alternative endpoints for a service.
 
 The algorithm for resolving SVCB records and associated
-address records are specified in {{client-behavior}}.
+address records is specified in {{client-behavior}}.
 
 Other SVCB-compatible resource record types
 can also be defined as-needed.  In particular, the 
@@ -742,7 +742,7 @@ HTTPS, and most are applicable to other protocols as well.
 ## "alpn" and "no-default-alpn" {#alpn-key}
 
 The "alpn" and "no-default-alpn" SvcParamKeys together
-indicate the set of Application Layer Protocol Negotiation (ALPN)
+indicate the set of Application Layer Protocol Negotation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
 and associated transport protocols supported by this service endpoint.
 
