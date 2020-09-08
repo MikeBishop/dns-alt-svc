@@ -1169,8 +1169,8 @@ absence of an active adversary.
 Consider a simple zone of the form:
 
     $ORIGIN simple.example. ; Simple example zone
-    simple.example. 300 IN A    192.0.2.1
-                           AAAA 2001:db8::1
+    @ 300 IN A    192.0.2.1
+             AAAA 2001:db8::1
 
 The domain owner could add this record:
 
