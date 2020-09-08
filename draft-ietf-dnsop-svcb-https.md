@@ -742,7 +742,7 @@ HTTPS, and most are applicable to other protocols as well.
 ## "alpn" and "no-default-alpn" {#alpn-key}
 
 The "alpn" and "no-default-alpn" SvcParamKeys together
-indicate the set of Application Layer Protocol Negotation (ALPN)
+indicate the set of Application Layer Protocol Negotiation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
 and associated transport protocols supported by this service endpoint.
 
