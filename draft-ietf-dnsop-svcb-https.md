@@ -727,9 +727,9 @@ this might look like:
     foo                  3600 IN CNAME foosvc.example.net.
     _8080._foo.foo       3600 IN CNAME foosvc.example.net.
 
-    $ORIGIN example.net.        ; Service provider zone
-    foosvc.example.net.         3600 IN SVCB 1 . key65333=...
-    foosvc.example.net.         300  IN AAAA 2001:db8::1
+    $ORIGIN example.net. ; Service provider zone
+    foosvc               3600 IN SVCB 1 . key65333=...
+    foosvc                300 IN AAAA 2001:db8::1
 
 Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
 this is likely unnecessary and makes responses slower and larger.
