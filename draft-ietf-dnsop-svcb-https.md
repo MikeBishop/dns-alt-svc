@@ -1172,7 +1172,7 @@ Consider a simple zone of the form:
 
 The domain owner could add this record:
 
-    simple.example. 7200 IN HTTPS 1 . alpn=h3 ...
+    simple.example. 7200 IN HTTPS 1 . alpn=h3
 
 to indicate that simple.example uses HTTPS, and supports QUIC
 in addition to HTTPS over TCP (an implicit default).
@@ -1224,6 +1224,55 @@ whether the client supports HTTPS RRs or not.  If the client does support
 HTTPS RRs, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
 each server pool can have its own protocol, ECH configuration, etc.
+
+## Multi-CDN
+
+The HTTPS record is intended to support operating an HTTP service backed by
+multiple Content Distribution Networks for redundancy, performance, etc.
+This example shows such a configuration:
+
+    $ORIGIN svc2.example. ; A second hosting provider
+    cdn 7200 IN HTTPS 1 . alpn=h2
+    cdn  300 IN A        192.0.2.4
+                AAAA     2001:db8::4
+
+    $ORIGIN customer.example. ; A multi-CDN customer domain
+    ; Alias to the two CDNs by copying their ServiceMode records.
+    www 7200 IN HTTPS 1 h3pool.svc.example. alpn=h2,h3 echconfig="123..."
+                HTTPS 2 pool.svc.example. alpn=h2 echconfig="abc..."
+                HTTPS 1 cdn.svc2.example. alpn=h2
+    ; For non-HTTPS-aware clients, copy the CDNs' IPs.
+    www  300 IN A    192.0.2.2
+                A    192.0.2.4
+                AAAA 2001:db8::2
+                AAAA 2001:db8::4
+    ; The apex is aliased to www to match its configuration.
+    @   7200 IN HTTPS 0 www
+    ; Non-HTTPS-aware clients will use the same CDN IPs.
+    @    300 IN A    192.0.2.2
+                A    192.0.2.4
+                AAAA 2001:db8::2
+                AAAA 2001:db8::4
+
+Domain owners should be cautious when using a multi-CDN configuration, as it
+introduces a number of complexities highlighted by this example:
+
+* If CDN 1 supports ECH, and CDN 2 does not, the client is vulnerable to ECH
+  downgrade by a network adversary who blocks connections to CDN 1.
+* The domain owner must ensure that their copies of the CDNs' HTTPS, A, and AAAA
+  records are up-to-date.  Failure to update could lead to breakage when the
+  CDN changes its configuration, or conversely could make it impossible for
+  CDNs to change its configuration without breaking customers.  This could be
+  avoided in part by using multiple AliasMode or CNAME records (each in their
+  own RRSet), but that is not representable in a standard zone file.
+* The IP addresses in the customer zone are the CDN's fallback IPs.  It is not
+  safe in general to include all IPs of the CDN's SvcDomains, because some
+  SvcDomains may only be usable with the corresponding SvcParams.
+* Aliasing the apex to its subdomain simplifies the zone file but likely
+  increases resolution latency, especially when using a non-HTTPS-aware
+  recursive resolver.
+* Customers can copy SvcPriority verbatim (as in this example), or
+  modify it to control the fallback order.
 
 ## Non-HTTPS uses
 
