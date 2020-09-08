@@ -723,9 +723,9 @@ TargetName to be a domain for which the client will have already issued
 address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
 this might look like:
 
-    $ORIGIN example.com.        ; Origin
-    foo.example.com.            3600 IN CNAME foosvc.example.net.
-    _8080._foo.foo.example.com. 3600 IN CNAME foosvc.example.net.
+    $ORIGIN example.com. ; Origin
+    foo                  3600 IN CNAME foosvc.example.net.
+    _8080._foo.foo       3600 IN CNAME foosvc.example.net.
 
     $ORIGIN example.net.        ; Service provider zone
     foosvc.example.net.         3600 IN SVCB 1 . key65333=...
