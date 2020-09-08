@@ -723,12 +723,13 @@ TargetName to be a domain for which the client will have already issued
 address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
 this might look like:
 
-    ; Origin zone
-    foo.example.com.            3600 IN CNAME foosvc.example.net.
-    _8080._foo.foo.example.com. 3600 IN CNAME foosvc.example.net.
-    ; Service provider zone
-    foosvc.example.net. 3600 IN SVCB 1 . key65333=...
-    foosvc.example.net.  300 IN AAAA 2001:db8::1
+    $ORIGIN example.com. ; Origin
+    foo                  3600 IN CNAME foosvc.example.net.
+    _8080._foo.foo       3600 IN CNAME foosvc.example.net.
+
+    $ORIGIN example.net. ; Service provider zone
+    foosvc               3600 IN SVCB 1 . key65333=...
+    foosvc                300 IN AAAA 2001:db8::1
 
 Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
 this is likely unnecessary and makes responses slower and larger.
@@ -1167,8 +1168,9 @@ absence of an active adversary.
 
 Consider a simple zone of the form:
 
-    simple.example. 300 IN A    192.0.2.1
-                           AAAA 2001:db8::1
+    $ORIGIN simple.example. ; Simple example zone
+    @ 300 IN A    192.0.2.1
+             AAAA 2001:db8::1
 
 The domain owner could add this record:
 
