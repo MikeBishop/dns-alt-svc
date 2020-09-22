@@ -331,7 +331,8 @@ the service name with a label indicating the scheme, prefixed with an underscore
 resulting in a domain name like "_examplescheme.api.example.com.".
 
 Protocol mapping documents MAY specify additional underscore-prefixed labels
-to be prepended.  For schemes that specify a port (Section 3.2.3
+to be prepended (see {{other-standards}}).  For schemes that specify a port
+(Section 3.2.3
 of {{?URI=RFC3986}}), one reasonable possibility is to prepend the indicated port
 number (or the default if no port number is specified).  We term this behavior
 "Port Prefix Naming", and use it in the examples throughout this document.
@@ -1219,7 +1220,7 @@ records in ServiceMode:
 HTTPS RRs use similar Attrleaf labels if the origin contains
 a non-default port.
 
-# Interaction with other standards
+# Interaction with other standards {#other-standards}
 
 This standard is intended to reduce connection latency and
 improve user privacy.  Server operators implementing this standard
