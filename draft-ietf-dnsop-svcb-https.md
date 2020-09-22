@@ -51,18 +51,6 @@ By providing more information to the client before it attempts to
 establish a connection, these records offer potential benefits to
 both performance and privacy.
 
-TO BE REMOVED: This proposal is inspired by and based on recent DNS
-usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long
-standing desires to have SRV or a functional equivalent implemented
-for HTTP).  These proposals each provide an important function but are
-potentially incompatible with each other, such as when an origin is
-load-balanced across multiple hosting providers (multi-CDN).
-Furthermore, these each add potential cases for adding additional
-record lookups in addition to AAAA/A lookups. This design attempts to
-provide a unified framework that encompasses the key functionality of
-these proposals, as well as providing some extensibility for
-addressing similar future challenges.
-
 TO BE REMOVED: This document is being collaborated on in Github at:
 [https://github.com/MikeBishop/dns-alt-svc](https://github.com/MikeBishop/dns-alt-svc).
 The most recent working version of the document, open issues, etc. should all be
@@ -119,12 +107,6 @@ control for a resource; 2) "ServiceMode" binds together
 configuration information for a service endpoint.
 ServiceMode provides additional key=value parameters
 within each RDATA set.
-
-TO BE REMOVED: If we use this for providing configuration for DNS
-authorities, it is likely we'd specify a distinct "NS2" RR type that is
-an instantiation of SVCB for authoritative nameserver delegation and
-parameter specification, similar to HTTPS.
-See {{?I-D.tapril-ns2}} as one example.
 
 ## Goals of the SVCB RR
 
@@ -1004,10 +986,6 @@ Unlike Alt-Svc Field Values, HTTPS RRs can contain multiple ALPN
 IDs, and clients are encouraged to offer additional ALPNs that they
 support (subject to security constraints).
 
-TO BE REMOVED: The ALPN semantics in {{AltSvc}} are ambiguous, and
-problematic in some interpretations.  We should update {{AltSvc}}
-to give it well-defined semantics that match HTTPS RRs.
-
 ### Untrusted channel
 
 SVCB does not require or provide any assurance of authenticity.  (DNSSEC
@@ -1372,8 +1350,6 @@ be populated with the registrations below:
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
 | 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
 | 65535       | key65535        | Reserved ("Invalid key")        | (This document) |
-
-TODO: do we also want to reserve a range for greasing?
 
 ## Registry updates {#registry-updates}
 
