@@ -72,7 +72,7 @@ available there.  The authors (gratefully) accept pull requests.
 
 # Introduction
 
-The SVCB and HTTPS RRs provide clients with complete instructions
+The SVCB ("Service Binding") and HTTPS RRs provide clients with complete instructions
 for access to a service.  This information enables improved
 performance and privacy by avoiding transient connections to a sub-optimal
 default server, negotiating a preferred protocol, and providing relevant
