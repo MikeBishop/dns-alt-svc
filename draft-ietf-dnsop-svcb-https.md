@@ -1081,9 +1081,8 @@ of {{HSTS}}.
 
 ## HTTP-based protocols
 
-We define an "HTTP-based protocol" as one that involves connecting to an "http:"
-or "https:" URL.  When implementing an HTTP-based protocol, clients that use
-HTTPS RRs for HTTP SHOULD also use it for this URL.  For example, clients that
+All protocols employing "http://" or "https://" URLs SHOULD respect HTTPS RRs.
+For example, clients that
 support HTTPS RRs and implement the altered WebSocket {{!WebSocket=RFC6455}}
 opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RRs
 for the `requestURL`.
