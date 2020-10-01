@@ -324,15 +324,16 @@ If any RRs are malformed, the client MUST reject the entire RRSet and
 fall back to non-SVCB connection establishment.
 
 
-## SVCB owner names {#svcb-names}
+## SVCB query names {#svcb-names}
 
 When querying the SVCB RR, a service is translated into a QNAME by prepending
 the service name with a label indicating the scheme, prefixed with an underscore,
-resulting in a domain name like "_examplescheme.api.example.com.".
+resulting in a domain name like "_examplescheme.api.example.com.".  This
+follows the Attrleaf naming pattern {{Attrleaf}}, so the scheme MUST be
+registered appropriately with IANA (see {{other-standards}}).
 
 Protocol mapping documents MAY specify additional underscore-prefixed labels
-to be prepended (see {{other-standards}}).  For schemes that specify a port
-(Section 3.2.3
+to be prepended.  For schemes that specify a port (Section 3.2.3
 of {{?URI=RFC3986}}), one reasonable possibility is to prepend the indicated port
 number (or the default if no port number is specified).  We term this behavior
 "Port Prefix Naming", and use it in the examples throughout this document.
@@ -947,7 +948,7 @@ introduced in the HTTP Alternative Services proposed standard
 {{AltSvc}}.  Clients and servers that implement HTTPS RRs are
 not required to implement Alt-Svc.
 
-## Owner names for HTTPS RRs {#httpsnames}
+## Query names for HTTPS RRs {#httpsnames}
 
 The HTTPS RR uses Port Prefix Naming ({{svcb-names}}),
 with one modification: if the scheme is "https" and the port is 443,
