@@ -1000,13 +1000,13 @@ have a corresponding defined SvcParamKey.  For example, there is no
 SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
 this parameter is not safe to accept over an untrusted channel.
 
-### TTL and granularity
+### Cache lifetime
 
 There is no SvcParamKey corresponding to the Alt-Svc "ma" (max age) parameter.
 Instead, server operators encode the expiration time in the DNS TTL.
 
-The appropriate TTL value will typically be similar to the "ma" value
-used for Alt-Svc, but may vary depending on the desired efficiency and
+The appropriate TTL value might be different from the "ma" value
+used for Alt-Svc, depending on the desired efficiency and
 agility.  Some DNS caches incorrectly extend the lifetime of DNS
 records beyond the stated TTL, so server operators cannot rely on
 HTTPS RRs expiring on time.  Shortening the TTL to compensate
@@ -1015,6 +1015,8 @@ performance of correctly functioning caches and does not guarantee
 faster expiration from incorrect caches.  Instead, server operators
 SHOULD maintain compatibility with expired records until they observe
 that nearly all connections have migrated to the new configuration.
+
+### Granularity
 
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPS RR,
