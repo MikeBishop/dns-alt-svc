@@ -383,9 +383,8 @@ resolvers SHOULD pick one at random.
 
 The primary purpose of AliasMode is to allow aliasing
 at the zone apex, where CNAME is not allowed.
-In AliasMode, TargetName MUST be the name of a domain that has SVCB, AAAA,
-or A records.  It MUST NOT be equal to the owner name, as this would cause a
-loop.
+In AliasMode, TargetName MUST NOT be equal to the owner
+name, as this would cause a loop.
 
 For example, the operator of foo://example.com:8080 could
 point requests to a service operating at foosvc.example.net
