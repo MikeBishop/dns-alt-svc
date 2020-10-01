@@ -313,7 +313,7 @@ SvcParamKeys SHALL appear in increasing numeric order.
 
 Clients MUST consider an RR malformed if:
 
-* the parser reaches the end of the RDATA while parsing the SvcParams.
+* the parser reaches the end of the RDATA in a non-terminal state.
 * SvcParamKeys are not in strictly increasing numeric order.
 * the SvcParamValue for an SvcParamKey does not have the expected format.
 
