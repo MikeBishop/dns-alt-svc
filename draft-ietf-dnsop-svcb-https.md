@@ -1443,25 +1443,22 @@ ACTION: create and include a reference to this registry.
 
 A registration MUST include the following fields:
 
-* Number: SvcParamKey wire format numeric identifier (range 0-65535)
-* Name: SvcParamKey presentation name
+* Number: wire format numeric identifier (range 0-65535)
+* Name: unique presentation name
 * Meaning: a short description
-* Pointer to specification text
+* Reference: pointer to specification text
 
-SvcParamKey entries to be added to this namespace
-have different policies ({{!RFC8126}}, Section 4)
-based on their range:
+Apart from the initial contents, the SvcParamKey name MUST NOT start with "key".
 
-| Number      | IANA Policy             |
-| ----------- | ----------------------  |
-| 0-255       | Standards Action        |
-| 256-32767   | Expert Review           |
-| 32768-65280 | First Come First Served |
-| 65280-65534 | Private Use             |
-| 65535       | Standards Action        |
+Entries in this registry are subject to a Specification Required registration
+policy ({{!RFC8126}}, Section 4.6).  The provided specification MUST specify
+the SvcParamValue's presentation format and MAY detail its intended meaning
+and use.  Additionally, the registry SHALL allow registrants to have a Number
+temporarily marked as "Reserved" (without an associated Name)
+on a First Come First Served basis.
 
-Apart from the initial contents, the SvcParamKey
-name MUST NOT start with "key".
+This arrangement supports the development of new parameters while ensuring that
+zone files can be made interoperable.
 
 ### Initial contents {#iana-keys}
 
@@ -1477,8 +1474,8 @@ be populated with the registrations below:
 | 4           | ipv4hint        | IPv4 address hints              | (This document) |
 | 5           | echconfig       | Encrypted ClientHello info      | (This document) |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
-| 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
-| 65535       | key65535        | Reserved ("Invalid key")        | (This document) |
+| 65280-65534 | N/A             | Private Use                     | (This document) |
+| 65535       | (empty string)  | Reserved ("Invalid key")        | (This document) |
 
 ## Registry updates {#registry-updates}
 
