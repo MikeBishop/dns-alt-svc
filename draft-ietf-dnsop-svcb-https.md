@@ -703,25 +703,6 @@ in the initial response.  As a performance optimization, if some of the SVCB
 records in the response can be used without requiring additional DNS queries,
 the client MAY prefer those records, regardless of their priorities.
 
-## Structuring zones for performance
-
-To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD minimize the use of AliasMode records, and choose
-TargetName to be a domain for which the client will have already issued
-address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
-this might look like:
-
-    $ORIGIN example.com. ; Origin
-    foo                  3600 IN CNAME foosvc.example.net.
-    _8080._foo.foo       3600 IN CNAME foosvc.example.net.
-
-    $ORIGIN example.net. ; Service provider zone
-    foosvc               3600 IN SVCB 1 . key65333=...
-    foosvc                300 IN AAAA 2001:db8::1
-
-Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
-this is likely unnecessary and makes responses slower and larger.
-
 # Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for
@@ -1147,9 +1128,44 @@ Zone owners who do use such a mixed configuration SHOULD mark the RRs with
 without, in order to maximize the likelihood that ECH will be used in the
 absence of an active adversary.
 
-# Examples
+# Zone Structures
 
-## Protocol enhancements
+## Structuring zones for flexibility
+
+Each ServiceForm RRSet can only serve a single scheme.  The scheme is indicated
+by the owner name and the RR type.  For the generic SVCB RR type, this means that
+each owner name can only be used for a single scheme.  The underscore prefixing
+requirement ({{svcb-names}}) ensures that this is true for the initial query,
+but it is the responsibility of zone owners to choose names that satisfy this
+constraint when using aliases, including CNAME and AliasMode records.
+
+When using the generic SVCB RR type with aliasing, zone owners SHOULD choose alias
+target names that indicate the scheme in use (e.g. `foosvc.example.net` for
+`foo://` schemes).  This will help to avoid confusion when another scheme needs to
+be added to the configuration.
+
+## Structuring zones for performance
+
+To avoid a delay for clients using a nonconforming recursive resolver,
+domain owners SHOULD minimize the use of AliasMode records, and choose
+TargetName to be a domain for which the client will have already issued
+address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
+this might look like:
+
+    $ORIGIN example.com. ; Origin
+    foo                  3600 IN CNAME foosvc.example.net.
+    _8080._foo.foo       3600 IN CNAME foosvc.example.net.
+
+    $ORIGIN example.net. ; Service provider zone
+    foosvc               3600 IN SVCB 1 . key65333=...
+    foosvc                300 IN AAAA 2001:db8::1
+
+Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
+this is likely unnecessary and makes responses slower and larger.
+
+## Examples
+
+### Protocol enhancements
 
 Consider a simple zone of the form:
 
@@ -1166,7 +1182,7 @@ in addition to HTTPS over TCP (an implicit default).
 The record could also include other information
 (e.g. non-standard port, ECH configuration).
 
-## Apex aliasing
+### Apex aliasing
 
 Consider a zone that is using CNAME aliasing:
 
@@ -1192,7 +1208,7 @@ When connecting, clients will continue to treat the authoritative
 origins as "https://www.aliased.example" and "https://aliased.example",
 respectively, and will validate TLS server certificates accordingly.
 
-## Parameter binding
+### Parameter binding
 
 Suppose that svc.example's default server pool supports HTTP/2, and
 it has deployed HTTP/3 on a new server pool with a different
@@ -1212,7 +1228,7 @@ HTTPS RRs, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
 each server pool can have its own protocol, ECH configuration, etc.
 
-## Non-HTTPS uses
+### Non-HTTPS uses
 
 For services other than HTTPS, the SVCB RR and an Attrleaf label {{?Attrleaf}}
 will be used.  For example, to reach an example resource of
