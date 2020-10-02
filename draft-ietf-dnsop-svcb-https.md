@@ -508,13 +508,15 @@ procedure:
    acceptable parameters.  This TargetName and SvcParams represent the
    preferred endpoint.  If connection to this endpoint fails, the
    client MAY try to connect using values from a lower-priority record.
-   If all attempts fail, clients SHOULD go to step 5.
+   If all attempts fail, clients MAY terminate connection establishment
+   or proceed to step 5 (except as noted in {{ech-client-behavior}}).
 
 5. Try to use the endpoint consisting of $ADDR_QNAME, the authority endpoint's
    port number, and no SvcParams.
 
-6. If all of the above connection attempts fail, clients MAY connect to the
-   authority endpoint.
+If all of the above connection attempts fail, clients MAY connect to the
+authority endpoint (except as noted in {{client-failures}} and
+{{ech-client-behavior}}).
 
 This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
@@ -530,8 +532,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If a SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
 cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
-{{!DoH=RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME or the
-authority endpoint (steps 5 and 6 above).  Otherwise, an active attacker
+{{!DoH=RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME (step 5
+above) or the authority endpoint.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -542,7 +544,7 @@ selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it SHOULD NOT fall back to steps 5 or 6 if the SVCB
+it SHOULD NOT fall back to non-SVCB connection if a SVCB
 response fails to validate.
 
 If the client is unable to complete SVCB resolution due to its chain length
@@ -1127,13 +1129,12 @@ ECH.  Accordingly, ECH-capable clients SHALL implement the following
 behavior for connection establishment:
 
 1. Perform connection establishment using HTTPS RRs as described in
-   {{client-behavior}}, but do not fall back to address records (steps 5 and 6).
-   If there are compatible HTTPS RRs, they all have an "echconfig" key, and
-   attempts to connect to them all fail, terminate connection establishment.
+   {{client-behavior}}.  After step 4, if there were compatible HTTPS RRs,
+   they all had an "echconfig" key, and attempts to connect to them all failed,
+   terminate connection establishment.
 2. If the client implements Alt-Svc, try to connect using any entries from
    the Alt-Svc cache.
-3. Fall back to address records (steps 5 and 6 of {{client-behavior}}) if
-   necessary.
+3. Continue connection establishment as in {{client-behavior}} if necessary.
 
 As a latency optimization, clients MAY prefetch DNS records for later steps
 before they are needed.
