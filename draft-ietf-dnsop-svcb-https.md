@@ -643,7 +643,7 @@ This includes following any aliases that the resolver would ordinarily
 follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).
 
 See {{alias-mode}} for additional safeguards for recursive resolvers
-to implement to mitigate loop.
+to implement to mitigate loops.
 
 See {{incomplete-response}} for possible optimizations of this procedure.
 
