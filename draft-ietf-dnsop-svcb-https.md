@@ -391,18 +391,18 @@ any ServiceMode records in the set.
 
 
 
-### AliasMode
+### AliasMode {#alias-mode}
 
 In AliasMode, the SVCB record aliases a service to a
 TargetName.  SVCB RRSets SHOULD only have a single resource
 record in AliasMode.  If multiple are present, clients or recursive
 resolvers SHOULD pick one at random.
 
-The primary purpose of AliasMode is to allow aliasing
-at the zone apex, where CNAME is not allowed.
-In AliasMode, TargetName MUST be the name of a domain that has SVCB, AAAA,
-or A records.  It SHOULD NOT be equal to the owner name, as this would cause a
-loop.
+The primary purpose of AliasMode is to allow aliasing at the zone
+apex, where CNAME is not allowed.  In AliasMode, the TargetName will
+be the name of a domain that resolves to SVCB (or HTTPS),
+AAAA, or A records.  The TargetName SHOULD NOT be equal
+to the owner name, as this would result in a loop.
 
 For example, the operator of foo://example.com:8080 could
 point requests to a service operating at foosvc.example.net
@@ -642,9 +642,8 @@ resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
 follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).
 
-Recursive resolvers MUST implement reasonable loop prevention,
-such as for handling cases where the TargetName points to a name
-that in-turn points back to the same TargetName.
+See {{alias-mode}} for additional safeguards for recursive resolvers
+to implement to mitigate loop.
 
 See {{incomplete-response}} for possible optimizations of this procedure.
 
