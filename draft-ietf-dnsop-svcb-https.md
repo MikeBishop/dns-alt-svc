@@ -389,6 +389,9 @@ be the name of a domain that resolves to SVCB
 AAAA, and/or A records.  The TargetName SHOULD NOT be equal
 to the owner name, as this would result in a loop.
 
+In AliasMode, records SHOULD NOT include any SvcParams, and recipients MUST
+ignore any SvcParams that are present.
+
 For example, the operator of foo://example.com:8080 could
 point requests to a service operating at foosvc.example.net
 by publishing:
