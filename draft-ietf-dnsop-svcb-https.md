@@ -1227,7 +1227,7 @@ HTTPS RRs, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
 each server pool can have its own protocol, ECH configuration, etc.
 
-## Multi-CDN
+## Multi-CDN {#multicdn}
 
 The HTTPS RR is intended to support HTTPS services operated by
 multiple independent entities, such as different Content Delivery
@@ -1241,22 +1241,26 @@ having different DNS responses to different queries, either over time
 or due to logic within the authoritative DNS server:
 
      $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     ; This zone contains/returns different CNAME records
+     ; at different points-in-time.  The RRset for "www" can
+     ; only ever contain a single CNAME.  Sometimes the zone has:
      www 900 IN CNAME cdn1.svc1.example.      ; For some subset of DNS responses
+     ; and other times it contains:
      www 900 IN CNAME customer.svc2.example.  ; For the remaining DNS responses
 
      ; The apex is also aliased to www to match its configuration
-     @ 7200 IN HTTPS 0 www
+     @     7200 IN HTTPS 0 www
      ; Non-HTTPS-aware clients use non-CDN IPs
-       		A    203.0.113.82
-		AAAA 2001:db8:203::2
+                   A    203.0.113.82
+                   AAAA 2001:db8:203::2
 
      ; Resolutions following the cdn1.svc1.example path use these records.
      ; This CDN uses a different alternative service for HTTP/3.
      $ORIGIN svc1.example.  ; domain for CDN 1
-     cdn1 300 IN HTTPS 1 h3pool.svc1.example. alpn=h3 echconfig="123..."
-                 HTTPS 2 . alpn=h2 echconfig="123..."
-     	      	 A 192.0.2.2
-                 AAAA 2001:db8:192::4
+     cdn1     1800 IN HTTPS 1 h3pool alpn=h3 echconfig="123..."
+                      HTTPS 2 . alpn=h2 echconfig="123..."
+                      A    192.0.2.2
+                      AAAA 2001:db8:192::4
      h3pool 300 IN A 192.0.2.3
                 AAAA 2001:db8:192:7::3
 
@@ -1264,11 +1268,11 @@ or due to logic within the authoritative DNS server:
      ; Note that this CDN only supports HTTP/2.
      $ORIGIN svc2.example. ; domain operated by CDN 2     
      customer 300 IN HTTPS 1 . alpn=h2 echconfig="xyz..."
-     	      	 A 198.51.100.2
-     	      	 A 198.51.100.3
-     	      	 A 198.51.100.4
-                 AAAA 2001:db8:198::7
-                 AAAA 2001:db8:198::12
+               60 IN A    198.51.100.2
+                     A    198.51.100.3
+                     A    198.51.100.4
+                     AAAA 2001:db8:198::7
+                     AAAA 2001:db8:198::12
 
 Note that in the above example, the different CDNs have different
 echconfig and different capabilities, but clients will use HTTPS RRs
