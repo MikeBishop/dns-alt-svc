@@ -364,15 +364,27 @@ addition to the default transport protocol for "foo://".
 
 (Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
 
-## Modes
+## Interpretation
 
-When SvcPriority is 0 the SVCB record is in AliasMode. Otherwise, it is in ServiceMode.
+### SvcPriority {#pri}
+
+When SvcPriority is 0 the SVCB record is in AliasMode ({{alias-mode}}).
+Otherwise, it is in ServiceMode ({{service-mode}}).
 
 Within a SVCB RRSet,
 all RRs SHOULD have the same Mode.
 If an RRSet contains a record in AliasMode, the recipient MUST ignore
 any ServiceMode records in the set.
 
+RRSets are explicitly unordered collections, so the
+SvcPriority field is used to impose an ordering on SVCB RRs.
+SVCB RRs with a smaller SvcPriority value SHOULD be given
+preference over RRs with a larger SvcPriority value.
+
+When receiving an RRSet containing multiple SVCB records with the
+same SvcPriority value, clients SHOULD apply a random shuffle within a
+priority level to the records before using them, to ensure uniform
+load-balancing.
 
 
 ### AliasMode {#alias-mode}
@@ -432,7 +444,7 @@ AliasMode records only apply to queries for the specific RR type.
 For example, a SVCB record cannot alias to an HTTPS record,
 nor vice-versa.
 
-### ServiceMode
+### ServiceMode {#service-mode}
 
 In ServiceMode, the TargetName and SvcParams within each resource record
 associate an alternative endpoint for the service with its connection
@@ -443,18 +455,6 @@ explains how SvcParams are applied for connections of that scheme.
 Unless specified otherwise by the
 protocol mapping, clients MUST ignore any SvcParam that they do
 not recognize.
-
-### SvcPriority {#pri}
-
-RRSets are explicitly unordered collections, so the
-SvcPriority field is used to impose an ordering on SVCB RRs.
-SVCB RRs with a smaller SvcPriority value SHOULD be given
-preference over RRs with a larger SvcPriority value.
-
-When receiving an RRSet containing multiple SVCB records with the
-same SvcPriority value, clients SHOULD apply a random shuffle within a
-priority level to the records before using them, to ensure uniform
-load-balancing.
 
 ## Special handling of "." in TargetName {#dot}
 
