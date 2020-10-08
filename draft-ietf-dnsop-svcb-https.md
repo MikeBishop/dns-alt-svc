@@ -42,7 +42,7 @@ informative:
 This document specifies the "SVCB" and "HTTPS" DNS resource record (RR)
 types to facilitate the lookup of information needed to make connections
 to network services, such as for HTTPS origins.  SVCB records
-allow a service to be provided from multiple alternative endpoints, 
+allow a service to be provided from multiple alternative endpoints,
 each with associated parameters (such as transport protocol
 configuration and keys for encrypting the TLS ClientHello).  They also
 enable aliasing of apex domains, which is not possible with CNAME.
@@ -160,7 +160,7 @@ The SVCB RR has two mandatory fields and one optional.  The fields are:
    AliasMode) or the alternative endpoint (for ServiceMode).
 3. SvcParams (optional): A list of key=value pairs
    describing the alternative endpoint at
-   TargetName (only used in ServiceMode and otherwise ignored). 
+   TargetName (only used in ServiceMode and otherwise ignored).
    Described in {{presentation}}.
 
 Cooperating DNS recursive resolvers will perform subsequent record
@@ -229,7 +229,7 @@ The algorithm for resolving SVCB records and associated
 address records is specified in {{client-behavior}}.
 
 Other SVCB-compatible resource record types
-can also be defined as-needed.  In particular, the 
+can also be defined as-needed.  In particular, the
 HTTPS RR (RR type 65) provides special handling
 for the case of "https" origins as described in {{https}}.
 
@@ -1235,7 +1235,7 @@ each server pool can have its own protocol, ECH configuration, etc.
 
 For services other than HTTPS, the SVCB RR and an Attrleaf label {{?Attrleaf}}
 will be used.  For example, to reach an example resource of
-"baz://api.example.com:8765", the following SVCB 
+"baz://api.example.com:8765", the following SVCB
 record would be used to alias it to "svc4-baz.example.net."
 which in-turn could return AAAA/A records and/or SVCB
 records in ServiceMode:
@@ -1346,7 +1346,7 @@ A registration MUST include the following fields:
 * Pointer to specification text
 
 SvcParamKey entries to be added to this namespace
-have different policies ({{!RFC5226}}, Section 4.1)
+have different policies ({{!RFC8126}}, Section 4)
 based on their range:
 
 | Number      | IANA Policy             |
