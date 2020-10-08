@@ -1346,7 +1346,7 @@ A registration MUST include the following fields:
 * Pointer to specification text
 
 SvcParamKey entries to be added to this namespace
-have different policies ({{!RFC5226}}, Section 4.1)
+have different policies ({{!RFC8126}}, Section 4)
 based on their range:
 
 | Number      | IANA Policy             |
