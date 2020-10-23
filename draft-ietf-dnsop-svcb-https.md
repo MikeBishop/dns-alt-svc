@@ -1240,21 +1240,28 @@ This example shows such a configuration, with www.customer.example
 having different DNS responses to different queries, either over time
 or due to logic within the authoritative DNS server:
 
-     $ORIGIN customer.example.  ; A Multi-CDN customer domain
      ; This zone contains/returns different CNAME records
      ; at different points-in-time.  The RRset for "www" can
-     ; only ever contain a single CNAME.  Sometimes the zone has:
-     www 900 IN CNAME cdn1.svc1.example.      ; For some subset of DNS responses
-     ; and other times it contains:
-     www 900 IN CNAME customer.svc2.example.  ; For the remaining DNS responses
+     ; only ever contain a single CNAME.
 
+     ; Sometimes the zone has:
+     $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     www 900 IN CNAME cdn1.svc1.example.
+
+     ; and other times it contains:
+     $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     www 900 IN CNAME customer.svc2.example.
+
+     ; With the following remaining constant and always included:
+     $ORIGIN customer.example.  ; A Multi-CDN customer domain
      ; The apex is also aliased to www to match its configuration
      @     7200 IN HTTPS 0 www
      ; Non-HTTPS-aware clients use non-CDN IPs
                    A    203.0.113.82
                    AAAA 2001:db8:203::2
 
-     ; Resolutions following the cdn1.svc1.example path use these records.
+     ; Resolutions following the cdn1.svc1.example
+     ; path use these records.
      ; This CDN uses a different alternative service for HTTP/3.
      $ORIGIN svc1.example.  ; domain for CDN 1
      cdn1     1800 IN HTTPS 1 h3pool alpn=h3 echconfig="123..."
@@ -1264,7 +1271,8 @@ or due to logic within the authoritative DNS server:
      h3pool 300 IN A 192.0.2.3
                 AAAA 2001:db8:192:7::3
 
-     ; Resolutions following the customer.svc2.example path use these records.
+     ; Resolutions following the customer.svc2.example
+     ; path use these records.
      ; Note that this CDN only supports HTTP/2.
      $ORIGIN svc2.example. ; domain operated by CDN 2     
      customer 300 IN HTTPS 1 . alpn=h2 echconfig="xyz..."
