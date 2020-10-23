@@ -1250,11 +1250,11 @@ or due to logic within the authoritative DNS server:
      www 900 IN CNAME cdn1.svc1.example.
 
      ; and other times it contains:
-     $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     $ORIGIN customer.example.
      www 900 IN CNAME customer.svc2.example.
 
      ; and yet other times it contains:
-     $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     $ORIGIN customer.example.
      www 900 IN CNAME cdn3.svc3.example.
 
      ; With the following remaining constant and always included:
@@ -1310,7 +1310,7 @@ introduces a number of complexities highlighted by this example:
   recursive resolver.  An alternative would be to alias the zone
   apex directly to a name managed by a CDN.
 
-* The A, AAAA, HTTPS resolutions are independent lookups so may
+* The A, AAAA, HTTPS resolutions are independent lookups so clients may
   observe and follow different CNAMEs to different CDNs.
   Clients may thus find a SvcDomainName pointing to a name
   other than the one which returned along with the A and AAAA lookups
@@ -1318,7 +1318,7 @@ introduces a number of complexities highlighted by this example:
   Including ipv6hint and ipv4hint will reduce the performance
   impact of this case.
 
-* If only not all CDNs publish HTTPS records, clients will sometimes
+* If not all CDNs publish HTTPS records, clients will sometimes
   receive NODATA for HTTPS queries (as with cdn3.svc3.example above),
   and thus no echconfig, but could receive A/AAAA records from
   a different CDN which does support ECH.  Clients will be unable
