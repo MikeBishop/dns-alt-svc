@@ -51,18 +51,6 @@ By providing more information to the client before it attempts to
 establish a connection, these records offer potential benefits to
 both performance and privacy.
 
-TO BE REMOVED: This proposal is inspired by and based on recent DNS
-usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long
-standing desires to have SRV or a functional equivalent implemented
-for HTTP).  These proposals each provide an important function but are
-potentially incompatible with each other, such as when an origin is
-load-balanced across multiple hosting providers (multi-CDN).
-Furthermore, these each add potential cases for adding additional
-record lookups in addition to AAAA/A lookups. This design attempts to
-provide a unified framework that encompasses the key functionality of
-these proposals, as well as providing some extensibility for
-addressing similar future challenges.
-
 TO BE REMOVED: This document is being collaborated on in Github at:
 [https://github.com/MikeBishop/dns-alt-svc](https://github.com/MikeBishop/dns-alt-svc).
 The most recent working version of the document, open issues, etc. should all be
@@ -72,7 +60,7 @@ available there.  The authors (gratefully) accept pull requests.
 
 # Introduction
 
-The SVCB and HTTPS RRs provide clients with complete instructions
+The SVCB ("Service Binding") and HTTPS RRs provide clients with complete instructions
 for access to a service.  This information enables improved
 performance and privacy by avoiding transient connections to a sub-optimal
 default server, negotiating a preferred protocol, and providing relevant
@@ -119,12 +107,6 @@ control for a resource; 2) "ServiceMode" binds together
 configuration information for a service endpoint.
 ServiceMode provides additional key=value parameters
 within each RDATA set.
-
-TO BE REMOVED: If we use this for providing configuration for DNS
-authorities, it is likely we'd specify a distinct "NS2" RR type that is
-an instantiation of SVCB for authoritative nameserver delegation and
-parameter specification, similar to HTTPS.
-See {{?I-D.tapril-ns2}} as one example.
 
 ## Goals of the SVCB RR
 
@@ -331,7 +313,7 @@ SvcParamKeys SHALL appear in increasing numeric order.
 
 Clients MUST consider an RR malformed if:
 
-* the parser reaches the end of the RDATA while parsing the SvcParams.
+* the end of the RDATA occurs within a SvcParam.
 * SvcParamKeys are not in strictly increasing numeric order.
 * the SvcParamValue for an SvcParamKey does not have the expected format.
 
@@ -342,11 +324,13 @@ If any RRs are malformed, the client MUST reject the entire RRSet and
 fall back to non-SVCB connection establishment.
 
 
-## SVCB owner names {#svcb-names}
+## SVCB query names {#svcb-names}
 
 When querying the SVCB RR, a service is translated into a QNAME by prepending
 the service name with a label indicating the scheme, prefixed with an underscore,
-resulting in a domain name like "_examplescheme.api.example.com.".
+resulting in a domain name like "_examplescheme.api.example.com.".  This
+follows the Attrleaf naming pattern {{Attrleaf}}, so the scheme MUST be
+registered appropriately with IANA (see {{other-standards}}).
 
 Protocol mapping documents MAY specify additional underscore-prefixed labels
 to be prepended.  For schemes that specify a port (Section 3.2.3
@@ -380,15 +364,27 @@ addition to the default transport protocol for "foo://".
 
 (Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
 
-## Modes
+## Interpretation
 
-When SvcPriority is 0 the SVCB record is in AliasMode. Otherwise, it is in ServiceMode.
+### SvcPriority {#pri}
+
+When SvcPriority is 0 the SVCB record is in AliasMode ({{alias-mode}}).
+Otherwise, it is in ServiceMode ({{service-mode}}).
 
 Within a SVCB RRSet,
 all RRs SHOULD have the same Mode.
 If an RRSet contains a record in AliasMode, the recipient MUST ignore
 any ServiceMode records in the set.
 
+RRSets are explicitly unordered collections, so the
+SvcPriority field is used to impose an ordering on SVCB RRs.
+SVCB RRs with a smaller SvcPriority value SHOULD be given
+preference over RRs with a larger SvcPriority value.
+
+When receiving an RRSet containing multiple SVCB records with the
+same SvcPriority value, clients SHOULD apply a random shuffle within a
+priority level to the records before using them, to ensure uniform
+load-balancing.
 
 
 ### AliasMode {#alias-mode}
@@ -448,7 +444,7 @@ AliasMode records only apply to queries for the specific RR type.
 For example, a SVCB record cannot alias to an HTTPS record,
 nor vice-versa.
 
-### ServiceMode
+### ServiceMode {#service-mode}
 
 In ServiceMode, the TargetName and SvcParams within each resource record
 associate an alternative endpoint for the service with its connection
@@ -459,18 +455,6 @@ explains how SvcParams are applied for connections of that scheme.
 Unless specified otherwise by the
 protocol mapping, clients MUST ignore any SvcParam that they do
 not recognize.
-
-### SvcPriority {#pri}
-
-RRSets are explicitly unordered collections, so the
-SvcPriority field is used to impose an ordering on SVCB RRs.
-SVCB RRs with a smaller SvcPriority value SHOULD be given
-preference over RRs with a larger SvcPriority value.
-
-When receiving an RRSet containing multiple SVCB records with the
-same SvcPriority value, clients SHOULD apply a random shuffle within a
-priority level to the records before using them, to ensure uniform
-load-balancing.
 
 ## Special handling of "." in TargetName {#dot}
 
@@ -719,24 +703,6 @@ in the initial response.  As a performance optimization, if some of the SVCB
 records in the response can be used without requiring additional DNS queries,
 the client MAY prefer those records, regardless of their priorities.
 
-## Structuring zones for performance
-
-To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD minimize the use of AliasMode records, and choose
-TargetName to be a domain for which the client will have already issued
-address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
-this might look like:
-
-    ; Origin zone
-    foo.example.com.            3600 IN CNAME foosvc.example.net.
-    _8080._foo.foo.example.com. 3600 IN CNAME foosvc.example.net.
-    ; Service provider zone
-    foosvc.example.net. 3600 IN SVCB 1 . key65333=...
-    foosvc.example.net.  300 IN AAAA 2001:db8::1
-
-Domain owners SHOULD avoid using a SvcDomainName that is below a DNAME, as
-this is likely unnecessary and makes responses slower and larger.
-
 # Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for
@@ -745,7 +711,7 @@ HTTPS, and most are applicable to other protocols as well.
 ## "alpn" and "no-default-alpn" {#alpn-key}
 
 The "alpn" and "no-default-alpn" SvcParamKeys together
-indicate the set of Application Layer Protocol Negotation (ALPN)
+indicate the set of Application Layer Protocol Negotiation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
 and associated transport protocols supported by this service endpoint.
 
@@ -917,6 +883,8 @@ In presentation format, "mandatory" contains a list of one or more valid
 SvcParamKeys, either by their registered name or in the unknown-key format
 ({{presentation}}).  Keys MAY appear in any order, but MUST NOT appear more
 than once.  Any listed keys MUST also appear in the SvcParams.
+To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
+
 For example, the following is a valid list of SvcParams:
 
     echconfig=... key65333=ex1 key65444=ex2 mandatory=key65444,echconfig
@@ -965,7 +933,7 @@ introduced in the HTTP Alternative Services proposed standard
 {{AltSvc}}.  Clients and servers that implement HTTPS RRs are
 not required to implement Alt-Svc.
 
-## Owner names for HTTPS RRs {#httpsnames}
+## Query names for HTTPS RRs {#httpsnames}
 
 The HTTPS RR uses Port Prefix Naming ({{svcb-names}}),
 with one modification: if the scheme is "https" and the port is 443,
@@ -1005,10 +973,6 @@ Unlike Alt-Svc Field Values, HTTPS RRs can contain multiple ALPN
 IDs, and clients are encouraged to offer additional ALPNs that they
 support (subject to security constraints).
 
-TO BE REMOVED: The ALPN semantics in {{AltSvc}} are ambiguous, and
-problematic in some interpretations.  We should update {{AltSvc}}
-to give it well-defined semantics that match HTTPS RRs.
-
 ### Untrusted channel
 
 SVCB does not require or provide any assurance of authenticity.  (DNSSEC
@@ -1022,13 +986,13 @@ have a corresponding defined SvcParamKey.  For example, there is no
 SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
 this parameter is not safe to accept over an untrusted channel.
 
-### TTL and granularity
+### Cache lifetime
 
 There is no SvcParamKey corresponding to the Alt-Svc "ma" (max age) parameter.
 Instead, server operators encode the expiration time in the DNS TTL.
 
-The appropriate TTL value will typically be similar to the "ma" value
-used for Alt-Svc, but may vary depending on the desired efficiency and
+The appropriate TTL value might be different from the "ma" value
+used for Alt-Svc, depending on the desired efficiency and
 agility.  Some DNS caches incorrectly extend the lifetime of DNS
 records beyond the stated TTL, so server operators cannot rely on
 HTTPS RRs expiring on time.  Shortening the TTL to compensate
@@ -1037,6 +1001,8 @@ performance of correctly functioning caches and does not guarantee
 faster expiration from incorrect caches.  Instead, server operators
 SHOULD maintain compatibility with expired records until they observe
 that nearly all connections have migrated to the new configuration.
+
+### Granularity
 
 Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
 Field Value specifically to the client.  When using an HTTPS RR,
@@ -1103,9 +1069,8 @@ of {{HSTS}}.
 
 ## HTTP-based protocols
 
-We define an "HTTP-based protocol" as one that involves connecting to an "http:"
-or "https:" URL.  When implementing an HTTP-based protocol, clients that use
-HTTPS RRs for HTTP SHOULD also use it for this URL.  For example, clients that
+All protocols employing "http://" or "https://" URLs SHOULD respect HTTPS RRs.
+For example, clients that
 support HTTPS RRs and implement the altered WebSocket {{!WebSocket=RFC6455}}
 opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RRs
 for the `requestURL`.
@@ -1163,14 +1128,50 @@ Zone owners who do use such a mixed configuration SHOULD mark the RRs with
 without, in order to maximize the likelihood that ECH will be used in the
 absence of an active adversary.
 
-# Examples
+# Zone Structures
 
-## Protocol enhancements
+## Structuring zones for flexibility
+
+Each ServiceForm RRSet can only serve a single scheme.  The scheme is indicated
+by the owner name and the RR type.  For the generic SVCB RR type, this means that
+each owner name can only be used for a single scheme.  The underscore prefixing
+requirement ({{svcb-names}}) ensures that this is true for the initial query,
+but it is the responsibility of zone owners to choose names that satisfy this
+constraint when using aliases, including CNAME and AliasMode records.
+
+When using the generic SVCB RR type with aliasing, zone owners SHOULD choose alias
+target names that indicate the scheme in use (e.g. `foosvc.example.net` for
+`foo://` schemes).  This will help to avoid confusion when another scheme needs to
+be added to the configuration.
+
+## Structuring zones for performance
+
+To avoid a delay for clients using a nonconforming recursive resolver,
+domain owners SHOULD minimize the use of AliasMode records, and choose
+TargetName to be a domain for which the client will have already issued
+address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
+this might look like:
+
+    $ORIGIN example.com. ; Origin
+    foo                  3600 IN CNAME foosvc.example.net.
+    _8080._foo.foo       3600 IN CNAME foosvc.example.net.
+
+    $ORIGIN example.net. ; Service provider zone
+    foosvc               3600 IN SVCB 1 . key65333=...
+    foosvc                300 IN AAAA 2001:db8::1
+
+Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
+this is likely unnecessary and makes responses slower and larger.
+
+## Examples
+
+### Protocol enhancements
 
 Consider a simple zone of the form:
 
-    simple.example. 300 IN A    192.0.2.1
-                           AAAA 2001:db8::1
+    $ORIGIN simple.example. ; Simple example zone
+    @ 300 IN A    192.0.2.1
+             AAAA 2001:db8::1
 
 The domain owner could add this record:
 
@@ -1181,7 +1182,7 @@ in addition to HTTPS over TCP (an implicit default).
 The record could also include other information
 (e.g. non-standard port, ECH configuration).
 
-## Apex aliasing
+### Apex aliasing
 
 Consider a zone that is using CNAME aliasing:
 
@@ -1207,7 +1208,7 @@ When connecting, clients will continue to treat the authoritative
 origins as "https://www.aliased.example" and "https://aliased.example",
 respectively, and will validate TLS server certificates accordingly.
 
-## Parameter binding
+### Parameter binding
 
 Suppose that svc.example's default server pool supports HTTP/2, and
 it has deployed HTTP/3 on a new server pool with a different
@@ -1227,7 +1228,7 @@ HTTPS RRs, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
 each server pool can have its own protocol, ECH configuration, etc.
 
-## Multi-CDN {#multicdn}
+### Multi-CDN {#multicdn}
 
 The HTTPS RR is intended to support HTTPS services operated by
 multiple independent entities, such as different Content Delivery
@@ -1297,9 +1298,7 @@ introduces a number of complexities highlighted by this example:
   recursive resolver.  An alternative would be to alias the zone
   apex directly to a name managed by a CDN.
 
-
-
-## Non-HTTPS uses
+### Non-HTTPS uses
 
 For services other than HTTPS, the SVCB RR and an Attrleaf label {{?Attrleaf}}
 will be used.  For example, to reach an example resource of
@@ -1313,7 +1312,7 @@ records in ServiceMode:
 HTTPS RRs use similar Attrleaf labels if the origin contains
 a non-default port.
 
-# Interaction with other standards
+# Interaction with other standards {#other-standards}
 
 This standard is intended to reduce connection latency and
 improve user privacy.  Server operators implementing this standard
@@ -1444,8 +1443,6 @@ be populated with the registrations below:
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
 | 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
 | 65535       | key65535        | Reserved ("Invalid key")        | (This document) |
-
-TODO: do we also want to reserve a range for greasing?
 
 ## Registry updates {#registry-updates}
 
