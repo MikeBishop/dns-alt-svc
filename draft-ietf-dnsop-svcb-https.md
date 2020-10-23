@@ -677,9 +677,9 @@ For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
     _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net. (
-        echconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
+        echconfig="111..." ipv6hint=2001:db8::1 port=1234 )
                                    SVCB 2 svc2.example.net. (
-        echconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
+        echconfig="222..." ipv6hint=2001:db8::2 port=1234 )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
 it MAY proceed with TLS on that connection using `echconfig="222..."`, even
@@ -1178,7 +1178,7 @@ Consider a simple zone of the form:
 
 The domain owner could add this record:
 
-    simple.example. 7200 IN HTTPS 1 . alpn=h3 ...
+    simple.example. 7200 IN HTTPS 1 . alpn=h3
 
 to indicate that simple.example uses HTTPS, and supports QUIC
 in addition to HTTPS over TCP (an implicit default).
@@ -1230,6 +1230,102 @@ whether the client supports HTTPS RRs or not.  If the client does support
 HTTPS RRs, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
 each server pool can have its own protocol, ECH configuration, etc.
+
+### Multi-CDN {#multicdn}
+
+The HTTPS RR is intended to support HTTPS services operated by
+multiple independent entities, such as different Content Delivery
+Networks (CDNs) or different hosting providers.  This includes
+the case where a service is migrated from one operator to another,
+as well as the case where the service is multiplexed between
+multiple operators for performance, redundancy, etc.
+
+This example shows such a configuration, with www.customer.example
+having different DNS responses to different queries, either over time
+or due to logic within the authoritative DNS server:
+
+     ; This zone contains/returns different CNAME records
+     ; at different points-in-time.  The RRset for "www" can
+     ; only ever contain a single CNAME.
+
+     ; Sometimes the zone has:
+     $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     www 900 IN CNAME cdn1.svc1.example.
+
+     ; and other times it contains:
+     $ORIGIN customer.example.
+     www 900 IN CNAME customer.svc2.example.
+
+     ; and yet other times it contains:
+     $ORIGIN customer.example.
+     www 900 IN CNAME cdn3.svc3.example.
+
+     ; With the following remaining constant and always included:
+     $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     ; The apex is also aliased to www to match its configuration
+     @     7200 IN HTTPS 0 www
+     ; Non-HTTPS-aware clients use non-CDN IPs
+                   A    203.0.113.82
+                   AAAA 2001:db8:203::2
+
+     ; Resolutions following the cdn1.svc1.example
+     ; path use these records.
+     ; This CDN uses a different alternative service for HTTP/3.
+     $ORIGIN svc1.example.  ; domain for CDN 1
+     cdn1     1800 IN HTTPS 1 h3pool alpn=h3 echconfig="123..."
+                      HTTPS 2 . alpn=h2 echconfig="123..."
+                      A    192.0.2.2
+                      AAAA 2001:db8:192::4
+     h3pool 300 IN A 192.0.2.3
+                AAAA 2001:db8:192:7::3
+
+     ; Resolutions following the customer.svc2.example
+     ; path use these records.
+     ; Note that this CDN only supports HTTP/2.
+     $ORIGIN svc2.example. ; domain operated by CDN 2     
+     customer 300 IN HTTPS 1 . alpn=h2 echconfig="xyz..."
+               60 IN A    198.51.100.2
+                     A    198.51.100.3
+                     A    198.51.100.4
+                     AAAA 2001:db8:198::7
+                     AAAA 2001:db8:198::12
+
+     ; Resolutions following the customer.svc2.example
+     ; path use these records.
+     ; Note that this CDN has no HTTPS records
+     ; and thus no ECH support.
+     $ORIGIN svc3.example. ; domain operated by CDN 3 
+     cdn3      60 IN A    203.0.113.8
+                     AAAA 2001:db8:113::8
+
+Note that in the above example, the different CDNs have different
+echconfig and different capabilities, but clients will use HTTPS RRs
+as a bound-together unit.
+
+Domain owners should be cautious when using a multi-CDN configuration, as it
+introduces a number of complexities highlighted by this example:
+
+* If CDN 1 supports ECH, and CDN 2 does not, the client is vulnerable to ECH
+  downgrade by a network adversary who forces clients to get CDN 2 records.
+
+* Aliasing the apex to its subdomain simplifies the zone file but likely
+  increases resolution latency, especially when using a non-HTTPS-aware
+  recursive resolver.  An alternative would be to alias the zone
+  apex directly to a name managed by a CDN.
+
+* The A, AAAA, HTTPS resolutions are independent lookups so clients may
+  observe and follow different CNAMEs to different CDNs.
+  Clients may thus find a SvcDomainName pointing to a name
+  other than the one which returned along with the A and AAAA lookups
+  and will need to do an additional resolution for them.
+  Including ipv6hint and ipv4hint will reduce the performance
+  impact of this case.
+
+* If not all CDNs publish HTTPS records, clients will sometimes
+  receive NODATA for HTTPS queries (as with cdn3.svc3.example above),
+  and thus no echconfig, but could receive A/AAAA records from
+  a different CDN which does support ECH.  Clients will be unable
+  to use ECH in this case.
 
 ### Non-HTTPS uses
 
