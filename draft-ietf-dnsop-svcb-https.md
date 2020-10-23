@@ -1253,6 +1253,10 @@ or due to logic within the authoritative DNS server:
      $ORIGIN customer.example.  ; A Multi-CDN customer domain
      www 900 IN CNAME customer.svc2.example.
 
+     ; and yet other times it contains:
+     $ORIGIN customer.example.  ; A Multi-CDN customer domain
+     www 900 IN CNAME cdn3.svc3.example.
+
      ; With the following remaining constant and always included:
      $ORIGIN customer.example.  ; A Multi-CDN customer domain
      ; The apex is also aliased to www to match its configuration
@@ -1283,6 +1287,14 @@ or due to logic within the authoritative DNS server:
                      AAAA 2001:db8:198::7
                      AAAA 2001:db8:198::12
 
+     ; Resolutions following the customer.svc2.example
+     ; path use these records.
+     ; Note that this CDN has no HTTPS records
+     ; and thus no ECH support.
+     $ORIGIN svc3.example. ; domain operated by CDN 3 
+     cdn3      60 IN A    203.0.113.8
+                     AAAA 2001:db8:113::8
+
 Note that in the above example, the different CDNs have different
 echconfig and different capabilities, but clients will use HTTPS RRs
 as a bound-together unit.
@@ -1297,6 +1309,20 @@ introduces a number of complexities highlighted by this example:
   increases resolution latency, especially when using a non-HTTPS-aware
   recursive resolver.  An alternative would be to alias the zone
   apex directly to a name managed by a CDN.
+
+* The A, AAAA, HTTPS resolutions are independent lookups so may
+  observe and follow different CNAMEs to different CDNs.
+  Clients may thus find a SvcDomainName pointing to a name
+  other than the one which returned along with the A and AAAA lookups
+  and will need to do an additional resolution for them.
+  Including ipv6hint and ipv4hint will reduce the performance
+  impact of this case.
+
+* If only not all CDNs publish HTTPS records, clients will sometimes
+  receive NODATA for HTTPS queries (as with cdn3.svc3.example above),
+  and thus no echconfig, but could receive A/AAAA records from
+  a different CDN which does support ECH.  Clients will be unable
+  to use ECH in this case.
 
 ### Non-HTTPS uses
 
