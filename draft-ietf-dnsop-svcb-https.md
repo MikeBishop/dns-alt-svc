@@ -279,6 +279,10 @@ value of the key type without leading zeros.
 A SvcParam in this form SHALL be parsed as specified above, and
 the decoded `value` SHALL be used as its wire format encoding.
 
+For some SvcParamKeys, the SvcParamValue corresponds to a list or set of
+items.  Presentation formats for such keys SHOULD make use of the decoding
+algorithm in {{value-list}}, producing a "value-list".
+
 SvcParams in presentation format MAY appear in any order, but keys MUST NOT be
 repeated.
 
@@ -742,10 +746,10 @@ ALPNs are identified by their registered "Identification Sequence"
 
     alpn-id = 1*255OCTET
 
-"alpn" is a multi-valued SvcParamKey.  To construct the value list, apply the
-value list decoding algorithm ({{value-list}}) to the SvcParamValue.
-Each decoded value in the "alpn" value list
-SHALL be an `alpn-id`.  The value list MUST NOT be empty.
+"alpn" is a multi-valued SvcParamKey.  To construct its value-list, apply the
+value-list decoding algorithm ({{value-list}}) to the SvcParamValue.
+Each decoded value in the "alpn" value-list
+SHALL be an `alpn-id`.  The value-list MUST NOT be empty.
 
 The wire format value for "alpn" consists of at least one
 `alpn-id` prefixed by its length as a single octet, and these length-value
@@ -857,9 +861,9 @@ addresses in response to the TargetName query. Failure to use A and/or
 AAAA response addresses could negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
-To construct the value list, apply the value list decoding algorithm
+To construct the value-list, apply the value-list decoding algorithm
 ({{value-list}}) to the SvcParamValue.
-Each decoded value in the value list SHALL be an IP address of the appropriate
+Each decoded value in the value-list SHALL be an IP address of the appropriate
 family in standard textual format {{!RFC5952}}.  To enable simpler parsing,
 this SvcParamValue MUST NOT contain escape sequences.
 
@@ -903,7 +907,7 @@ SvcParamKeys, either by their registered name or in the unknown-key format
 ({{presentation}}).  Keys MAY appear in any order, but MUST NOT appear more
 than once.  Any listed keys MUST also appear in the SvcParams.
 
-To construct the value list, apply the value list decoding algorithm
+To construct the value-list, apply the value-list decoding algorithm
 ({{value-list}}) to the SvcParamValue.  To enable simpler parsing, this
 SvcParamValue MUST NOT contain escape sequences.
 
@@ -915,7 +919,7 @@ In wire format, the keys are represented by their numeric values in
 network byte order, concatenated in ascending order.
 
 This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
-own value list.  Other automatically mandatory keys SHOULD NOT appear in the
+own value-list.  Other automatically mandatory keys SHOULD NOT appear in the
 list either.  (Including them wastes space and otherwise has no effect.)
 
 # Using SVCB with HTTPS and HTTP {#https}
@@ -1419,7 +1423,7 @@ In this document, this algorithm is referred to as "character-string decoding".
 The algorithm is the same as used by `<character-string>` in RFC 1035,
 although the output length in this document is not limited to 255 octets.
 
-## Decoding a value list {#value-list}
+## Decoding a value-list {#value-list}
 
 In order to represent lists of values in zone files, this specification uses
 an extended version of character-string decoding that adds the use of ","
