@@ -508,10 +508,11 @@ procedure:
    acceptable parameters.  This TargetName and SvcParams represent the
    preferred endpoint.  If connection to this endpoint fails, the
    client MAY try to connect using values from a lower-priority record.
-   If all attempts fail, clients MAY terminate connection establishment
-   or proceed to step 5 (except as noted in {{ech-client-behavior}}).
+   If all attempts fail, clients SHOULD go to step 5 (except as noted in
+   {{ech-client-behavior}}.
 
-5. Try to use the endpoint consisting of $ADDR_QNAME, the authority endpoint's
+5. There are no usable ServiceMode records.  Clients SHALL connect to the
+   endpoint consisting of $ADDR_QNAME, the authority endpoint's
    port number, and no SvcParams.
 
 If all of the above connection attempts fail, clients MAY connect to the
