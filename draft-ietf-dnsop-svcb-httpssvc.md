@@ -963,10 +963,12 @@ it SHOULD abandon the connection attempt if the HTTPSSVC response fails
 to validate.
 
 Finally, when making an "https" scheme request to an origin with an HTTPSSVC
-record, either directly or via the above redirect, the client SHOULD terminate the
-connection if there are any errors with the underlying secure transport, such as
-errors in certificate validation. This aligns with Section 8.4 and Section 12.1
-of {{HSTS}}.
+record, either directly or via the above redirect, the client MAY terminate the
+connection without user recourse if there are any errors with the underlying
+secure transport.  If the connection has a server certificate for the correct
+name from a trusted issuer, and an error is detected (e.g. the certificate
+is revoked or expired), the client SHOULD terminate without recourse.  This
+is a subset of the requirements in Section 8.4 and Section 12.1 of {{HSTS}}.
 
 # Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys {#esniconfig}
 
