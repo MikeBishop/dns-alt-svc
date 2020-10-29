@@ -1475,7 +1475,7 @@ be populated with the registrations below:
 | 5           | echconfig       | Encrypted ClientHello info      | (This document) |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) |
 | 65280-65534 | N/A             | Private Use                     | (This document) |
-| 65535       | (empty string)  | Reserved ("Invalid key")        | (This document) |
+| 65535       | invalid         | Reserved ("Invalid key")        | (This document) |
 
 ## Registry updates {#registry-updates}
 
