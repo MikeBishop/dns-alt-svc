@@ -1400,6 +1400,16 @@ mechanism allows them to target particular protocols or ports within a domain.
 Clients that might be subject to such attacks SHOULD ignore AliasForm "."
 records.
 
+# Privacy Considerations
+
+Standard address queries reveal the user's intent to access a particular
+domain.  This information is visible to the recursive resolver, and to
+many other parties when plaintext DNS transport is used.  SVCB queries,
+like queries for SRV records and other specific RR types, additionally
+reveal the user's intent to use a particular protocol.  This is not
+normally sensitive information, but it should be considered when adding
+SVCB support in a new context.
+
 # IANA Considerations
 
 ## SVCB RRType
