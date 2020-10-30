@@ -549,8 +549,7 @@ selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it SHOULD NOT fall back to non-SVCB connection if a SVCB
-response fails to validate.
+it SHOULD terminate the connection if a SVCB response fails to validate.
 
 If the client is unable to complete SVCB resolution due to its chain length
 limit, the client SHOULD fall back to the authority endpoint, as if the
@@ -892,7 +891,7 @@ or the owner name (which can be written as "."), server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
-## "mandatory" {#mandatory}
+# ServiceMode RR compatibility and mandatory keys {#mandatory}
 
 In a ServiceMode RR, a SvcParamKey is considered "mandatory" if the RR will not
 function correctly for clients that ignore this SvcParamKey.  Each SVCB
