@@ -503,15 +503,19 @@ procedure:
    subject to chain length limits and loop detection heuristics (see
    {{client-failures}}).
 
-4. If one or more ServiceMode records are returned
-   for $SVCB_QNAME, clients SHOULD select the highest-priority compatible record with
-   acceptable parameters.  This TargetName and SvcParams represent the
-   preferred endpoint.  If connection to this endpoint fails, the
-   client MAY try to connect using values from a lower-priority record.
-   If all attempts fail, clients SHOULD go to step 5 (except as noted in
-   {{ech-client-behavior}}.
+4. If one or more "compatible" ({{mandatory}}) ServiceMode records are returned
+   for $SVCB_QNAME, clients SHOULD select the highest-priority compatible record.
+   This record's TargetName and SvcParams represent the preferred endpoint.  If
+   connection to this endpoint fails, the client SHOULD try to connect using
+   values from the next-highest-priority compatible record, etc. If all attempts
+   fail, clients SHOULD go to step 5 (except as noted in {{ech-client-behavior}}).
 
-5. There are no usable ServiceMode records.  Clients SHALL connect to the
+5. At this point there are no usable ServiceMode records, because
+   - there were no SVCB records found for $SVCB_QNAME, OR
+   - all records found were incompatible with this client, OR
+   - all connection attempts using ServiceMode records failed.
+
+   Accordingly, clients SHALL connect to the
    endpoint consisting of $ADDR_QNAME, the authority endpoint's
    port number, and no SvcParams.
 
@@ -898,7 +902,8 @@ mandatory", i.e. mandatory if they are present in an RR.  The SvcParamKey
 any automatically mandatory keys that are present.
 
 A ServiceMode RR is considered "compatible" with a client if the client
-implements support for all its mandatory keys.  If the SVCB RRSet contains
+recognizes all the mandatory keys, and their values indicate that successful
+connection establishment is possible.  If the SVCB RRSet contains
 no compatible RRs, the client will generally act as if the RRSet is empty.
 
 In presentation format, "mandatory" contains a list of one or more valid
