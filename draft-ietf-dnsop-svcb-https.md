@@ -1520,7 +1520,7 @@ Thank you to Ian Swett, Ralf Weber, Jon Reed,
 Martin Thomson, Lucas Pardue, Ilari Liusvaara,
 Tim Wicinski, Tommy Pauly, Chris Wood, David Benjamin,
 Mark Andrews, Emily Stark, Eric Orth, Kyle Rose,
-Craig Taylor, Dan McArdle and others for their feedback
+Craig Taylor, Dan McArdle, Brian Dickson, and others for their feedback
 and suggestions on this draft.
 
 
