@@ -506,18 +506,25 @@ procedure:
    subject to chain length limits and loop detection heuristics (see
    {{client-failures}}).
 
-4. If one or more ServiceMode records are returned
-   for $SVCB_QNAME, clients SHOULD select the highest-priority compatible record with
-   acceptable parameters.  This TargetName and SvcParams represent the
-   preferred endpoint.  If connection to this endpoint fails, the
-   client MAY try to connect using values from a lower-priority record.
-   If all attempts fail, clients SHOULD go to step 5.
+4. If one or more "compatible" ({{mandatory}}) ServiceMode records are returned
+   for $SVCB_QNAME, clients SHOULD select the highest-priority compatible record.
+   This record's TargetName and SvcParams represent the preferred endpoint.  If
+   connection to this endpoint fails, the client SHOULD try to connect using
+   values from the next-highest-priority compatible record, etc. If all attempts
+   fail, clients SHOULD go to step 5 (except as noted in {{ech-client-behavior}}).
 
-5. Try to use the endpoint consisting of $ADDR_QNAME, the authority endpoint's
+5. At this point there are no usable ServiceMode records, because
+   - there were no SVCB records found for $SVCB_QNAME, OR
+   - all records found were incompatible with this client, OR
+   - all connection attempts using ServiceMode records failed.
+
+   Accordingly, clients SHALL connect to the
+   endpoint consisting of $ADDR_QNAME, the authority endpoint's
    port number, and no SvcParams.
 
-6. If all of the above connection attempts fail, clients MAY connect to the
-   authority endpoint.
+If all of the above connection attempts fail, clients MAY connect to the
+authority endpoint (except as noted in {{client-failures}} and
+{{ech-client-behavior}}).
 
 This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
@@ -533,8 +540,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If a SVCB query results in a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
 cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
-{{!DoH=RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME or the
-authority endpoint (steps 5 and 6 above).  Otherwise, an active attacker
+{{!DoH=RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME (step 5
+above) or the authority endpoint.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -545,8 +552,7 @@ selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
 Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it SHOULD NOT fall back to steps 5 or 6 if the SVCB
-response fails to validate.
+it SHOULD terminate the connection if a SVCB response fails to validate.
 
 If the client is unable to complete SVCB resolution due to its chain length
 limit, the client SHOULD fall back to the authority endpoint, as if the
@@ -873,7 +879,7 @@ or the owner name (which can be written as "."), server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
-## "mandatory" {#mandatory}
+# ServiceMode RR compatibility and mandatory keys {#mandatory}
 
 In a ServiceMode RR, a SvcParamKey is considered "mandatory" if the RR will not
 function correctly for clients that ignore this SvcParamKey.  Each SVCB
@@ -883,7 +889,8 @@ mandatory", i.e. mandatory if they are present in an RR.  The SvcParamKey
 any automatically mandatory keys that are present.
 
 A ServiceMode RR is considered "compatible" with a client if the client
-implements support for all its mandatory keys.  If the SVCB RRSet contains
+recognizes all the mandatory keys, and their values indicate that successful
+connection establishment is possible.  If the SVCB RRSet contains
 no compatible RRs, the client will generally act as if the RRSet is empty.
 
 In presentation format, "mandatory" contains a list of one or more valid
@@ -1118,13 +1125,12 @@ ECH.  Accordingly, ECH-capable clients SHALL implement the following
 behavior for connection establishment:
 
 1. Perform connection establishment using HTTPS RRs as described in
-   {{client-behavior}}, but do not fall back to address records (steps 5 and 6).
-   If there are compatible HTTPS RRs, they all have an "echconfig" key, and
-   attempts to connect to them all fail, terminate connection establishment.
+   {{client-behavior}}.  After step 4, if there were compatible HTTPS RRs,
+   they all had an "echconfig" key, and attempts to connect to them all failed,
+   terminate connection establishment.
 2. If the client implements Alt-Svc, try to connect using any entries from
    the Alt-Svc cache.
-3. Fall back to address records (steps 5 and 6 of {{client-behavior}}) if
-   necessary.
+3. Continue connection establishment as in {{client-behavior}} if necessary.
 
 As a latency optimization, clients MAY prefetch DNS records for later steps
 before they are needed.
