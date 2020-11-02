@@ -1657,6 +1657,15 @@ reduce implementation complexity.
 
 # Change history
 
+* draft-ietf-dnsop-svcb-https-02
+    * Added a Privacy Considerations section
+    * Adjusted resolution fallback description
+    * Clarified status of SvcParams in AliasMode
+    * Improved advice on zone structuring and use with Alt-Svc
+    * Improved examples, including a new Multi-CDN example
+    * Reorganized text on value-list parsing and SvcPriority
+    * Improved phrasing and other editorial improvements throughout
+
 * draft-ietf-dnsop-svcb-https-01
     * Added a "mandatory" SvcParamKey
     * Added the ability to indicate that a service does not exist
