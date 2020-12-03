@@ -69,3 +69,7 @@ which Cloudflare provides HTTPS termination.
 The following domains can be used for testing (along any other domain served by
 Cloudflare): blog.cloudflare.com, www.cloudflare.com, cdnjs.cloudflare.com,
 cloudflare-http3.com, cloudflare-http2.com, cloudflare-http1.com.
+
+## Firefox ##
+
+Firefox supports HTTPS RR since Firefox 81. It is currently disabled and can be enabled by changing prefs: network.dns.upgrade_with_https_rr and network.dns.use_https_rr_as_altsvc (type about:config in the address bar and search for the prefs; set them to true). At the moment this is only supported if DoH is enabled.
