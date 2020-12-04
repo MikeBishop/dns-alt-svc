@@ -1071,13 +1071,15 @@ Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
 
+When an HTTPS connection fails due to an error in the underlying secure
+transport, such as an error in certificate validation, some clients
+currently offer a "user recourse" that allows the user to bypass the
+security error and connect anyway.
 When making an "https" scheme request to an origin with an HTTPS RR,
-either directly or via the above redirect, the client MAY terminate the
-connection without user recourse if there are any errors with the underlying
-secure transport.  If the connection has a server certificate for the correct
-name from a trusted issuer, and an error is detected (e.g. the certificate
-is revoked or expired), the client SHOULD terminate without recourse.  This
-is a subset of the requirements in Section 8.4 and Section 12.1 of {{HSTS}}.
+either directly or via the above redirect, a client that normally offers
+such a user recourse MAY remove it.  Origins that publish HTTPS RRs
+therefore MUST NOT rely on user recourse for access.  For more information,
+see Section 8.4 and Section 12.1 of {{HSTS}}.
 
 ## HTTP-based protocols
 
