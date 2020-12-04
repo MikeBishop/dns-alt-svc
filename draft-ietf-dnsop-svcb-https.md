@@ -1076,10 +1076,10 @@ transport, such as an error in certificate validation, some clients
 currently offer a "user recourse" that allows the user to bypass the
 security error and connect anyway.
 When making an "https" scheme request to an origin with an HTTPS RR,
-either directly or via the above redirect, a client that normally offers
-such a user recourse MAY remove it.  Origins that publish HTTPS RRs
-therefore MUST NOT rely on user recourse for access.  For more information,
-see Section 8.4 and Section 12.1 of {{HSTS}}.
+either directly or via the above redirect, such a client MAY remove the user
+recourse option.  Origins that publish HTTPS RRs therefore MUST NOT rely
+on user recourse for access.  For more information, see Section 8.4 and
+Section 12.1 of {{HSTS}}.
 
 ## HTTP-based protocols
 
