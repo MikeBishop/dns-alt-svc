@@ -1589,6 +1589,25 @@ two `list-value`s:
     part1
     part2,part3
 
+# HTTP Mapping Summary
+
+This table serves as a non-normative summary of the HTTP mapping for SVCB.
+Future protocol mappings may provide a similar summary table.
+
+|                                  |                                          |
+|----------------------------------+------------------------------------------|
+| **Mapped scheme**                | "https"                                  |
+| **RR type**                      | HTTPS                                    |
+| **Name prefixing**               | None for port 443, otherwise Port-Prefix |
+| **Automatically Mandatory Keys** | `port`, `alpn`, `no-default-alpn`        |
+| **SvcParam defaults**            | `alpn`: \["http/1.1"\]                   |
+| **Special behaviors**            | HTTP to HTTPS upgrade                    |
+|----------------------------------+------------------------------------------|
+
+This table does not indicate any SvcParamKeys that servers are required to
+publish, or that clients are required to implement, because there are none
+in this mapping.
+
 # Comparison with alternatives
 
 The SVCB and HTTPS RR types closely resemble,
