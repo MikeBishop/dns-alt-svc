@@ -1569,6 +1569,7 @@ separates items in the list.  (For simplicity, empty items are not allowed.)
     escaped-item    = 1*(item-allowed / "\," / "\\")
     comma-separated = [escaped-item *("," escaped-item)]
 
+Decoding of value-lists happens after character-string decoding.  
 For example, consider these `char-string` SvcParamValues:
 
     "part1,part2,part3\\,part4\\\\"
