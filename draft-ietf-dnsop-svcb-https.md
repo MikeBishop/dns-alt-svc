@@ -266,7 +266,7 @@ In ABNF {{!RFC5234}},
     SvcParamValue = char-string
     value         = *OCTET
 
-Unless otherwise specified, the SvcParamValue is parsed using the
+The SvcParamValue is parsed using the
 character-string decoding algorithm ({{decoding}}), producing a `value`.
 The `value` is then validated and converted into wire-format in a manner
 specific to each key.
@@ -279,9 +279,9 @@ value of the key type without leading zeros.
 A SvcParam in this form SHALL be parsed as specified above, and
 the decoded `value` SHALL be used as its wire format encoding.
 
-For some SvcParamKeys, the SvcParamValue corresponds to a list or set of
-items.  Presentation formats for such keys SHOULD make use of the decoding
-algorithm in {{value-list}}, producing a "value-list".
+For some SvcParamKeys, the `value` corresponds to a list or set of
+items.  Presentation formats for such keys SHOULD use a comma-separated list
+({{value-list}}).
 
 SvcParams in presentation format MAY appear in any order, but keys MUST NOT be
 repeated.
@@ -739,10 +739,8 @@ ALPNs are identified by their registered "Identification Sequence"
 
     alpn-id = 1*255OCTET
 
-"alpn" is a multi-valued SvcParamKey.  To construct its value-list, apply the
-value-list decoding algorithm ({{value-list}}) to the SvcParamValue.
-Each decoded value in the "alpn" value-list
-SHALL be an `alpn-id`.  The value-list MUST NOT be empty.
+The presentation `value` SHALL be a comma-separated list ({{value-list}})
+of one or more `alpn-id`s.
 
 The wire format value for "alpn" consists of at least one
 `alpn-id` prefixed by its length as a single octet, and these length-value
@@ -854,9 +852,8 @@ addresses in response to the TargetName query. Failure to use A and/or
 AAAA response addresses could negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
-To construct the value-list, apply the value-list decoding algorithm
-({{value-list}}) to the SvcParamValue.
-Each decoded value in the value-list SHALL be an IP address of the appropriate
+The presentation `value` SHALL be a comma-separated list ({{value-list}})
+of one or more IP addresses of the appropriate
 family in standard textual format {{!RFC5952}}.  To enable simpler parsing,
 this SvcParamValue MUST NOT contain escape sequences.
 
@@ -896,13 +893,13 @@ recognizes all the mandatory keys, and their values indicate that successful
 connection establishment is possible.  If the SVCB RRSet contains
 no compatible RRs, the client will generally act as if the RRSet is empty.
 
-In presentation format, "mandatory" contains a list of one or more valid
+The presentation `value` SHALL be a comma-separated list
+({{value-list}}) of one or more valid
 SvcParamKeys, either by their registered name or in the unknown-key format
 ({{presentation}}).  Keys MAY appear in any order, but MUST NOT appear more
 than once.  Any listed keys MUST also appear in the SvcParams.
 
-To construct the value-list, apply the value-list decoding algorithm
-({{value-list}}) to the SvcParamValue.  To enable simpler parsing, this
+To enable simpler parsing, this
 SvcParamValue MUST NOT contain escape sequences.
 
 For example, the following is a valid list of SvcParams:
@@ -1574,34 +1571,35 @@ In this document, this algorithm is referred to as "character-string decoding".
 The algorithm is the same as used by `<character-string>` in RFC 1035,
 although the output length in this document is not limited to 255 octets.
 
-## Decoding a value-list {#value-list}
+## Decoding a comma-separated list {#value-list}
 
-In order to represent lists of values in zone files, this specification uses
-an extended version of character-string decoding that adds the use of ","
-as a delimiter after double-quote processing.  When "," is not escaped
-(by a preceding "\\" or as the escape sequence "\\044"), it separates
-values in the output, which is a list of 1*OCTET.  (For simplicity, empty
-values are not allowed.)  We refer to this modified procedure as "value-list
-decoding".
+In order to represent lists of items in zone files, this specification uses
+comma-separated lists.  When "," is not escaped (by a preceding "\\"), it
+separates items in the list.  (For simplicity, empty items are not allowed.)
 
-    value-list = char-string
-    list-value = 1*OCTET
+    item            = 1*OCTET
+    ; item-allowed is OCTET minus "," and "\".
+    item-allowed    = %x00-2B / %x2D-5B / %x5D-FF
+    escaped-item    = 1*(item-allowed / "\," / "\\")
+    comma-separated = [escaped-item *("," escaped-item)]
 
+Decoding of value-lists happens after character-string decoding.  
 For example, consider these `char-string` SvcParamValues:
 
-    "part1,part2\,part3"
-    part1,part2\044part3
+    "part1,part2,part3\\,part4\\\\"
+    part1\,\p\a\r\t\2\044part3\092,part4\092\\
 
-Character-string decoding either of these inputs would produce a single `*OCTET`
-output:
+These inputs are equivalent: character-string decoding either of them would
+produce the same `value`:
 
-    part1,part2,part3
+    part1,part2,part3\,part4\\
 
-Value-list decoding either of these inputs would instead convert it to a list of
-two `list-value`s:
+Applying comma-separated list decoding to this `value` would produce a list
+of three `item`s:
 
     part1
-    part2,part3
+    part2
+    part3,part4\
 
 # Comparison with alternatives
 
