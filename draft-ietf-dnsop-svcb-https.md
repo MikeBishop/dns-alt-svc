@@ -940,7 +940,9 @@ the Internet ("IN") Class {{!RFC1035}}.
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
 The "automatically mandatory" keys ({{mandatory}}) are "port"
-and "no-default-alpn".  Clients that restrict the HTTPS destination
+and "no-default-alpn".  (As described in {{mandatory}}, clients must
+either implement these keys or ignore any RR in which they appear.)
+Clients that restrict the HTTPS destination
 port (e.g. using the "bad ports" list from {{FETCH}}) SHOULD apply the
 same restriction to the "port" SvcParam.
 
