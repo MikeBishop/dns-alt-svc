@@ -715,7 +715,10 @@ the client MAY prefer those records, regardless of their priorities.
 # Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for
-HTTPS, and most are applicable to other protocols as well.
+HTTPS, and most are applicable to other protocols as well.  Each new protocol
+mapping document MUST specify which keys are applicable and safe to use.
+Protocol mappings MAY alter the interpretation of SvcParamKeys but MUST NOT
+alter their presentation or wire formats.
 
 ## "alpn" and "no-default-alpn" {#alpn-key}
 
@@ -937,7 +940,9 @@ the Internet ("IN") Class {{!RFC1035}}.
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
 The "automatically mandatory" keys ({{mandatory}}) are "port", "alpn",
-and "no-default-alpn".
+and "no-default-alpn".  Clients that restrict the HTTPS destination
+port (e.g. using the "bad ports" list from {{FETCH}}) SHOULD apply the
+same restriction to the "port" SvcParam.
 
 The presence of an HTTPS RR for an origin also indicates
 that all HTTP resources are available over HTTPS, as
@@ -988,7 +993,7 @@ differences in the intended client and server behavior.
 
 Unlike Alt-Svc Field Values, HTTPS RRs can contain multiple ALPN
 IDs, and clients are encouraged to offer additional ALPNs that they
-support (subject to security constraints).
+support.
 
 ### Untrusted channel
 
@@ -1409,6 +1414,15 @@ could already block entire domains by forging erroneous responses, but this
 mechanism allows them to target particular protocols or ports within a domain.
 Clients that might be subject to such attacks SHOULD ignore AliasForm "."
 records.
+
+A hostile DNS intermediary or origin can return SVCB records indicating any IP
+address and port number, including IP addresses inside the local network and
+port numbers assigned to internal services.  If the attacker can influence the
+client's payload (e.g. TLS session ticket contents), and an internal service
+has a sufficiently lax parser, it's possible that the attacker could gain
+unintended access.  (The same concerns apply to SRV records, HTTP Alt-Svc,
+and HTTP redirects.)  As a mitigation, SVCB mapping documents SHOULD indicate
+any port number restrictions that are appropriate for the supported transports.
 
 # Privacy Considerations
 
