@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-01-05T18:11:59.705440+00:00",
+  "timestamp": "2021-01-06T16:19:37.638073+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -4979,7 +4979,7 @@
       "id": "MDU6SXNzdWU3MTM5NjkzMzI=",
       "title": "Please PLEASE simplify alpn and list representations and encoding/decoding",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/268",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "brian-peter-dickson",
       "authorAssociation": "NONE",
       "assignees": [],
@@ -4988,8 +4988,8 @@
       ],
       "body": "The stuff in Appendix A.1 is both moot and confusing.\r\n\r\nIf I understand correctly (after having to read and cross-reference many parts of this document, the ALPN RFC(s), and the IANA table for ALPN), the following is the case:\r\nNO ALPN IDs HAVE EMBEDDED COMMAS.\r\nThus, there is NO need for quoted commas in any ALPN.\r\nAnd, no other values (single or multi) have (or allow) embedded commas.\r\n\r\nCan we please dispense with all of the fancy things showing how to quote commas and how to interpret quoted commas?\r\nIf necessary, place a caveat into the IANA table that ALPN values MUST NOT contain commas in their ID.\r\n\r\nThis reduces ALPN to wire format of one or more <length>string (where length is a single octet), and the presentation format is simply a comma-separated list of strings, possibly enclosed in quotes, with no other quoting necessary.\r\n\r\nThe SvcParameters object itself is, in presentation format, a list separated with whitespace, so there is no ambiguity between the list within an ALPN, and the list of SvcParameters. \r\n\r\nPlease?\r\n\r\nIt would be nice to have a much simpler document, and much easier task for implementing things.",
       "createdAt": "2020-10-03T00:46:21Z",
-      "updatedAt": "2020-12-16T19:14:55Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-05T20:15:42Z",
+      "closedAt": "2021-01-05T20:15:42Z",
       "comments": [
         {
           "author": "bemasc",
@@ -5039,6 +5039,13 @@
           "body": "I've added a PR for this change in #282.  This doesn't eliminate the weirdness of ALPN, but it makes it considerably more contained.  I've now encountered multiple implementations where the draft-02 text would require totally restructuring the parser, so I think something like this change is necessary.",
           "createdAt": "2020-12-16T19:14:55Z",
           "updatedAt": "2020-12-16T19:14:55Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I've merged #282.  This should substantially simplify the implementation of the ALPN zone file syntax, while still enabling representation of arbitrary ALPNs if necessary.  It should make life easier for everyone except @marka63, who has already implemented the previous behavior.  Sorry, Mark.\r\n\r\nThis is not set in stone, but we are approaching WGLC, so please speak now if you can't live with this version.",
+          "createdAt": "2021-01-05T20:15:42Z",
+          "updatedAt": "2021-01-05T20:15:42Z"
         }
       ]
     },
@@ -5192,6 +5199,24 @@
           "updatedAt": "2021-01-05T03:25:40Z"
         }
       ]
+    },
+    {
+      "number": 283,
+      "id": "MDU6SXNzdWU3Nzk0NDI4MTc=",
+      "title": "Clarify behavior when no-default-alpn is specified but without alpn specified",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/issues/283",
+      "state": "OPEN",
+      "author": "enygren",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [
+        "enygren"
+      ],
+      "labels": [],
+      "body": "See discussion:  https://github.com/MikeBishop/dns-alt-svc/pull/281/files#r551698492",
+      "createdAt": "2021-01-05T19:08:58Z",
+      "updatedAt": "2021-01-05T19:44:59Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -19478,13 +19503,13 @@
       "labels": [],
       "body": "This change removes the First Come First Served registration policy\r\nand the Expert Review policy, and combines them into a single\r\nSpecification Required range, with guidelines for what constitutes a\r\nminimal specification.  The goal of this change is to avoid zone file\r\nincompatibilities that could arise from the registration of keys whose\r\npresentation format is poorly documented.",
       "createdAt": "2020-10-02T02:53:17Z",
-      "updatedAt": "2020-12-22T00:39:42Z",
+      "updatedAt": "2021-01-06T02:11:27Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "1515e3d3124a10c85d71664eb6ad470a7a97d995",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-iana",
-      "headRefOid": "e076984d5952d9c260260cf74de3b553f5c8c539",
+      "headRefOid": "b1c1eeb9704f9643bb61c146be3b36ea6f7de4be",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -19557,7 +19582,7 @@
               "originalPosition": 29,
               "body": "This temporary first-come-first-served seems awkward. I think requiring the IANA registration to define the presentation format is much simpler and consistent with IANA policy.",
               "createdAt": "2020-12-16T21:57:42Z",
-              "updatedAt": "2020-12-16T21:57:47Z"
+              "updatedAt": "2021-01-06T02:05:57Z"
             }
           ]
         },
@@ -19577,7 +19602,7 @@
               "originalPosition": 29,
               "body": "Does that mean you're OK with having to specify the presentation format before IANA allocates you a number?  Remember that FCFS doesn't mean you get to choose your number (except at IANA's discretion).",
               "createdAt": "2020-12-16T22:19:32Z",
-              "updatedAt": "2020-12-16T22:19:32Z"
+              "updatedAt": "2021-01-06T02:05:57Z"
             }
           ]
         },
@@ -19597,7 +19622,7 @@
               "originalPosition": 29,
               "body": "Yeah, I think it's quite reasonable to have to give information like that on the allocation.",
               "createdAt": "2020-12-17T17:43:25Z",
-              "updatedAt": "2020-12-17T17:43:25Z"
+              "updatedAt": "2021-01-06T02:05:57Z"
             }
           ]
         },
@@ -19617,7 +19642,7 @@
               "originalPosition": 29,
               "body": "The apparent goal of this text is to be able to claim a code-point for experimental purposes before the presentation format is fixed.  RFC 7120 requires any early allocations to be from within the IETF, and for the implementation to be fully stable.  FCFS-to-reserve is an end-run around those requirements.  (And something that IANA specifically says [does not exist](https://www.iana.org/help/protocol-registration):  \"There is an early allocation process available, but there is no reservation system.\")  Is the intended audience here non-IETF and/or unstable usage?  If not, let's just stick with early allocation.\r\n\r\nNote that there is still a Private Use range, which would work as a place to implement until the specification is stable enough for EA.",
               "createdAt": "2020-12-17T18:49:23Z",
-              "updatedAt": "2020-12-17T18:49:23Z"
+              "updatedAt": "2021-01-06T02:05:57Z"
             }
           ]
         },
@@ -19637,7 +19662,27 @@
               "originalPosition": 29,
               "body": "I don't think the FCFS range should be meant for code points that are intended to be later reserved and standardized. Rather, I'd expect them to be used for non-private use for specs that aren't fully standardized, but have value for deploying and support. Stable specs and RFCs would use the more official space once they have final formats, etc.\r\n\r\nAn example is how Oblivious DoH is using a value in the FCFS range with a specific definition that is used for interoperating implementations on the public Internet; it's well-defined, but it may not be the same as some later RFC that could eventually take precedence.",
               "createdAt": "2020-12-22T00:39:41Z",
-              "updatedAt": "2020-12-22T00:39:42Z"
+              "updatedAt": "2021-01-06T02:05:57Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMjc5MzEy",
+          "commit": {
+            "abbreviatedOid": "b1c1eeb"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-06T02:11:27Z",
+          "updatedAt": "2021-01-06T02:11:27Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "Per @MikeBishop's observation, I've removed the sentence on temporary reservation.\r\n\r\nOblivious DoH would be in violation of the policy either way.  FCFS doesn't mean \"take a number\"; it means \"ask and ye shall receive\".  However, I think \"Specification Required\" should work fine for Oblivious DoH.  You have a specification (an I-D) that defines the presentation format unambiguously, so you meet the criteria.  Done.",
+              "createdAt": "2021-01-06T02:11:27Z",
+              "updatedAt": "2021-01-06T02:11:27Z"
             }
           ]
         }
@@ -20668,13 +20713,13 @@
       "labels": [],
       "body": "",
       "createdAt": "2020-12-14T20:36:50Z",
-      "updatedAt": "2021-01-05T18:11:54Z",
+      "updatedAt": "2021-01-06T16:19:09Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
-      "baseRefOid": "757ca1bbaa55954a670abda97fcad40493bdbac7",
+      "baseRefOid": "e318510b60c6a4f21eb0f541aa3f316e8e502938",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-table",
-      "headRefOid": "85b63de35b258c4f8428025a1b9a684dc0c71866",
+      "headRefOid": "462aeb4811ce9d4ace8972e70dc49cf350020f09",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -20697,31 +20742,31 @@
               "originalPosition": 11,
               "body": "How should we treat http (and ws/wss?) in this section?",
               "createdAt": "2021-01-05T03:30:14Z",
-              "updatedAt": "2021-01-05T18:11:33Z"
+              "updatedAt": "2021-01-06T16:19:09Z"
             },
             {
               "originalPosition": 13,
               "body": "Include a reference for \"Port-Prefix\"?  (and/or give an example?)",
               "createdAt": "2021-01-05T03:31:15Z",
-              "updatedAt": "2021-01-05T18:11:33Z"
+              "updatedAt": "2021-01-06T16:19:09Z"
             },
             {
               "originalPosition": 12,
               "body": "Include the RR code point in parens?",
               "createdAt": "2021-01-05T03:31:30Z",
-              "updatedAt": "2021-01-05T18:11:33Z"
+              "updatedAt": "2021-01-06T16:19:09Z"
             },
             {
               "originalPosition": 16,
               "body": "Include a section reference?",
               "createdAt": "2021-01-05T03:31:54Z",
-              "updatedAt": "2021-01-05T18:11:33Z"
+              "updatedAt": "2021-01-06T16:19:09Z"
             },
             {
               "originalPosition": 22,
               "body": "* What happens if a client specifies no-default-alpn but doesn't include an alpn key?\r\n* Aren't clients required to implement all of the automatically-mandatory keys?  Or just that if a server sends them but a client doesn't implement then the record is pruned?  Does this mean alpn is effectively required for clients to implement?",
               "createdAt": "2021-01-05T03:34:13Z",
-              "updatedAt": "2021-01-05T18:11:33Z"
+              "updatedAt": "2021-01-06T16:19:09Z"
             }
           ]
         },
@@ -20741,9 +20786,282 @@
               "originalPosition": 11,
               "body": "OK, I added a row for them.",
               "createdAt": "2021-01-05T18:11:54Z",
-              "updatedAt": "2021-01-05T18:11:54Z"
+              "updatedAt": "2021-01-06T16:19:09Z"
             }
           ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDE4MjUz",
+          "commit": {
+            "abbreviatedOid": "85b63de"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T18:12:07Z",
+          "updatedAt": "2021-01-05T18:12:07Z",
+          "comments": [
+            {
+              "originalPosition": 13,
+              "body": "I changed this to an example/template.",
+              "createdAt": "2021-01-05T18:12:07Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDE4NDc3",
+          "commit": {
+            "abbreviatedOid": "85b63de"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T18:12:27Z",
+          "updatedAt": "2021-01-05T18:12:27Z",
+          "comments": [
+            {
+              "originalPosition": 12,
+              "body": "Done",
+              "createdAt": "2021-01-05T18:12:27Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDE4ODMx",
+          "commit": {
+            "abbreviatedOid": "85b63de"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T18:12:59Z",
+          "updatedAt": "2021-01-05T18:12:59Z",
+          "comments": [
+            {
+              "originalPosition": 16,
+              "body": "I added a reference to the overall section in the intro sentence.  I don't think we should try to squeeze references into this (non-normative) summary table.",
+              "createdAt": "2021-01-05T18:12:59Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDMwMjg0",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T18:28:51Z",
+          "updatedAt": "2021-01-05T18:28:51Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "> What happens if a client specifies no-default-alpn but doesn't include an alpn key?\r\n\r\nAssuming s/client/origin, that record is null: its set of advertised ALPNs is empty, so no client will ever attempt to use it.\r\n\r\n> Aren't clients required to implement all of the automatically-mandatory keys?\r\n\r\nFormally, no.\r\n\r\n> Or just that if a server sends them but a client doesn't implement then the record is pruned?\r\n\r\nCorrect.\r\n\r\n> Does this mean alpn is effectively required for clients to implement?\r\n\r\nThis is an interesting question.  To improve the answer, I've added a nontrivial change to this PR: I've removed \"alpn\" from the automatically mandatory keys.\r\n\r\nIf \"alpn\" is automatically mandatory, such a client would lose access to any endpoint that proactively advertised support for newer HTTP versions, which is ... paradoxical. With this change, a client that does not implement support for \"alpn\" has correct HTTP/1.1-only behavior.",
+              "createdAt": "2021-01-05T18:28:51Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDQyNDA3",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T18:47:14Z",
+          "updatedAt": "2021-01-05T18:47:15Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "> > What happens if a client specifies no-default-alpn but doesn't include an alpn key?\r\n> \r\n> Assuming s/client/origin, that record is null: its set of advertised ALPNs is empty, so no client will ever attempt to use it.\r\n> \r\n\r\nFor consistency with all the other rules for calling non-sensible stuff invalid, should this be made into a more formal \"don't do that\"? And should clients consider it malformed (at least those clients that can handle \"alpn\" if you remove it from the mandatory keys)?\r\n\r\nMaybe: 'If \"no-default-alpn\" is indictated, \"alpn\" MUST be included.  If a client that recognizes \"alpn\" SvcParamKeys receives an RR with \"no-default-alpn\" but no \"alpn\", the RR MUST be considered malformed.'\r\n",
+              "createdAt": "2021-01-05T18:47:14Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDUyNTM5",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T19:02:08Z",
+          "updatedAt": "2021-01-05T19:02:09Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "This state does violate the \"alpn list is one or more entries\" scenario, but it would be good to call it out explicitly somewhere, but likely elsewhere from this table.  (If no-default-alpn is specified without an alpn, the RR should be discarded seems like a reasonable behavior.)",
+              "createdAt": "2021-01-05T19:02:08Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDU3MjU4",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T19:09:14Z",
+          "updatedAt": "2021-01-05T19:09:27Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "Opened issue #283",
+              "createdAt": "2021-01-05T19:09:14Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDYxMzU2",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T19:15:42Z",
+          "updatedAt": "2021-01-05T19:15:42Z",
+          "comments": [
+            {
+              "originalPosition": 22,
+              "body": "And split out PR #284 ",
+              "createdAt": "2021-01-05T19:15:42Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDYyMTU3",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T19:16:59Z",
+          "updatedAt": "2021-01-05T19:16:59Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Do we want a clarifying note as to what it means for alpn to not be automatically mandatory given that no-default-alpn requires alpn to be present?",
+              "createdAt": "2021-01-05T19:16:59Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDcwNjcx",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T19:29:45Z",
+          "updatedAt": "2021-01-05T19:29:45Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "I don't have any clarification to add on that point.  Suggestions welcome.",
+              "createdAt": "2021-01-05T19:29:45Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTAwNzk3",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:16:09Z",
+          "updatedAt": "2021-01-05T20:16:10Z",
+          "comments": [
+            {
+              "originalPosition": 3,
+              "body": "```suggestion\r\nHTTPS RRs.  The default set of ALPN IDs is the single value \"http/1.1\".\r\nClients not implementing the \"alpn\" key SHOULD behave as if the default\r\nALPN ID is present and also discard records containing no-default-alpn.\r\n```",
+              "createdAt": "2021-01-05T20:16:09Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTAwODk4",
+          "commit": {
+            "abbreviatedOid": "3d8cb01"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:16:19Z",
+          "updatedAt": "2021-01-05T20:16:19Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Added a suggestion above.",
+              "createdAt": "2021-01-05T20:16:19Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTEzODAx",
+          "commit": {
+            "abbreviatedOid": "25e65e0"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:37:15Z",
+          "updatedAt": "2021-01-05T20:37:15Z",
+          "comments": [
+            {
+              "originalPosition": 3,
+              "body": "OK, I added a variation on that sentence.",
+              "createdAt": "2021-01-05T20:37:15Z",
+              "updatedAt": "2021-01-06T16:19:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyODQxODQ3",
+          "commit": {
+            "abbreviatedOid": "25e65e0"
+          },
+          "author": "MikeBishop",
+          "authorAssociation": "OWNER",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-06T16:14:00Z",
+          "updatedAt": "2021-01-06T16:14:00Z",
+          "comments": []
         }
       ]
     },
@@ -20752,25 +21070,42 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTM5ODE3OTgw",
       "title": "Disentangle comma-separated lists from char-string",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/282",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "bemasc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "This change allows unconditional char-string parsing to occur before\r\ninspecting the SvcParamKey in order to determine whether it is\r\nsingle-valued or multi-valued.  I've now encountered two implementations\r\nof zone file syntax that have this structure, which makes the current\r\ntext unimplementable.\r\n\r\nAddresses #268",
       "createdAt": "2020-12-14T21:41:35Z",
-      "updatedAt": "2021-01-05T18:06:00Z",
+      "updatedAt": "2021-01-06T01:05:15Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "757ca1bbaa55954a670abda97fcad40493bdbac7",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-comma",
-      "headRefOid": "465561e04133da1a71b885fa79f6f4f9a48e5a98",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "headRefOid": "636cdde1ed72a477c4c8d3b0ddad4c05129fd8db",
+      "closedAt": "2021-01-05T20:12:58Z",
+      "mergedAt": "2021-01-05T20:12:58Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "8ee88330f32c783d3290259e660137d445089951"
+      },
+      "comments": [
+        {
+          "author": "marka63",
+          "authorAssociation": "NONE",
+          "body": "\n\n> On 6 Jan 2021, at 05:06, Tim Wicinski <notifications@github.com> wrote:\n> \n> \n> @moonshiner commented on this pull request.\n> \n> In draft-ietf-dnsop-svcb-https.md:\n> \n> >  \n> -In order to represent lists of values in zone files, this specification uses\n> -an extended version of character-string decoding that adds the use of \",\"\n> -as a delimiter after double-quote processing.  When \",\" is not escaped\n> -(by a preceding \"\\\\\" or as the escape sequence \"\\\\044\"), it separates\n> -values in the output, which is a list of 1*OCTET.  (For simplicity, empty\n> -values are not allowed.)  We refer to this modified procedure as \"value-list\n> -decoding\".\n> +In order to represent lists of items in zone files, this specification uses\n> +comma-separated lists.  When \",\" is not escaped (by a preceding \"\\\\\"), it\n> +separates items in the list.  (For simplicity, empty items are not allowed.)\n> \n> Not \"halting\" parsing, but just throwing out this record as invalid.\n> (or the behavior to halt or not to halt is up to the implementation)\n\nIf the DNS server loads the zone then it is broken.  STD13 REQUIRES that servers\nnot load a zone if there is any error detected when reading the master file.\nYou can continue processing and report multiple errors but the zone is not to\nbe loaded.\n\n> \u2014\n> You are receiving this because you are subscribed to this thread.\n> Reply to this email directly, view it on GitHub, or unsubscribe.\n> \n\n-- \nMark Andrews, ISC\n1 Seymour St., Dundas Valley, NSW 2117, Australia\nPHONE: +61 2 9871 4742              INTERNET: marka@isc.org\n\n",
+          "createdAt": "2021-01-06T01:01:55Z",
+          "updatedAt": "2021-01-06T01:01:55Z"
+        },
+        {
+          "author": "moonshiner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Thanks Mark. I fail to remember that more often than not. ",
+          "createdAt": "2021-01-06T01:05:15Z",
+          "updatedAt": "2021-01-06T01:05:15Z"
+        }
+      ],
       "reviews": [
         {
           "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYxNDk0Mzg1",
@@ -20788,25 +21123,25 @@
               "originalPosition": 29,
               "body": "Do we still need the \"value-list MUST NOT be empty\" constraint?",
               "createdAt": "2021-01-05T03:36:11Z",
-              "updatedAt": "2021-01-05T03:43:35Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
             },
             {
               "originalPosition": 80,
               "body": "Should we specify how empty items are handled?  (ie, clients MUST discard records where the value-list is empty or where a 'value' is empty?)",
               "createdAt": "2021-01-05T03:40:17Z",
-              "updatedAt": "2021-01-05T03:43:35Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
             },
             {
               "originalPosition": 80,
               "body": "(Although this may want to go elsewhere since it impacts wire format handling)",
               "createdAt": "2021-01-05T03:40:46Z",
-              "updatedAt": "2021-01-05T03:43:35Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
             },
             {
               "originalPosition": 85,
               "body": "What about double-quote?  (\"\"\")",
               "createdAt": "2021-01-05T03:42:19Z",
-              "updatedAt": "2021-01-05T03:43:35Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
             }
           ]
         },
@@ -20826,7 +21161,7 @@
               "originalPosition": 29,
               "body": "It's still there: \"one or more\".",
               "createdAt": "2021-01-05T17:46:21Z",
-              "updatedAt": "2021-01-05T17:46:21Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
             }
           ]
         },
@@ -20846,7 +21181,7 @@
               "originalPosition": 80,
               "body": "Nothing here impacts clients; this is only relevant during zone-file parsing.  I think it's clear from the text here that `alpn=,,` is a syntax error that halts zone file parsing.",
               "createdAt": "2021-01-05T17:48:53Z",
-              "updatedAt": "2021-01-05T17:48:53Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
             }
           ]
         },
@@ -20866,7 +21201,7 @@
               "originalPosition": 85,
               "body": "Double-quote is not special-cased here.  It is treated just like any other character, e.g, `alpn=\"\\\"foo\\\",bar\"` -> `\"foo\",bar` -> (`\"foo\"`, `bar`).",
               "createdAt": "2021-01-05T17:50:55Z",
-              "updatedAt": "2021-01-05T17:50:56Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
             }
           ]
         },
@@ -20886,7 +21221,307 @@
               "originalPosition": 80,
               "body": "Not \"halting\" parsing, but just throwing out this record as invalid.  \r\n(or the behavior to halt or not to halt is up to the implementation)",
               "createdAt": "2021-01-05T18:06:00Z",
-              "updatedAt": "2021-01-05T18:06:00Z"
+              "updatedAt": "2021-01-05T19:40:17Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDQ3ODc1",
+          "commit": {
+            "abbreviatedOid": "465561e"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T18:55:31Z",
+          "updatedAt": "2021-01-05T18:55:31Z",
+          "comments": [
+            {
+              "originalPosition": 85,
+              "body": "I should have re-read with more context.  Perhaps being clear below would help?",
+              "createdAt": "2021-01-05T18:55:31Z",
+              "updatedAt": "2021-01-05T19:40:17Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDQ4ODQ0",
+          "commit": {
+            "abbreviatedOid": "465561e"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T18:56:56Z",
+          "updatedAt": "2021-01-05T18:56:57Z",
+          "comments": [
+            {
+              "originalPosition": 90,
+              "body": "```suggestion\r\nDecoding of value-lists happens after character-string decoding.  \r\nFor example, consider these `char-string` SvcParamValues:\r\n```\r\n",
+              "createdAt": "2021-01-05T18:56:56Z",
+              "updatedAt": "2021-01-05T19:40:17Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDk2NDI2",
+          "commit": {
+            "abbreviatedOid": "636cdde"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-05T20:09:07Z",
+          "updatedAt": "2021-01-05T20:09:07Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 284,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTQ5NDE4MjEw",
+      "title": "When no-default-alpn is present, alpn must also be present",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/284",
+      "state": "OPEN",
+      "author": "enygren",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Fixes #283",
+      "createdAt": "2021-01-05T19:15:06Z",
+      "updatedAt": "2021-01-05T21:22:20Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "e318510b60c6a4f21eb0f541aa3f316e8e502938",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "enygren-no-default-alpn-must-have-alpn",
+      "headRefOid": "4ef037fa068a4226a5e659f8948f5785a4ce8512",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDgwNDM0",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T19:44:41Z",
+          "updatedAt": "2021-01-05T19:44:42Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "I would prefer to distinguish here between what we want the zone file parser to do vs. what we want the client to do.\r\n\r\nI'm fine with telling the zone file parser that this is invalid, but \"discarded\" sounds silent.  \"flagged as invalid\" might be clearer.\r\n\r\nFor the client, I'd prefer to avoid imposing new requirements or repeating normative language.  If it's necessary, we could say something like \"Compliant clients will ignore ...\".",
+              "createdAt": "2021-01-05T19:44:41Z",
+              "updatedAt": "2021-01-05T19:44:42Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDk1NTA2",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:07:43Z",
+          "updatedAt": "2021-01-05T20:07:44Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "```suggestion\r\n(else compliant clients should ignore the record as invalid).\r\n```",
+              "createdAt": "2021-01-05T20:07:43Z",
+              "updatedAt": "2021-01-05T20:07:44Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDk1NjY0",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:07:56Z",
+          "updatedAt": "2021-01-05T20:07:56Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Better?",
+              "createdAt": "2021-01-05T20:07:56Z",
+              "updatedAt": "2021-01-05T20:07:56Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTE1NjQ1",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:40:15Z",
+          "updatedAt": "2021-01-05T20:40:15Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "There's already the rule that clients must reject the entire rrset if any RR is malformed. As written in this change, I think it is ambiguous whether or not the missing \"alpn\" counts as a malformed key, so I wouldn't be sure whether to ignore the RR (just for not having a supported alpn value) or the RRSet (as malformed).\r\n\r\nHence, I think we need the client expectation clarified here and avoid saying something like \"invalid\" unless we mean the malformed case. My preference would be to treat is as malformed to stop bad configurations, but I won't fight for that as long as it's unambiguous.",
+              "createdAt": "2021-01-05T20:40:15Z",
+              "updatedAt": "2021-01-05T20:40:15Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTE1OTE0",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:40:43Z",
+          "updatedAt": "2021-01-05T20:40:43Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "After thinking about this some more, I've changed my mind.  We can just say \"this is not allowed\" and leave the details to the implementors.\r\n```suggestion\r\nempty.  When \"no-default-alpn\" is specified, \"alpn\" MUST also be specified.\r\n```",
+              "createdAt": "2021-01-05T20:40:43Z",
+              "updatedAt": "2021-01-05T20:40:43Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTE3NTMy",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:43:21Z",
+          "updatedAt": "2021-01-05T20:43:21Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "\"malformed\" has a precise definition in Section 2.2.  This would not qualify as \"malformed\".",
+              "createdAt": "2021-01-05T20:43:21Z",
+              "updatedAt": "2021-01-05T20:43:21Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTE4ODQ1",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:45:32Z",
+          "updatedAt": "2021-01-05T20:45:33Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Making this more complicated is having no-default-alpn be mandatory but not alpn.  (See discussion in #281.)  This should cover and we should be crystal clear on what happens if no-default-alpn and alpn are present on some records but some other records have no no-default-alpn, and the client doesn't implement alpn support.  The net result should probably be that clients discard the no-default-alpn records but then use the other records.  ",
+              "createdAt": "2021-01-05T20:45:32Z",
+              "updatedAt": "2021-01-05T20:45:33Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTIxMzA5",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:49:12Z",
+          "updatedAt": "2021-01-05T20:49:12Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "The potentially relevant part of that definition:\r\n\"the SvcParamValue for an SvcParamKey does not have the expected format\"\r\n\r\nDoes an expected key/value not being present and declared \"invalid\" count as an unexpected format? Probably not, but I would still argue it's ambiguous enough to require clarification.\r\n\r\n(And even if it's decided this doesn't meet the current definition, I think it would be better to modify the definition to cover this case, but that's getting into the area I said I wouldn't fight for.)",
+              "createdAt": "2021-01-05T20:49:12Z",
+              "updatedAt": "2021-01-05T20:49:12Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTI1Nzg1",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T20:56:27Z",
+          "updatedAt": "2021-01-05T20:56:28Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "@ericorth I think there's a logical distinction between \"syntactic validity\" (malformed/unparseable) and \"semantic validity\" (inter-key logical agreement).  If a record is malformed, something Really Bad happened (memory corruption?).  If there's a configuration error, that's different.  I don't have strong feelings about what clients ought to do in each case, but I can certainly imagine that we might recommend or allow different behaviors.\r\n\r\nBTW, this isn't the only case of inter-key logical agreement.  We already have the case of \"mandatory\" indicating a key that is not actually present.",
+              "createdAt": "2021-01-05T20:56:27Z",
+              "updatedAt": "2021-01-05T20:56:28Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTMzNzEz",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T21:08:47Z",
+          "updatedAt": "2021-01-05T21:08:47Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Agreed that they're reasonably distinct cases and it would be very reasonable to treat the cases differently.\r\n\r\nBut I think my specific points still stand:\r\n- My soft preference would be to add semantic validity (at least this case and maybe also the \"mandatory\" case) to the cases where the RRSet is rejected.  If somebody creates a stupidly bad config, it should be obvious so they know to fix it.  But it wouldn't be the end of the world either if we just make it discarded-RR or just let the stupid results of the stupid config happen.\r\n- Logically distinct or not, there's still room for confusion.  Maybe we just need a sentence in 2.2 clarifying that it only covers syntactic validity of the individual values themselves?",
+              "createdAt": "2021-01-05T21:08:47Z",
+              "updatedAt": "2021-01-05T21:08:47Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMTQ2MTYz",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-05T21:22:20Z",
+          "updatedAt": "2021-01-05T21:22:20Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "And also, absent a clearly specified rule for how the client should behave given a violation of a semantic rule like this one, we should avoid the word \"invalid\".  As a client implementor, I want to know the proper way to enforce validity.  If the answer is that it's not enforced in any way and just continue to handle it logically (eg by treating a record as one without a matching ALPN and thus discarded RR), then that is not \"invalid\".",
+              "createdAt": "2021-01-05T21:22:20Z",
+              "updatedAt": "2021-01-05T21:22:20Z"
             }
           ]
         }
