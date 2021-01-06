@@ -1619,7 +1619,6 @@ This table serves as a non-normative summary of the HTTP mapping for SVCB
 | **Automatically Mandatory Keys** | `port`, `no-default-alpn`                |
 | **SvcParam defaults**            | `alpn`: \["http/1.1"\]                   |
 | **Special behaviors**            | HTTP to HTTPS upgrade                    |
-| -------------------------------- | ---------------------------------------- |
 
 This table does not indicate any SvcParamKeys that servers are required to
 publish, or that clients are required to implement, because there are none
