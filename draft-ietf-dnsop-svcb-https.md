@@ -1453,9 +1453,7 @@ Apart from the initial contents, the SvcParamKey name MUST NOT start with "key".
 Entries in this registry are subject to a Specification Required registration
 policy ({{!RFC8126}}, Section 4.6).  The provided specification MUST specify
 the SvcParamValue's presentation format and MAY detail its intended meaning
-and use.  Additionally, the registry SHALL allow registrants to have a Number
-temporarily marked as "Reserved" (without an associated Name)
-on a First Come First Served basis.
+and use.
 
 This arrangement supports the development of new parameters while ensuring that
 zone files can be made interoperable.
