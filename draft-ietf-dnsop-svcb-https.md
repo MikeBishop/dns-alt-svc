@@ -936,8 +936,10 @@ the Internet ("IN") Class {{!RFC1035}}.
 
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
-The "automatically mandatory" keys ({{mandatory}}) are "port", "alpn",
-and "no-default-alpn".  Clients that restrict the HTTPS destination
+The "automatically mandatory" keys ({{mandatory}}) are "port"
+and "no-default-alpn".  (As described in {{mandatory}}, clients must
+either implement these keys or ignore any RR in which they appear.)
+Clients that restrict the HTTPS destination
 port (e.g. using the "bad ports" list from {{FETCH}}) SHOULD apply the
 same restriction to the "port" SvcParam.
 
@@ -1600,6 +1602,25 @@ of three `item`s:
     part1
     part2
     part3,part4\
+
+# HTTP Mapping Summary
+
+This table serves as a non-normative summary of the HTTP mapping for SVCB
+({{https}}).  Future protocol mappings may provide a similar summary table.
+
+|                                  |                                          |
+| -------------------------------- | ---------------------------------------- |
+| **Mapped scheme**                | "https"                                  |
+| **Other affected schemes**       | "http", "wss", "ws", (other HTTP-based)  |
+| **RR type**                      | HTTPS (65)                               |
+| **Name prefix**                  | None for port 443, else `_$PORT._https`  |
+| **Automatically Mandatory Keys** | `port`, `no-default-alpn`                |
+| **SvcParam defaults**            | `alpn`: \["http/1.1"\]                   |
+| **Special behaviors**            | HTTP to HTTPS upgrade                    |
+
+This table does not indicate any SvcParamKeys that servers are required to
+publish, or that clients are required to implement, because there are none
+in this mapping.
 
 # Comparison with alternatives
 
