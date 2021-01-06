@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 9 July 2021                                           E. Nygren
+Expires: 10 July 2021                                          E. Nygren
                                                      Akamai Technologies
-                                                          5 January 2021
+                                                          6 January 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 July 2021.
+   This Internet-Draft will expire on 10 July 2021.
 
 Copyright Notice
 
