@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MikeBishop/dns-alt-svc bemasc-ports preview</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <style type="text/css">/*<![CDATA[*/
+      body { font-family: "Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif; }
+      h1, h2, td { font-family: "Helvetica Neue","Roboto Condensed","Open Sans",Helvetica,Calibri,sans-serif; }
+      h1 { font-size: 20px; } h2 { font-size: 16px; }
+      table { margin: 5px 10px; border-collapse: collapse; }
+      th, td { font-weight: normal; text-align: left; padding: 2px 5px; }
+      a:link { color: #000; } a:visited { color: #00a; }
+    /*]]>*/</style>
+  </head>
+  <body>
+    <h1>Editor's drafts for bemasc-ports branch of <a href="https://github.com/MikeBishop/dns-alt-svc/tree/bemasc-ports">MikeBishop/dns-alt-svc</a></h1>
+    <p>View <a href="issues.html">saved issues</a>,
+      or the latest GitHub <a href="https://github.com/MikeBishop/dns-alt-svc/issues">issues</a>
+      and <a href="https://github.com/MikeBishop/dns-alt-svc/pulls">pull requests</a>.</p>
+    <table id="branch-bemasc-ports">
+      <tr>
+        <th>draft-ietf-dnsop-svcb-httpssvc</th>
+        <td><a href="./draft-ietf-dnsop-svcb-httpssvc.html"
+           class="html draft-ietf-dnsop-svcb-httpssvc">html</a></td>
+        <td><a href="./draft-ietf-dnsop-svcb-httpssvc.txt"
+           class="txt draft-ietf-dnsop-svcb-httpssvc">plain text</a></td>
+        <td><a href=https://tools.ietf.org/rfcdiff?url1=https://MikeBishop.github.io/dns-alt-svc/draft-ietf-dnsop-svcb-httpssvc.txt&amp;url2=https://MikeBishop.github.io/dns-alt-svc/bemasc-ports/draft-ietf-dnsop-svcb-httpssvc.txt>diff with master</a></td>
+        <td><a href="https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-dnsop-svcb-httpssvc.txt&amp;url2=https://MikeBishop.github.io/dns-alt-svc/bemasc-ports/draft-ietf-dnsop-svcb-httpssvc.txt" class="diff draft-ietf-dnsop-svcb-httpssvc">
+          diff with last submission</a></td>
+      </tr>
+      <tr>
+        <th>draft-schwartz-httpbis-dns-alt-svc</th>
+        <td><a href="./draft-schwartz-httpbis-dns-alt-svc.html"
+           class="html draft-schwartz-httpbis-dns-alt-svc">html</a></td>
+        <td><a href="./draft-schwartz-httpbis-dns-alt-svc.txt"
+           class="txt draft-schwartz-httpbis-dns-alt-svc">plain text</a></td>
+        <td><a href=https://tools.ietf.org/rfcdiff?url1=https://MikeBishop.github.io/dns-alt-svc/draft-schwartz-httpbis-dns-alt-svc.txt&amp;url2=https://MikeBishop.github.io/dns-alt-svc/bemasc-ports/draft-schwartz-httpbis-dns-alt-svc.txt>diff with master</a></td>
+        <td><a href="https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-schwartz-httpbis-dns-alt-svc.txt&amp;url2=https://MikeBishop.github.io/dns-alt-svc/bemasc-ports/draft-schwartz-httpbis-dns-alt-svc.txt" class="diff draft-schwartz-httpbis-dns-alt-svc">
+          diff with last submission</a></td>
+      </tr>
+    </table>
+    <script>
+// @licstart
+//  Any copyright is dedicated to the Public Domain.
+//  http://creativecommons.org/publicdomain/zero/1.0/
+// @licend
+window.onload = function() {
+  var referrer_branch = 'master';
+  // e.g., "https://github.com/user/repo/tree/master"
+  var chunks = document.referrer.split("/");
+  if (chunks[2] === 'github.com' && chunks[5] === 'tree') {
+    referrer_branch = chunks[6];
+  }
+  let branch = document.querySelector('#branch-' + referrer_branch);
+  let h = document.location.hash.substring(1);
+  if (h === 'show') {
+    document.location.hash = '#' + branch.id;
+  } else if (branch && h.startsWith('go')) {
+    let e = branch.querySelector(h.substring(2));
+    if (e && e.href) {
+      document.location = e.href;
+    }
+  }
+};
+    </script>
+  </body>
+</html>

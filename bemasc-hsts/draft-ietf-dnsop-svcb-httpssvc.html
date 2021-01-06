@@ -1,0 +1,3070 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Service binding and parameter specification via the DNS (DNS SVCB and HTTPSSVC)</title>
+<meta content="Ben Schwartz" name="author">
+<meta content="Mike Bishop" name="author">
+<meta content="Erik Nygren" name="author">
+<meta content='
+       This document specifies the "SVCB" and "HTTPSSVC" DNS resource record types to
+facilitate the lookup of information needed to make connections for
+origin resources, such as for HTTPS URLs.  SVCB records
+allow an origin to be served from multiple network
+locations, each with associated parameters (such as transport protocol
+configuration and keying material for encrypting TLS SNI).  They also
+enable aliasing of apex domains, which is not possible with CNAME.
+The HTTPSSVC DNS RR is a variation of SVCB for HTTPS and HTTP origins.
+By providing more information to the client before it attempts to
+establish a connection, these records offer potential benefits to
+both performance and privacy. 
+       TO BE REMOVED: This proposal is inspired by and based on recent DNS
+usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long
+standing desires to have SRV or a functional equivalent implemented
+for HTTP).  These proposals each provide an important function but are
+potentially incompatible with each other, such as when an origin is
+load-balanced across multiple hosting providers (multi-CDN).
+Furthermore, these each add potential cases for adding additional
+record lookups in-addition to AAAA/A lookups. This design attempts to
+provide a unified framework that encompasses the key functionality of
+these proposals, as well as providing some extensibility for
+addressing similar future challenges. 
+       TO BE REMOVED: The specific name for this RR type is an open
+topic for discussion.  "SVCB" and "HTTPSSVC" are meant as placeholders
+as they are easy to replace.  Other names might include "B",
+"SRV2", "SVCHTTPS", "HTTPS", and "ALTSVC". 
+    ' name="description">
+<meta content="xml2rfc 2.37.3" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-ietf-dnsop-svcb-httpssvc-latest" name="ietf.draft">
+<link href="draft-ietf-dnsop-svcb-httpssvc.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@import url('https://martinthomson.github.io/i-d-template/fonts.css');
+
+html {
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --small-font-size: 14.5px;
+}
+body {
+  max-width: 624px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+#title {
+  padding: 1em 0 0.2em;
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 26px;
+}
+h4, h5, h6 {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p, #abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 18px;
+  line-height: 24px;
+}
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href].selfRef {
+  color: var(--text-color);
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px 'Oxygen Mono', monospace;
+}
+pre {
+  border: 1px solid var(--line-color);
+  line-height: 17px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  pre {
+    display: inline-block;
+    overflow-x: auto;
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  pre + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+th {
+  text-align: left;
+  background-color: #eee;
+}
+tr:nth-child(2n) > td {
+  background-color: var(--background-color);
+}
+tr:nth-child(2n+1) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody tr:nth-child(2n+1) > td {
+  background-color: var(--background-color);
+}
+table caption {
+  font-style: italic;
+  margin: 0.3em 0;
+  padding: 0;
+  text-align: left;
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  visibility: hidden;
+  user-select: none;
+}
+a.pilcrow[href] { color: #ddd; }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media screen {
+  :hover > a.pilcrow {
+    visibility: visible;
+  }
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 8em;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  margin: 0;
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0 0 0 calc(1em + var(--identifier-width));
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 600px) {
+  .index ul {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  .index ul ul {
+    column-count: 1;
+    column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 600px) {
+  #authors-addresses {
+    display: relative;
+    padding: 32px 0 0;
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #name-authors-addresses {
+    position: absolute;
+    top: 0px;
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+  }
+}
+
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #b76427;
+  background-color: rgba(249, 232, 105, 0.3);
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: rgba(249, 232, 105, 0.3);
+  border-radius: 3px;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 953px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 954px) {
+  body {
+    padding-right: 380px;
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul p, #toc ul li {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table td.text-left,
+table th.text-left {
+  text-align: left;
+}
+table td.text-center,
+table th.text-center {
+  text-align: center;
+}
+table td.text-right,
+table th.text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+</style>
+<link href="rfc-local.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<script src="metadata.min.js"></script>
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">SVCB and HTTPSSVC RRs for DNS</td>
+<td class="right">January 2020</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Schwartz, et al.</td>
+<td class="center">Expires 18 July 2020</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">DNSOP Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-ietf-dnsop-svcb-httpssvc-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2020-01-15" class="published">15 January 2020</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2020-07-18">18 July 2020</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">B. Schwartz</div>
+<div class="org">Google</div>
+</div>
+<div class="author">
+      <div class="author-name">M. Bishop</div>
+<div class="org">Akamai Technologies</div>
+</div>
+<div class="author">
+      <div class="author-name">E. Nygren</div>
+<div class="org">Akamai Technologies</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Service binding and parameter specification via the DNS (DNS SVCB and HTTPSSVC)</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document specifies the "SVCB" and "HTTPSSVC" DNS resource record types to
+facilitate the lookup of information needed to make connections for
+origin resources, such as for HTTPS URLs.  SVCB records
+allow an origin to be served from multiple network
+locations, each with associated parameters (such as transport protocol
+configuration and keying material for encrypting TLS SNI).  They also
+enable aliasing of apex domains, which is not possible with CNAME.
+The HTTPSSVC DNS RR is a variation of SVCB for HTTPS and HTTP origins.
+By providing more information to the client before it attempts to
+establish a connection, these records offer potential benefits to
+both performance and privacy.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">TO BE REMOVED: This proposal is inspired by and based on recent DNS
+usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long
+standing desires to have SRV or a functional equivalent implemented
+for HTTP).  These proposals each provide an important function but are
+potentially incompatible with each other, such as when an origin is
+load-balanced across multiple hosting providers (multi-CDN).
+Furthermore, these each add potential cases for adding additional
+record lookups in-addition to AAAA/A lookups. This design attempts to
+provide a unified framework that encompasses the key functionality of
+these proposals, as well as providing some extensibility for
+addressing similar future challenges.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">TO BE REMOVED: The specific name for this RR type is an open
+topic for discussion.  "SVCB" and "HTTPSSVC" are meant as placeholders
+as they are easy to replace.  Other names might include "B",
+"SRV2", "SVCHTTPS", "HTTPS", and "ALTSVC".<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 18 July 2020.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2020 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Simplified BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Simplified BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1"><a href="#section-1" class="xref">1</a>.  <a href="#name-introduction" class="xref">Introduction</a><a href="#section-toc.1-1.1.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1"><a href="#section-1.1" class="xref">1.1</a>.  <a href="#name-example-protocol-enhancemen" class="xref">Example: Protocol enhancements</a><a href="#section-toc.1-1.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1"><a href="#section-1.2" class="xref">1.2</a>.  <a href="#name-example-apex-aliasing" class="xref">Example: Apex aliasing</a><a href="#section-toc.1-1.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.3">
+                <p id="section-toc.1-1.1.2.3.1"><a href="#section-1.3" class="xref">1.3</a>.  <a href="#name-example-parameter-binding" class="xref">Example: Parameter binding</a><a href="#section-toc.1-1.1.2.3.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.4">
+                <p id="section-toc.1-1.1.2.4.1"><a href="#section-1.4" class="xref">1.4</a>.  <a href="#name-example-non-https-uses" class="xref">Example: Non-HTTPS uses</a><a href="#section-toc.1-1.1.2.4.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.5">
+                <p id="section-toc.1-1.1.2.5.1"><a href="#section-1.5" class="xref">1.5</a>.  <a href="#name-goals-of-the-svcb-rr" class="xref">Goals of the SVCB RR</a><a href="#section-toc.1-1.1.2.5.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.6">
+                <p id="section-toc.1-1.1.2.6.1"><a href="#section-1.6" class="xref">1.6</a>.  <a href="#name-overview-of-the-svcb-rr" class="xref">Overview of the SVCB RR</a><a href="#section-toc.1-1.1.2.6.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.7">
+                <p id="section-toc.1-1.1.2.7.1"><a href="#section-1.7" class="xref">1.7</a>.  <a href="#name-parameter-for-esni" class="xref">Parameter for ESNI</a><a href="#section-toc.1-1.1.2.7.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.1.2.8">
+                <p id="section-toc.1-1.1.2.8.1"><a href="#section-1.8" class="xref">1.8</a>.  <a href="#name-terminology" class="xref">Terminology</a><a href="#section-toc.1-1.1.2.8.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="xref">2</a>.  <a href="#name-the-svcb-record-type" class="xref">The SVCB record type</a><a href="#section-toc.1-1.2.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="xref">2.1</a>.  <a href="#name-parameter-specification-via" class="xref">Parameter specification via ServiceFieldValue</a><a href="#section-toc.1-1.2.2.1.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.1.2.1">
+                    <p id="section-toc.1-1.2.2.1.2.1.1"><a href="#section-2.1.1" class="xref">2.1.1</a>.  <a href="#name-presentation-format" class="xref">Presentation format</a><a href="#section-toc.1-1.2.2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="xref">2.2</a>.  <a href="#name-svcb-rdata-wire-format" class="xref">SVCB RDATA Wire Format</a><a href="#section-toc.1-1.2.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.3">
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="xref">2.3</a>.  <a href="#name-svcb-owner-names" class="xref">SVCB owner names</a><a href="#section-toc.1-1.2.2.3.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.4">
+                <p id="section-toc.1-1.2.2.4.1"><a href="#section-2.4" class="xref">2.4</a>.  <a href="#name-svcrecordtype" class="xref">SvcRecordType</a><a href="#section-toc.1-1.2.2.4.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.5">
+                <p id="section-toc.1-1.2.2.5.1"><a href="#section-2.5" class="xref">2.5</a>.  <a href="#name-svcb-records-aliasform" class="xref">SVCB records: AliasForm</a><a href="#section-toc.1-1.2.2.5.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.6">
+                <p id="section-toc.1-1.2.2.6.1"><a href="#section-2.6" class="xref">2.6</a>.  <a href="#name-svcb-records-serviceform" class="xref">SVCB records: ServiceForm</a><a href="#section-toc.1-1.2.2.6.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.6.2.1">
+                    <p id="section-toc.1-1.2.2.6.2.1.1"><a href="#section-2.6.1" class="xref">2.6.1</a>.  <a href="#name-special-handling-of-for-svc" class="xref">Special handling of "." for SvcDomainName in ServiceForm</a><a href="#section-toc.1-1.2.2.6.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.2.2.6.2.2">
+                    <p id="section-toc.1-1.2.2.6.2.2.1"><a href="#section-2.6.2" class="xref">2.6.2</a>.  <a href="#name-svcfieldpriority" class="xref">SvcFieldPriority</a><a href="#section-toc.1-1.2.2.6.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-client-behavior" class="xref">Client behavior</a><a href="#section-toc.1-1.3.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="xref">3.1</a>.  <a href="#name-clients-using-a-proxy" class="xref">Clients using a Proxy</a><a href="#section-toc.1-1.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-dns-server-behavior" class="xref">DNS Server Behavior</a><a href="#section-toc.1-1.4.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-performance-optimizations" class="xref">Performance optimizations</a><a href="#section-toc.1-1.5.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="xref">5.1</a>.  <a href="#name-optimistic-pre-connection-a" class="xref">Optimistic pre-connection and connection reuse</a><a href="#section-toc.1-1.5.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-preferring-usable-records" class="xref">Preferring usable records</a><a href="#section-toc.1-1.5.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="xref">5.3</a>.  <a href="#name-structuring-zones-for-perfo" class="xref">Structuring zones for performance</a><a href="#section-toc.1-1.5.2.3.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="xref">6</a>.  <a href="#name-initial-svcparamkeys" class="xref">Initial SvcParamKeys</a><a href="#section-toc.1-1.6.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="xref">6.1</a>.  <a href="#name-alpn" class="xref">"alpn"</a><a href="#section-toc.1-1.6.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="xref">6.2</a>.  <a href="#name-port" class="xref">"port"</a><a href="#section-toc.1-1.6.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="xref">6.3</a>.  <a href="#name-esniconfig" class="xref">"esniconfig"</a><a href="#section-toc.1-1.6.2.3.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="xref">6.4</a>.  <a href="#name-ipv4hint-and-ipv6hint" class="xref">"ipv4hint" and "ipv6hint"</a><a href="#section-toc.1-1.6.2.4.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="xref">7</a>.  <a href="#name-using-svcb-with-https-and-h" class="xref">Using SVCB with HTTPS and HTTP</a><a href="#section-toc.1-1.7.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="xref">7.1</a>.  <a href="#name-owner-names-for-httpssvc-re" class="xref">Owner names for HTTPSSVC records</a><a href="#section-toc.1-1.7.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="xref">7.2</a>.  <a href="#name-populating-alt-used" class="xref">Populating Alt-Used</a><a href="#section-toc.1-1.7.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="xref">7.3</a>.  <a href="#name-differences-from-alt-svc" class="xref">Differences from Alt-Svc</a><a href="#section-toc.1-1.7.2.3.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.7.2.3.2.1">
+                    <p id="section-toc.1-1.7.2.3.2.1.1"><a href="#section-7.3.1" class="xref">7.3.1</a>.  <a href="#name-untrusted-channel" class="xref">Untrusted channel</a><a href="#section-toc.1-1.7.2.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.7.2.3.2.2">
+                    <p id="section-toc.1-1.7.2.3.2.2.1"><a href="#section-7.3.2" class="xref">7.3.2</a>.  <a href="#name-caching-and-granularity" class="xref">Caching and granularity</a><a href="#section-toc.1-1.7.2.3.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.7.2.4">
+                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="xref">7.4</a>.  <a href="#name-http-strict-transport-secur" class="xref">HTTP Strict Transport Security</a><a href="#section-toc.1-1.7.2.4.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="xref">8</a>.  <a href="#name-alt-svc-and-svcb-httpssvc-p" class="xref">Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys</a><a href="#section-toc.1-1.8.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="xref">8.1</a>.  <a href="#name-handling-a-mixture-of-alter" class="xref">Handling a mixture of alternatives not supporting ESNI</a><a href="#section-toc.1-1.8.2.1.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="xref">9</a>.  <a href="#name-interaction-with-other-stan" class="xref">Interaction with other standards</a><a href="#section-toc.1-1.9.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="xref">10</a>. <a href="#name-security-considerations" class="xref">Security Considerations</a><a href="#section-toc.1-1.10.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="xref">11</a>. <a href="#name-iana-considerations" class="xref">IANA Considerations</a><a href="#section-toc.1-1.11.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.11.2.1">
+                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="xref">11.1</a>.  <a href="#name-new-registry-for-service-pa" class="xref">New registry for Service Parameters</a><a href="#section-toc.1-1.11.2.1.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.11.2.1.2.1">
+                    <p id="section-toc.1-1.11.2.1.2.1.1"><a href="#section-11.1.1" class="xref">11.1.1</a>.  <a href="#name-procedure" class="xref">Procedure</a><a href="#section-toc.1-1.11.2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.11.2.1.2.2">
+                    <p id="section-toc.1-1.11.2.1.2.2.1"><a href="#section-11.1.2" class="xref">11.1.2</a>.  <a href="#name-initial-contents" class="xref">Initial contents</a><a href="#section-toc.1-1.11.2.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.11.2.2">
+                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="xref">11.2</a>.  <a href="#name-registry-updates" class="xref">Registry updates</a><a href="#section-toc.1-1.11.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="xref">12</a>. <a href="#name-acknowledgments-and-related" class="xref">Acknowledgments and Related Proposals</a><a href="#section-toc.1-1.12.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="xref">13</a>. <a href="#name-references" class="xref">References</a><a href="#section-toc.1-1.13.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.13.2.1">
+                <p id="section-toc.1-1.13.2.1.1"><a href="#section-13.1" class="xref">13.1</a>.  <a href="#name-normative-references" class="xref">Normative References</a><a href="#section-toc.1-1.13.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.13.2.2">
+                <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="xref">13.2</a>.  <a href="#name-informative-references" class="xref">Informative References</a><a href="#section-toc.1-1.13.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#section-appendix.a" class="xref">Appendix A</a>.  <a href="#name-mapping-between-httpssvc-an" class="xref">Mapping between HTTPSSVC and Alt-Svc</a><a href="#section-toc.1-1.14.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.14.2.1">
+                <p id="section-toc.1-1.14.2.1.1"><a href="#section-a.1" class="xref">A.1</a>.  <a href="#name-multiple-records-and-prefer" class="xref">Multiple records and preference ordering</a><a href="#section-toc.1-1.14.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.14.2.2">
+                <p id="section-toc.1-1.14.2.2.1"><a href="#section-a.2" class="xref">A.2</a>.  <a href="#name-additional-examples" class="xref">Additional examples</a><a href="#section-toc.1-1.14.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#section-appendix.b" class="xref">Appendix B</a>.  <a href="#name-comparison-with-alternative" class="xref">Comparison with alternatives</a><a href="#section-toc.1-1.15.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.15.2.1">
+                <p id="section-toc.1-1.15.2.1.1"><a href="#section-b.1" class="xref">B.1</a>.  <a href="#name-differences-from-the-srv-rr" class="xref">Differences from the SRV RR type</a><a href="#section-toc.1-1.15.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.15.2.2">
+                <p id="section-toc.1-1.15.2.2.1"><a href="#section-b.2" class="xref">B.2</a>.  <a href="#name-differences-from-the-propos" class="xref">Differences from the proposed HTTP record</a><a href="#section-toc.1-1.15.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.15.2.3">
+                <p id="section-toc.1-1.15.2.3.1"><a href="#section-b.3" class="xref">B.3</a>.  <a href="#name-differences-from-the-propose" class="xref">Differences from the proposed ANAME record</a><a href="#section-toc.1-1.15.2.3.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.15.2.4">
+                <p id="section-toc.1-1.15.2.4.1"><a href="#section-b.4" class="xref">B.4</a>.  <a href="#name-differences-from-the-proposed" class="xref">Differences from the proposed ESNI record</a><a href="#section-toc.1-1.15.2.4.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.15.2.5">
+                <p id="section-toc.1-1.15.2.5.1"><a href="#section-b.5" class="xref">B.5</a>.  <a href="#name-sni-alt-svc-parameter" class="xref">SNI Alt-Svc parameter</a><a href="#section-toc.1-1.15.2.5.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.16">
+            <p id="section-toc.1-1.16.1"><a href="#section-appendix.c" class="xref">Appendix C</a>.  <a href="#name-design-considerations-and-o" class="xref">Design Considerations and Open Issues</a><a href="#section-toc.1-1.16.1" class="pilcrow">¶</a></p>
+<ul class="toc ulEmpty">
+<li class="toc ulEmpty" id="section-toc.1-1.16.2.1">
+                <p id="section-toc.1-1.16.2.1.1"><a href="#section-c.1" class="xref">C.1</a>.  <a href="#name-record-name" class="xref">Record Name</a><a href="#section-toc.1-1.16.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.16.2.2">
+                <p id="section-toc.1-1.16.2.2.1"><a href="#section-c.2" class="xref">C.2</a>.  <a href="#name-generality" class="xref">Generality</a><a href="#section-toc.1-1.16.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.16.2.3">
+                <p id="section-toc.1-1.16.2.3.1"><a href="#section-c.3" class="xref">C.3</a>.  <a href="#name-wire-format" class="xref">Wire Format</a><a href="#section-toc.1-1.16.2.3.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.16.2.4">
+                <p id="section-toc.1-1.16.2.4.1"><a href="#section-c.4" class="xref">C.4</a>.  <a href="#name-where-to-include-priority" class="xref">Where to include Priority</a><a href="#section-toc.1-1.16.2.4.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.16.2.5">
+                <p id="section-toc.1-1.16.2.5.1"><a href="#section-c.5" class="xref">C.5</a>.  <a href="#name-whether-to-include-weight" class="xref">Whether to include Weight</a><a href="#section-toc.1-1.16.2.5.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.17">
+            <p id="section-toc.1-1.17.1"><a href="#section-appendix.d" class="xref">Appendix D</a>.  <a href="#name-change-history" class="xref">Change history</a><a href="#section-toc.1-1.17.1" class="pilcrow">¶</a></p>
+</li>
+<li class="toc ulEmpty" id="section-toc.1-1.18">
+            <p id="section-toc.1-1.18.1"><a href="#section-appendix.e" class="xref"></a><a href="#name-authors-addresses" class="xref">Authors' Addresses</a><a href="#section-toc.1-1.18.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">The SVCB and HTTPSSVC RRs provide clients with complete instructions
+for access to an origin.  This information enables improved
+performance and privacy by avoiding transient connections to a sub-optimal
+default server, negotiating a preferred protocol, and providing relevant
+public keys.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">For example, when clients need to make a connection to fetch resources
+associated with an HTTPS URI, they currently resolve only A and/or AAAA
+records for the origin hostname.  This is adequate for services that use
+basic HTTPS (fixed port, no QUIC, no <span>[<a href="#ESNI" class="xref">ESNI</a>]</span>).
+Going beyond basic HTTPS confers privacy, performance, and operational
+advantages, but it requires the client to learn additional
+information, and it is highly
+desirable to minimize the number of round-trip and lookups required to
+learn this additional information.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">The SVCB and HTTPSSVC RRs also help when the operator of an origin
+wishes to delegate operational control to one or more other domains, e.g.
+delegating the origin resource "https://example.com" to a service
+operator endpoint at "svc.example.net".  While this case can sometimes
+be handled by a CNAME, that does not cover all use-cases.  CNAME is also
+inadequate when the service operator needs to provide a bound
+collection of consistent configuration parameters through the DNS
+(such as network location, protocol, and keying information).<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This document first describes the SVCB RR as a general-purpose resource
+record that can be applied directly and efficiently to a wide range
+of services (<a href="#svcb" class="xref">Section 2</a>).  The HTTPSSVC RR is then defined as a special
+case of SVCB that improves efficiency and convenience for use with HTTPS
+(<a href="#https" class="xref">Section 7</a>) by avoiding the need for an <span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span> label
+(<a href="#httpsnames" class="xref">Section 7.1</a>).  Other protocols with similar needs may
+follow the pattern of HTTPSSVC and assign their own
+SVCB-compatible RR types.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">All behaviors described as applying to the SVCB RR also apply
+to the HTTPSSVC RR unless explicitly stated otherwise.
+<a href="#https" class="xref">Section 7</a> describes additional behaviors
+specific to the HTTPSSVC record.  Apart from <a href="#https" class="xref">Section 7</a>
+and introductory examples, much of this document refers only to the SVCB RR,
+but those references should be taken to apply to SVCB, HTTPSSVC,
+and any future SVCB-compatible RR types.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">The SVCB RR has two forms: 1) the "Alias Form" simply delegates operational
+control for a resource; 2) the "Service Form" binds together
+configuration information for a service endpoint.
+The Service Form provides additional key=value parameters
+within each RDATA set.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">TO BE REMOVED: If we use this for providing configuration for DNS
+authorities, it is likely we'd specify a distinct "NS2" RR type that is
+an instantiation of SVCB for authoritative nameserver delegation and
+parameter specification, similar to HTTPSSVC.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">TO BE REMOVED: Another open question is whether SVCB records
+should be self-descriptive and include the service name
+(eg, "https") in the RDATA section to avoid ambiguity.
+Perhaps this could be included as a svc="baz" parameter
+for protocols that are not the default for the RR type?
+Current inclination is to not do so.<a href="#section-1-8" class="pilcrow">¶</a></p>
+<div id="example-protocol-enhancements">
+<section id="section-1.1">
+        <h3 id="name-example-protocol-enhancemen">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-example-protocol-enhancemen" class="section-name selfRef">Example: Protocol enhancements</a>
+        </h3>
+<p id="section-1.1-1">Consider a simple zone of the form<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-1.1-2">
+<pre>
+simple.example. 300 IN A    192.0.2.1
+                       AAAA 2001:db8::1
+</pre><a href="#section-1.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-1.1-3">The domain owner could add records like<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-1.1-4">
+<pre>
+simple.example. 7200 IN HTTPSSVC 1 . alpn=h3 ...
+                        HTTPSSVC 2 . alpn=h2 ...
+</pre><a href="#section-1.1-4" class="pilcrow">¶</a>
+</div>
+<p id="section-1.1-5">The presence of these records indicates to clients that simple.example
+supports HTTPS, and the key=value pairs indicate that it prefers HTTP/3
+but also supports HTTP/2.  The records can also include other information
+(e.g. non-standard ports, ESNI configuration).<a href="#section-1.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="example-apex-aliasing">
+<section id="section-1.2">
+        <h3 id="name-example-apex-aliasing">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-example-apex-aliasing" class="section-name selfRef">Example: Apex aliasing</a>
+        </h3>
+<p id="section-1.2-1">Consider a zone that is using CNAME aliasing:<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-1.2-2">
+<pre>
+$ORIGIN aliased.example. ; A zone that is using a hosting service
+; Subdomain aliased to a high-performance server pool
+www             7200 IN CNAME pool.svc.example.
+; Apex domain on fixed IPs because CNAME is not allowed at the apex
+.                300 IN A     192.0.2.1
+                     IN AAAA  2001:db8::1
+</pre><a href="#section-1.2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-1.2-3">With HTTPSSVC, the owner of aliased.example could alias the apex by
+adding one additional record:<a href="#section-1.2-3" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-1.2-4">
+<pre>
+.               7200 IN HTTPSSVC 0 pool.svc.example.
+</pre><a href="#section-1.2-4" class="pilcrow">¶</a>
+</div>
+<p id="section-1.2-5">With this record in place, HTTPSSVC-aware clients will use the same
+server pool for aliased.example and www.aliased.example.  (They will
+also upgrade to HTTPS on aliased.example.)  Non-HTTPSSVC-aware clients
+will just ignore the new record.<a href="#section-1.2-5" class="pilcrow">¶</a></p>
+<p id="section-1.2-6">Similar to CNAME, HTTPSSVC has no impact on the origin name.
+When connecting, clients will continue to treat the authoritative
+origins as "https://www.aliased.example" and "https://aliased.example",
+respectively, and will validate TLS server certificates accordingly.<a href="#section-1.2-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="example-parameter-binding">
+<section id="section-1.3">
+        <h3 id="name-example-parameter-binding">
+<a href="#section-1.3" class="section-number selfRef">1.3. </a><a href="#name-example-parameter-binding" class="section-name selfRef">Example: Parameter binding</a>
+        </h3>
+<p id="section-1.3-1">Suppose that svc.example's default server pool supports HTTP/2, and
+it has deployed HTTP/3 on a new server pool with a different
+configuration.  This can be expressed in the following form:<a href="#section-1.3-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-1.3-2">
+<pre>
+$ORIGIN svc.example. ; A hosting provider.
+pool  7200 IN HTTPSSVC 1 h3pool alpn=h3 esniconfig="123..."
+              HTTPSSVC 2 . alpn=h2 esniconfig="abc..."
+pool   300 IN A        192.0.2.2
+              AAAA     2001:db8::2
+h3pool 300 IN A        192.0.2.3
+              AAAA     2001:db8::3
+</pre><a href="#section-1.3-2" class="pilcrow">¶</a>
+</div>
+<p id="section-1.3-3">This configuration is entirely compatible with the "Apex aliasing" example,
+whether the client supports HTTPSSVC or not.  If the client does support
+HTTPSSVC, all connections will be upgraded to HTTPS, and clients will
+use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
+each server pool can have its own protocol, ESNI configuration, etc.<a href="#section-1.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="example-non-https-uses">
+<section id="section-1.4">
+        <h3 id="name-example-non-https-uses">
+<a href="#section-1.4" class="section-number selfRef">1.4. </a><a href="#name-example-non-https-uses" class="section-name selfRef">Example: Non-HTTPS uses</a>
+        </h3>
+<p id="section-1.4-1">For services other than HTTPS, the SVCB RR and an <span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span> label
+will be used.  For example, to reach an example resource of
+"baz://api.example.com:8765", the following Alias Form
+SVCB record would be used to delegate to "svc4-baz.example.net."
+which in-turn could return AAAA/A records and/or SVCB
+records in ServiceForm.<a href="#section-1.4-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-1.4-2">
+<pre>
+_8765._baz.api.example.com. 7200 IN SVCB 0 svc4-baz.example.net.
+</pre><a href="#section-1.4-2" class="pilcrow">¶</a>
+</div>
+<p id="section-1.4-3">HTTPSSVC records use similar <span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span> labels if the origin contains
+a non-default port.<a href="#section-1.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="goals-of-the-svcb-rr">
+<section id="section-1.5">
+        <h3 id="name-goals-of-the-svcb-rr">
+<a href="#section-1.5" class="section-number selfRef">1.5. </a><a href="#name-goals-of-the-svcb-rr" class="section-name selfRef">Goals of the SVCB RR</a>
+        </h3>
+<p id="section-1.5-1">The goal of the SVCB RR is to allow clients to resolve a single
+additional DNS RR in a way that:<a href="#section-1.5-1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-1.5-2.1">Provides service endpoints authoritative for the service,
+along with parameters associated with each of these endpoints.<a href="#section-1.5-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-1.5-2.2">Does not assume that all alternative service endpoints have the same parameters
+or capabilities, or are even
+operated by the same entity.  This is important as DNS does not
+provide any way to tie together multiple RRs for the same name.
+For example, if www.example.com is a CNAME alias that switches
+between one of three CDNs or hosting environments, successive queries
+for that name may return records that correspond to different environments.<a href="#section-1.5-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-1.5-2.3">Enables CNAME-like functionality at a zone apex (such as
+"example.com") for participating protocols, and generally
+enables delegation of operational authority for an origin within the
+DNS to an alternate name.<a href="#section-1.5-2.3" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-1.5-3">Additional goals specific to HTTPSSVC and the HTTPS use-case include:<a href="#section-1.5-3" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-1.5-4.1">Connect directly to <span>[<a href="#HTTP3" class="xref">HTTP3</a>]</span> (QUIC transport)
+alternative service endpoints<a href="#section-1.5-4.1" class="pilcrow">¶</a>
+</li>
+<li id="section-1.5-4.2">Obtain the <span>[<a href="#ESNI" class="xref">ESNI</a>]</span> keys associated with an alternative service endpoint<a href="#section-1.5-4.2" class="pilcrow">¶</a>
+</li>
+<li id="section-1.5-4.3">Support non-default TCP and UDP ports<a href="#section-1.5-4.3" class="pilcrow">¶</a>
+</li>
+<li id="section-1.5-4.4">Address a set of long-standing issues due to HTTP(S) clients not
+implementing support for SRV records, as well as due to a limitation
+that a DNS name can not have both CNAME and NS RRs
+(as is the case for zone apex names)<a href="#section-1.5-4.4" class="pilcrow">¶</a>
+</li>
+<li id="section-1.5-4.5">Provide an HSTS-like indication signaling
+for the duration of the DNS RR TTL that the HTTPS scheme should
+be used instead of HTTP (see <a href="#hsts" class="xref">Section 7.4</a>).<a href="#section-1.5-4.5" class="pilcrow">¶</a>
+</li>
+</ul>
+</section>
+</div>
+<div id="overview-of-the-svcb-rr">
+<section id="section-1.6">
+        <h3 id="name-overview-of-the-svcb-rr">
+<a href="#section-1.6" class="section-number selfRef">1.6. </a><a href="#name-overview-of-the-svcb-rr" class="section-name selfRef">Overview of the SVCB RR</a>
+        </h3>
+<p id="section-1.6-1">This subsection briefly describes the SVCB RR in
+a non-normative manner.  (As mentioned above, this all
+applies equally to the HTTPSSVC RR which shares
+the same encoding, format, and high-level semantics.)<a href="#section-1.6-1" class="pilcrow">¶</a></p>
+<p id="section-1.6-2">The SVCB RR has two forms: AliasForm and ServiceForm.
+SVCB RR entries with two non-empty fields are in AliasForm.
+When more fields are present, this indicates that the SVCB RR
+is in ServiceForm.  The fields are:<a href="#section-1.6-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal" id="section-1.6-3">
+          <li id="section-1.6-3.1">SvcFieldPriority: The priority of this record (relative to others,
+with lower values preferred).  Applicable for the ServiceForm,
+and otherwise has value "0".  (Described in <a href="#pri" class="xref">Appendix A.1</a>.)<a href="#section-1.6-3.1" class="pilcrow">¶</a>
+</li>
+<li id="section-1.6-3.2">SvcDomainName: The domain name of either the alias target (for
+AliasForm) or the alternative service endpoint (for ServiceForm).<a href="#section-1.6-3.2" class="pilcrow">¶</a>
+</li>
+<li id="section-1.6-3.3">SvcFieldValue: A list of key=value pairs
+describing the alternative service endpoint for the domain name specified in
+SvcDomainName (only for ServiceForm and otherwise empty).
+Described in <a href="#svcfieldvalue" class="xref">Section 2.1</a>.<a href="#section-1.6-3.3" class="pilcrow">¶</a>
+</li>
+</ol>
+<p id="section-1.6-4">Cooperating DNS recursive resolvers will perform subsequent record
+resolution (for SVCB, A, and AAAA records) and return them in the
+Additional Section of the response.  Clients must either use responses
+included in the additional section returned by the recursive resolver
+or perform necessary SVCB, A, and AAAA record resolutions.  DNS
+authoritative servers may attach in-bailiwick SVCB, A, AAAA, and CNAME
+records in the Additional Section to responses for an SVCB query.<a href="#section-1.6-4" class="pilcrow">¶</a></p>
+<p id="section-1.6-5">When in the ServiceForm, the SvcFieldValue of the SVCB RR
+provides an extensible data model for describing network
+endpoints that are authoritative for the origin, along with
+parameters associated with each of these endpoints.<a href="#section-1.6-5" class="pilcrow">¶</a></p>
+<p id="section-1.6-6">For the HTTPS use-case, the HTTPSSVC RR enables many of the benefits of <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>,
+without waiting for a full HTTP connection initiation (multiple roundtrips)
+before learning of the preferred alternative,
+and without necessarily revealing the user's
+intended destination to all entities along the network path.<a href="#section-1.6-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="parameter-for-esni">
+<section id="section-1.7">
+        <h3 id="name-parameter-for-esni">
+<a href="#section-1.7" class="section-number selfRef">1.7. </a><a href="#name-parameter-for-esni" class="section-name selfRef">Parameter for ESNI</a>
+        </h3>
+<p id="section-1.7-1">This document also defines a parameter for Encrypted SNI <span>[<a href="#ESNI" class="xref">ESNI</a>]</span>
+keys, both as a general SVCB parameter and also as a corresponding
+Alt-Svc parameter. See <a href="#esniconfig" class="xref">Section 8</a>.<a href="#section-1.7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="terminology">
+<section id="section-1.8">
+        <h3 id="name-terminology">
+<a href="#section-1.8" class="section-number selfRef">1.8. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<p id="section-1.8-1">For consistency with <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>, we adopt the following definitions:<a href="#section-1.8-1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-1.8-2.1">An "origin" is an information source as in <span>[<a href="#RFC6454" class="xref">RFC6454</a>]</span>.
+For services other than HTTPS, the exact definition will
+need to be provided by the document mapping that service
+onto the SVCB RR.<a href="#section-1.8-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-1.8-2.2">The "origin server" is the server that the client would reach when
+accessing the origin in the absence of the SVCB record
+or an HTTPS Alt-Svc.<a href="#section-1.8-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-1.8-2.3">An "alternative service" is a different server that can serve the
+origin over a specified protocol.<a href="#section-1.8-2.3" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-1.8-3">For example within HTTPS, the origin consists of a scheme (typically
+"https"), a host name, and a port (typically "443").<a href="#section-1.8-3" class="pilcrow">¶</a></p>
+<p id="section-1.8-4">Additional DNS terminology intends to be consistent
+with <span>[<a href="#DNSTerm" class="xref">DNSTerm</a>]</span>.<a href="#section-1.8-4" class="pilcrow">¶</a></p>
+<p id="section-1.8-5">SVCB is a contraction of "service binding".  HTTPSSVC is a contraction of
+"HTTPS service".  SVCB, HTTPSSVC, and future RR types that share SVCB's
+format and registry are collectively known as SVCB-compatible RR types.<a href="#section-1.8-5" class="pilcrow">¶</a></p>
+<p id="section-1.8-6">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+"MAY", and "OPTIONAL" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-1.8-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="svcb">
+<section id="section-2">
+      <h2 id="name-the-svcb-record-type">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-the-svcb-record-type" class="section-name selfRef">The SVCB record type</a>
+      </h2>
+<p id="section-2-1">The SVCB DNS resource record (RR) type (RR type ???)
+is used to locate endpoints that can service an origin.
+There is special handling for the case of "https" origins.
+The presentation format of the record is:<a href="#section-2-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-2-2">
+<pre>
+Name TTL IN SVCB SvcFieldPriority SvcDomainName SvcFieldValue
+</pre><a href="#section-2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-2-3">The SVCB record is defined specifically within
+the Internet ("IN") Class (<span>[<a href="#RFC1035" class="xref">RFC1035</a>]</span>).
+SvcFieldPriority is a number in the range 0-65535,
+SvcDomainName is a domain name,
+and SvcFieldValue is a set of key=value pairs present for the ServiceForm.
+The SvcFieldValue is empty for the AliasForm.<a href="#section-2-3" class="pilcrow">¶</a></p>
+<p id="section-2-4">The algorithm for resolving SVCB records and associated
+address records is specified in <a href="#client-behavior" class="xref">Section 3</a>.<a href="#section-2-4" class="pilcrow">¶</a></p>
+<div id="svcfieldvalue">
+<section id="section-2.1">
+        <h3 id="name-parameter-specification-via">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-parameter-specification-via" class="section-name selfRef">Parameter specification via ServiceFieldValue</a>
+        </h3>
+<p id="section-2.1-1">In ServiceForm, the SvcFieldValue contains key=value pairs.
+Keys are IANA-registered SvcParamKeys (<a href="#svcparamregistry" class="xref">Section 11.1</a>)
+with both a case-insensitive string representation and
+a numeric representation in the range 0-65535.
+Registered key names should only contain characters from the ranges
+"a"-"z", "0"-"9", and "-".  In ABNF <span>[<a href="#RFC5234" class="xref">RFC5234</a>]</span>,<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-2.1-2">
+<pre>
+ALPHA_LC    = %x61-7A   ;  a-z
+key         = ALPHA_LC / DIGIT / "-"
+display-key = ALPHA / DIGIT / "-"
+</pre><a href="#section-2.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-2.1-3">Values are in a format specific to the SvcParamKey.
+Their definition should specify both their presentation format
+and wire encoding (e.g., domain names, binary data, or numeric values).<a href="#section-2.1-3" class="pilcrow">¶</a></p>
+<p id="section-2.1-4">The SVCB format preserves the order of values and can encode multiple
+values for the same parameter.  However, clients MUST consider only
+the first appearance of a parameter unless its specification explicitly allows
+multiple values.<a href="#section-2.1-4" class="pilcrow">¶</a></p>
+<div id="presentation-format">
+<section id="section-2.1.1">
+          <h4 id="name-presentation-format">
+<a href="#section-2.1.1" class="section-number selfRef">2.1.1. </a><a href="#name-presentation-format" class="section-name selfRef">Presentation format</a>
+          </h4>
+<p id="section-2.1.1-1">The presentation format for SvcFieldValue is a whitespace-separated
+list of the key=value pairs.  Each pair is presented in the following form:<a href="#section-2.1.1-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-2.1.1-2">
+<pre>
+; basic-visible is VCHAR minus DQUOTE, ";", and "\"
+basic-visible = %x21 / %x23-3A / %x3C-5B / %x5D-7E
+escaped-char  = "\" (VCHAR / WSP)
+contiguous    = *(basic-visible / escaped-char)
+quoted-string = DQUOTE *(contiguous / WSP) DQUOTE
+value         = quoted-string / contiguous
+pair          = display-key "=" value
+</pre><a href="#section-2.1.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-2.1.1-3">The value format is intended to match the definition of &lt;character-string&gt;
+in <span>[<a href="#RFC1035" class="xref">RFC1035</a>]</span> Section 5.1.  (Unlike &lt;character-string&gt;, the length
+of a value is not limited to 255 characters.)<a href="#section-2.1.1-3" class="pilcrow">¶</a></p>
+<p id="section-2.1.1-4">Unrecognized keys are represented in presentation
+format as "keyNNNNN" where NNNNN is the numeric
+value of the key type without leading zeros.
+In presentation format, values of unrecognized keys
+should be represented in wire format, using decimal escape codes
+(e.g. \255) when necessary.<a href="#section-2.1.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="svcb-rdata-wire-format">
+<section id="section-2.2">
+        <h3 id="name-svcb-rdata-wire-format">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-svcb-rdata-wire-format" class="section-name selfRef">SVCB RDATA Wire Format</a>
+        </h3>
+<p id="section-2.2-1">The RDATA for the SVCB RR consists of:<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-2.2-2.1">a 2 octet field for SvcFieldPriority as an integer in network
+byte order.<a href="#section-2.2-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-2.2-2.2">the uncompressed, fully-qualified SvcDomainName, represented as
+a sequence of length-prefixed labels as in Section 3.1 of <span>[<a href="#RFC1035" class="xref">RFC1035</a>]</span>.<a href="#section-2.2-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-2.2-2.3">the SvcFieldValue byte string, consuming the remainder of the record
+(so smaller than 65535 octets and constrained by the RDATA
+and DNS message sizes).<a href="#section-2.2-2.3" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-2.2-3">AliasForm is defined by SvcFieldPriority being 0.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.2-4">When SvcFieldValue is non-empty (ServiceForm), it contains a list of
+SvcParamKey=SvcParamValue pairs with length-prefixes for the SvcParamValues,
+each of which contains:<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-2.2-5.1">a 2 octet field containing the SvcParamKey as an
+integer in network byte order.<a href="#section-2.2-5.1" class="pilcrow">¶</a>
+</li>
+<li id="section-2.2-5.2">a 2 octet field containing the length of the SvcParamValue
+as an integer between 0 and 65535 in network byte order
+(but constrained by the RDATA and DNS message sizes).<a href="#section-2.2-5.2" class="pilcrow">¶</a>
+</li>
+<li id="section-2.2-5.3">an octet string of the length defined by the previous field.<a href="#section-2.2-5.3" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-2.2-6">If the parser reaches the end of the RDATA while parsing a SvcFieldValue,
+the RR is invalid and MUST be discarded.<a href="#section-2.2-6" class="pilcrow">¶</a></p>
+<p id="section-2.2-7">TODO: decide if we want special handling for any SvcParamKey ranges?
+For example: range for greasing; experimental range;
+range-of-mandatory-to-use-the-RR vs range of
+ignore-just-param-if-unknown.<a href="#section-2.2-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="svcb-names">
+<section id="section-2.3">
+        <h3 id="name-svcb-owner-names">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-svcb-owner-names" class="section-name selfRef">SVCB owner names</a>
+        </h3>
+<p id="section-2.3-1">When querying the SVCB RR, an origin is typically translated into a QNAME
+by prefixing the port and scheme with "_", then concatenating them with the
+host name, resulting in a domain name like "_8004._examplescheme.api.example.com.".<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.3-2">Protocol mappings for SVCB MAY remove the port or replace it with other
+protocol-specific information, but MUST retain the scheme in the QNAME.
+RR types other than SVCB can define additional behavior for translating
+origins to QNAMEs.  See <a href="#httpsnames" class="xref">Section 7.1</a> for the HTTPSSVC behavior.<a href="#section-2.3-2" class="pilcrow">¶</a></p>
+<p id="section-2.3-3">When a prior CNAME or SVCB record has aliased to
+an SVCB record, each RR shall be returned under its own owner name.<a href="#section-2.3-3" class="pilcrow">¶</a></p>
+<p id="section-2.3-4">Note that none of these forms alter the origin or authority for validation
+purposes.
+For example, clients MUST continue to validate TLS certificate
+hostnames based on the origin host.<a href="#section-2.3-4" class="pilcrow">¶</a></p>
+<p id="section-2.3-5">As an example:<a href="#section-2.3-5" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-2.3-6">
+<pre>
+_8443._foo.api.example.com. 7200 IN SVCB 0 svc4.example.net.
+svc4.example.net.  7200  IN SVCB 3 ( svc4.example.net. alpn="bar"
+                                   port="8004" esniconfig="..." )
+</pre><a href="#section-2.3-6" class="pilcrow">¶</a>
+</div>
+<p id="section-2.3-7">would indicate that "foo://api.example.com:8443" is aliased
+to use ALPN protocol "bar" service endpoints offered at "svc4.example.net"
+on port 8004.<a href="#section-2.3-7" class="pilcrow">¶</a></p>
+<p id="section-2.3-8">(Parentheses are used to ignore a line break (<span>[<a href="#RFC1035" class="xref">RFC1035</a>]</span> Section 5.1).)<a href="#section-2.3-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="svcrecordtype">
+<section id="section-2.4">
+        <h3 id="name-svcrecordtype">
+<a href="#section-2.4" class="section-number selfRef">2.4. </a><a href="#name-svcrecordtype" class="section-name selfRef">SvcRecordType</a>
+        </h3>
+<p id="section-2.4-1">The SvcRecordType is indicated by the SvcFieldPriority,
+and defines the form of the SVCB RR.
+When SvcFieldPriority is 0, the SVCB SvcRecordType is defined to be
+in AliasForm.  Otherwise, the SVCB SvcRecordType is defined to be
+in ServiceForm.<a href="#section-2.4-1" class="pilcrow">¶</a></p>
+<p id="section-2.4-2">Within an SVCB RRSet,
+all RRs should have the same SvcRecordType.
+If an RRSet contains a record in AliasForm, the client MUST ignore
+any records in the set with ServiceForm.<a href="#section-2.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="svcb-records-aliasform">
+<section id="section-2.5">
+        <h3 id="name-svcb-records-aliasform">
+<a href="#section-2.5" class="section-number selfRef">2.5. </a><a href="#name-svcb-records-aliasform" class="section-name selfRef">SVCB records: AliasForm</a>
+        </h3>
+<p id="section-2.5-1">When SvcRecordType is AliasForm, the SVCB record is to be treated
+similar to a CNAME alias pointing to
+SvcDomainName.  SVCB RRSets SHOULD only have a single resource
+record in this form.  If multiple are present, clients or recursive
+resolvers SHOULD pick one at random.<a href="#section-2.5-1" class="pilcrow">¶</a></p>
+<p id="section-2.5-2">The AliasForm's primary purpose is to allow aliasing
+at the zone apex, where CNAME is not allowed.
+For example, if an operator of https://example.com wanted to
+point HTTPS requests to a service operating at svc.example.net,
+they would publish a record such as:<a href="#section-2.5-2" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-2.5-3">
+<pre>
+example.com. 3600 IN SVCB 0 svc.example.net.
+</pre><a href="#section-2.5-3" class="pilcrow">¶</a>
+</div>
+<p id="section-2.5-4">The SvcDomainName MUST point to a domain name that contains
+another SVCB record, address (AAAA and/or A) records,
+or both address records and a ServiceForm SVCB record.<a href="#section-2.5-4" class="pilcrow">¶</a></p>
+<p id="section-2.5-5">Note that the SVCB record's owner name MAY be the canonical name
+of a CNAME record, and the SvcDomainName MAY be the owner of a CNAME
+record. Clients and recursive resolvers MUST follow CNAMEs as normal.<a href="#section-2.5-5" class="pilcrow">¶</a></p>
+<p id="section-2.5-6">Due to the risk of loops, clients and recursive resolvers MUST
+implement loop detection.  Chains of consecutive SVCB and CNAME
+records SHOULD be limited to (8?) prior to reaching terminal address
+records.<a href="#section-2.5-6" class="pilcrow">¶</a></p>
+<p id="section-2.5-7">As legacy clients will not know to use this record, service
+operators will likely need to retain fallback AAAA and A records
+alongside this SVCB record, although in a common case
+the target of the SVCB record might offer better performance, and
+therefore would be preferable for clients implementing this specification
+to use.<a href="#section-2.5-7" class="pilcrow">¶</a></p>
+<p id="section-2.5-8">Note that SVCB AliasForm RRs do not alias to RR types other than
+address records (AAAA and A), CNAMEs, and ServiceForm SVCB records.
+For example, an AliasForm SVCB record does not alias to an HTTPSSVC record,
+nor vice-versa.<a href="#section-2.5-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="svcb-records-serviceform">
+<section id="section-2.6">
+        <h3 id="name-svcb-records-serviceform">
+<a href="#section-2.6" class="section-number selfRef">2.6. </a><a href="#name-svcb-records-serviceform" class="section-name selfRef">SVCB records: ServiceForm</a>
+        </h3>
+<p id="section-2.6-1">When SvcRecordType is the ServiceForm, the combination of
+SvcDomainName and SvcFieldValue parameters within each resource record
+associates an alternative service location with its connection parameters.<a href="#section-2.6-1" class="pilcrow">¶</a></p>
+<p id="section-2.6-2">Each protocol scheme that uses SVCB MUST define a protocol mapping that
+explains how SvcFieldValues are applied for connections of that scheme.
+<a href="#map2altsvc" class="xref">Appendix A</a> defines a limited mapping between Alt-Svc (<span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>) values
+and the SVCB ServiceForm.  Protocols using SVCB may use this Alt-Svc
+mapping if they also use Alt-Svc.  Unless specified otherwise by the
+protocol mapping, clients MUST ignore SvcFieldValue parameters that they do
+not recognize.<a href="#section-2.6-2" class="pilcrow">¶</a></p>
+<div id="svcdomainnamedot">
+<section id="section-2.6.1">
+          <h4 id="name-special-handling-of-for-svc">
+<a href="#section-2.6.1" class="section-number selfRef">2.6.1. </a><a href="#name-special-handling-of-for-svc" class="section-name selfRef">Special handling of "." for SvcDomainName in ServiceForm</a>
+          </h4>
+<p id="section-2.6.1-1">For ServiceForm SVCB RRs, if SvcDomainName has the value ".", then the
+owner name of this record MUST be used as the effective
+SvcDomainName.  (The SvcDomainName of an SVCB RR in AliasForm MUST NOT have
+this value.)<a href="#section-2.6.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.6.1-2">For example, in the following example "svc2.example.net"
+is the effective SvcDomainName:<a href="#section-2.6.1-2" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-2.6.1-3">
+<pre>
+www.example.com.  7200  IN HTTPSSVC svc.example.net.
+svc.example.net.  7200  IN CNAME    svc2.example.net.
+svc2.example.net. 7200  IN HTTPSSVC 1 . ( alpn=h2
+                                    port=8002 esniconfig="..." )
+svc2.example.net. 300   IN A        192.0.2.2
+svc2.example.net. 300   IN AAAA     2001:db8::2
+</pre><a href="#section-2.6.1-3" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="svcfieldpri">
+<section id="section-2.6.2">
+          <h4 id="name-svcfieldpriority">
+<a href="#section-2.6.2" class="section-number selfRef">2.6.2. </a><a href="#name-svcfieldpriority" class="section-name selfRef">SvcFieldPriority</a>
+          </h4>
+<p id="section-2.6.2-1">As RRs within an RRSet are explicitly unordered collections, the
+SvcFieldPriority value serves to indicate priority.
+SVCB RRs with a smaller SvcFieldPriority value SHOULD be given
+preference over RRs with a larger SvcFieldPriority value.<a href="#section-2.6.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.6.2-2">When receiving an RRSet containing multiple SVCB records with the
+same SvcFieldPriority value, clients SHOULD apply a random shuffle within a
+priority level to the records before using them, to ensure uniform
+load-balancing.<a href="#section-2.6.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="client-behavior">
+<section id="section-3">
+      <h2 id="name-client-behavior">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-client-behavior" class="section-name selfRef">Client behavior</a>
+      </h2>
+<p id="section-3-1">An SVCB-aware client resolves an origin HOST by attempting to determine
+the preferred SvcFieldValue and IP addresses for its service, using the
+following procedure:<a href="#section-3-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal" id="section-3-2">
+        <li id="section-3-2.1">Issue parallel AAAA/A and SVCB queries for the name HOST.
+The answers for these may or may not include CNAME pointers
+before reaching one or more of these records.<a href="#section-3-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-3-2.2">If an SVCB record of AliasForm SvcRecordType is returned for HOST,
+clients MUST loop back to step 1 replacing HOST with SvcDomainName,
+subject to loop detection heuristics.<a href="#section-3-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-3-2.3">If one or more SVCB records of ServiceForm SvcRecordType are returned
+for HOST, clients should select the highest-priority option with
+acceptable parameters, and resolve AAAA and/or A records for its
+SvcDomainName if they are not already available.  These are the
+preferred SvcFieldValue and IP addresses.  If the connection fails, the
+client MAY try to connect using values from a lower-priority record.
+If none of the options succeed, the client SHOULD connect to the origin
+server directly.<a href="#section-3-2.3" class="pilcrow">¶</a>
+</li>
+<li id="section-3-2.4">If an SVCB record for HOST does not exist, the received AAAA and/or A
+records are the preferred IP addresses and there is no SvcFieldValue.<a href="#section-3-2.4" class="pilcrow">¶</a>
+</li>
+</ol>
+<p id="section-3-3">This procedure does not rely on any recursive or authoritative server to
+comply with this specification or have any awareness of SVCB.<a href="#section-3-3" class="pilcrow">¶</a></p>
+<p id="section-3-4">When selecting between AAAA and A records to use, clients may use an approach
+such as <span>[<a href="#HappyEyeballsV2" class="xref">HappyEyeballsV2</a>]</span>.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">Some important optimizations are discussed in <a href="#optimizations" class="xref">Section 5</a>
+to avoid additional latency in comparison to ordinary AAAA/A lookups.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<div id="clients-using-a-proxy">
+<section id="section-3.1">
+        <h3 id="name-clients-using-a-proxy">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-clients-using-a-proxy" class="section-name selfRef">Clients using a Proxy</a>
+        </h3>
+<p id="section-3.1-1">Clients using a domain-oriented transport proxy like HTTP CONNECT
+(<span>[<a href="#RFC7231" class="xref">RFC7231</a>]</span> Section 4.3.6) or SOCKS5 (<span>[<a href="#RFC1928" class="xref">RFC1928</a>]</span>) SHOULD disable
+SVCB support if performing SVCB queries would violate the
+client's privacy intent.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-2">If the client can safely perform SVCB queries (e.g. via the
+proxy or an affiliated resolver), the client SHOULD follow
+the standard SVCB resolution process, selecting the highest priority
+option that is compatible with the client and the proxy.  The client
+SHOULD provide the final SvcDomainName and port (if present) to the
+proxy as the destination host and port.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+<p id="section-3.1-3">Providing the proxy with the final SvcDomainName has several benefits:<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-3.1-4.1">It allows the client to use the SvcFieldValue, if present, which is
+only usable with a specific SvcDomainName.  The SvcFieldValue may
+include information that enhances performance (e.g. alpn) and privacy
+(e.g. esniconfig).<a href="#section-3.1-4.1" class="pilcrow">¶</a>
+</li>
+<li id="section-3.1-4.2">It allows the origin to delegate the apex domain.<a href="#section-3.1-4.2" class="pilcrow">¶</a>
+</li>
+<li id="section-3.1-4.3">It allows the proxy to select between IPv4 and IPv6 addresses for the
+server according to its configuration, and receive addresses based on
+its network geolocation.<a href="#section-3.1-4.3" class="pilcrow">¶</a>
+</li>
+</ul>
+</section>
+</div>
+</section>
+</div>
+<div id="server-behavior">
+<section id="section-4">
+      <h2 id="name-dns-server-behavior">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-dns-server-behavior" class="section-name selfRef">DNS Server Behavior</a>
+      </h2>
+<p id="section-4-1">When replying to an SVCB query, authoritative DNS servers SHOULD return
+A, AAAA, and SVCB records (as
+well as any relevant CNAME records) in the Additional Section for any
+in-bailiwick SvcDomainNames.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">Recursive resolvers that are aware of SVCB SHOULD ensure that the client can
+execute the procedure in <a href="#client-behavior" class="xref">Section 3</a> without issuing a second
+round of queries, by following this procedure while constructing a response
+to a stub resolver for an SVCB record query:<a href="#section-4-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal" id="section-4-3">
+        <li id="section-4-3.1">When processing an SVCB response from an authoritative server, add it to
+the Additional section (unless it is the Answer).<a href="#section-4-3.1" class="pilcrow">¶</a>
+</li>
+<li id="section-4-3.2">If all records are in ServiceForm, resolve A and AAAA records for each
+SvcDomainName (or for the owner name if the SvcDomainName is "."), and include all
+the results in the Additional section.<a href="#section-4-3.2" class="pilcrow">¶</a>
+</li>
+<li id="section-4-3.3">Otherwise, select an AliasForm record at random, and resolve A, AAAA,
+and SVCB records for
+the SvcDomainName.  If the SVCB record does not exist, add the A and AAAA
+records to the Additional section.  Otherwise, go to step 1,
+subject to loop detection heuristics.<a href="#section-4-3.3" class="pilcrow">¶</a>
+</li>
+</ol>
+<p id="section-4-4">All DNS servers SHOULD treat the SvcParam portion of the SVCB RR
+as opaque and SHOULD NOT try to alter their behavior based
+on its contents.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<p id="section-4-5">When responding to a query that includes the DNSSEC OK bit (<span>[<a href="#RFC3225" class="xref">RFC3225</a>]</span>),
+DNSSEC-capable recursive and authoritative DNS servers MUST accompany
+each RRSet in the Additional section with the same DNSSEC-related records
+that it would send when providing that RRSet as an Answer.<a href="#section-4-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="optimizations">
+<section id="section-5">
+      <h2 id="name-performance-optimizations">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-performance-optimizations" class="section-name selfRef">Performance optimizations</a>
+      </h2>
+<p id="section-5-1">For optimal performance (i.e. minimum connection setup time), clients
+SHOULD issue address (AAAA and/or A) and SVCB queries
+simultaneously, and SHOULD implement a client-side DNS cache.
+Responses in the Additional section of an SVCB response SHOULD be placed
+in cache before performing any followup queries.
+With these optimizations in place, and conforming DNS servers,
+using SVCB does not add network latency to connection setup.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<div id="optimistic-pre-connection-and-connection-reuse">
+<section id="section-5.1">
+        <h3 id="name-optimistic-pre-connection-a">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-optimistic-pre-connection-a" class="section-name selfRef">Optimistic pre-connection and connection reuse</a>
+        </h3>
+<p id="section-5.1-1">If an address response arrives before the corresponding SVCB response, the
+client MAY initiate a connection as if the SVCB query returned NODATA, but
+MUST NOT transmit any information that could be altered by the SVCB response
+until it arrives.  For example, a TLS ClientHello can be altered by the
+"esniconfig" value of an SVCB response (<a href="#svcparamkeys-esniconfig" class="xref">Section 6.3</a>).  Clients
+implementing this optimization SHOULD wait for 50 milliseconds before
+starting optimistic pre-connection, as per the guidance in
+<span>[<a href="#HappyEyeballsV2" class="xref">HappyEyeballsV2</a>]</span>.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-2">An SVCB record is consistent with a connection
+if the client would attempt an equivalent connection when making use of
+that record. If an SVCB record is consistent with an active or in-progress
+connection C, the client MAY prefer that record and use C as its connection.
+For example, suppose the client receives this SVCB RRSet for a protocol
+that uses TLS over TCP:<a href="#section-5.1-2" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-5.1-3">
+<pre>
+_1234._bar.example.com. 300 IN SVCB 1 svc1.example.net (
+    esniconfig="111..." ipv6hint=2001:db8::1 port=1234 ... )
+                               SVCB 2 svc2.example.net (
+    esniconfig="222..." ipv6hint=2001:db8::2 port=1234 ... )
+</pre><a href="#section-5.1-3" class="pilcrow">¶</a>
+</div>
+<p id="section-5.1-4">If the client has an in-progress TCP connection to <code>[2001:db8::2]:1234</code>,
+it MAY proceed with TLS on that connection using <code>esniconfig="222..."</code>, even
+though the other record in the RRSet has higher priority.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
+<p id="section-5.1-5">If none of the SVCB records are consistent
+with any active or in-progress connection,
+clients must proceed as described in Step 3 of the procedure in <a href="#client-behavior" class="xref">Section 3</a>.<a href="#section-5.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="preferring-usable-records">
+<section id="section-5.2">
+        <h3 id="name-preferring-usable-records">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-preferring-usable-records" class="section-name selfRef">Preferring usable records</a>
+        </h3>
+<p id="section-5.2-1">A nonconforming recursive resolver might not return all the information
+required to use all the records in an SVCB response.  If
+some of the SVCB records in the response can be used without requiring
+additional DNS queries, the client MAY prefer those records, regardless of
+their priorities.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="structuring-zones-for-performance">
+<section id="section-5.3">
+        <h3 id="name-structuring-zones-for-perfo">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-structuring-zones-for-perfo" class="section-name selfRef">Structuring zones for performance</a>
+        </h3>
+<p id="section-5.3-1">To avoid a delay for clients using a nonconforming recursive resolver,
+domain owners SHOULD use a single SVCB record whose SvcDomainName is
+"." if possible.  This will ensure that the required
+address records are already present in the client's DNS cache as part of the
+responses to the address queries that were issued in parallel.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="keys">
+<section id="section-6">
+      <h2 id="name-initial-svcparamkeys">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-initial-svcparamkeys" class="section-name selfRef">Initial SvcParamKeys</a>
+      </h2>
+<p id="section-6-1">A few initial SvcParamKeys are defined here.  These keys are useful for
+HTTPS, and most are applicable to other protocols as well.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<div id="alpn">
+<section id="section-6.1">
+        <h3 id="name-alpn">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-alpn" class="section-name selfRef">"alpn"</a>
+        </h3>
+<p id="section-6.1-1">The "alpn" SvcParamKey defines the Application Layer Protocol
+(ALPN, as defined in {{!RFC7301}) supported by a TLS-based alternative
+service.  Its value SHOULD be an entry in the IANA registry "TLS
+Application-Layer Protocol Negotiation (ALPN) Protocol IDs".<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">The presentation format and wire format of SvcParamValue
+is its registered "Identification Sequence".  This key SHALL NOT
+appear more than once in a SvcFieldValue.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">Clients MUST include this value in the ProtocolNameList in their
+ClientHello's <code>application_layer_protocol_negotiation</code> extension.
+Clients SHOULD also include any other values that they support and
+could negotiate on that connection with equivalent or better security
+properties.  For example, when using a SvcFieldValue with an "alpn" of
+"h2", the client MAY also include "http/1.1" in the ProtocolNameList.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">Clients MUST ignore SVCB RRs where the "alpn" SvcParamValue
+is unknown or not supported for use with the current scheme.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.1-5">The value of the "alpn" SvcParamKey can have effects beyond the content
+of the TLS handshake and stream.  For example, an "alpn" value of "h3"
+(<span>[<a href="#HTTP3" class="xref">HTTP3</a>]</span> Section 11.1) indicates the client must use QUIC, not TLS.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="port">
+<section id="section-6.2">
+        <h3 id="name-port">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-port" class="section-name selfRef">"port"</a>
+        </h3>
+<p id="section-6.2-1">The "port" SvcParamKey defines the TCP or UDP port
+that should be used to contact this alternative service.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.2-2">The presentation format of the SvcParamValue is a numeric value
+between 0 and 65535 inclusive.  The wire format of the SvcParamValue
+is the corresponding 2 octet numeric value in network byte order.<a href="#section-6.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="svcparamkeys-esniconfig">
+<section id="section-6.3">
+        <h3 id="name-esniconfig">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-esniconfig" class="section-name selfRef">"esniconfig"</a>
+        </h3>
+<p id="section-6.3-1">The SvcParamKey for ESNI is "esniconfig".  Its value is defined in
+<a href="#esniconfig" class="xref">Section 8</a>.  It is applicable to most TLS-based protocols.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.3-2">When publishing a record containing an "esniconfig" parameter, the publisher
+MUST ensure that all IP addresses of SvcDomainName correspond to servers
+that have access to the corresponding private key or are authoritative
+for the fallback domain. (See <span>[<a href="#ESNI" class="xref">ESNI</a>]</span> for more details about
+the fallback domain.) This yields an anonymity set of cardinality equal
+to the number of ESNI-enabled server domains supported by a given client-facing
+server. Thus, even with SNI encryption, an attacker who can enumerate the
+set of ESNI-enabled domains supported by a client-facing server can guess the
+correct SNI with probability at least 1/K, where K is the size of this
+ESNI-enabled server anonymity set. This probability may be increased via
+traffic analysis or other mechanisms.<a href="#section-6.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="svcparamkeys-iphints">
+<section id="section-6.4">
+        <h3 id="name-ipv4hint-and-ipv6hint">
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-ipv4hint-and-ipv6hint" class="section-name selfRef">"ipv4hint" and "ipv6hint"</a>
+        </h3>
+<p id="section-6.4-1">The "ipv4hint" and "ipv6hint" keys represent IP address hints for the
+service.  If A and AAAA records for SvcDomainName are locally
+available, the client SHOULD ignore these hints.  Otherwise, clients
+SHOULD perform A and/or AAAA queries for SvcDomainName as in
+<a href="#client-behavior" class="xref">Section 3</a>, and clients SHOULD use the IP address in those
+responses for future connections. Clients MAY opt to terminate any
+connections using the addresses in hints and instead switch to the
+addresses in response to the SvcDomainName. Failure to use A and/or
+AAAA response addresses may negatively impact load balancing or other
+geo-aware features and thereby degrade client performance.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">The wire format for each parameter is a sequence of IP addresses in network
+byte order.  Like an A or AAAA RRSet, the list of addresses represents an
+unordered collection, and clients SHOULD pick addresses to use in a random order.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-3">These parameters MAY be repeated multiple times within a record.
+When receiving such a record, clients SHOULD combine the sets of addresses.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+<p id="section-6.4-4">When selecting between IPv4 and IPv6 addresses to use, clients may use an
+approach such as <span>[<a href="#HappyEyeballsV2" class="xref">HappyEyeballsV2</a>]</span>.
+When only "ipv4hint" parameters are present, IPv6-only clients may synthesize
+IPv6 addresses as specified in <span>[<a href="#RFC7050" class="xref">RFC7050</a>]</span> or ignore the "ipv4hint" key and
+wait for AAAA resolution (<a href="#client-behavior" class="xref">Section 3</a>).  Recursive resolvers MUST NOT
+perform DNS64 (<span>[<a href="#RFC6147" class="xref">RFC6147</a>]</span>) on parameters within an SVCB record.
+For best performance, server operators SHOULD include "ipv6hint" parameters
+whenever they publish "ipv4hint" parameters.<a href="#section-6.4-4" class="pilcrow">¶</a></p>
+<p id="section-6.4-5">The presentation format for each parameter is a comma-separated list of
+IP addresses in standard textual format <span>[<a href="#RFC5952" class="xref">RFC5952</a>]</span>.<a href="#section-6.4-5" class="pilcrow">¶</a></p>
+<p id="section-6.4-6">These parameters are intended to minimize additional connection latency
+when a recursive resolver is not compliant with the requirements in
+<a href="#server-behavior" class="xref">Section 4</a>, and SHOULD NOT be included if most clients are using
+compliant recursive resolvers.  When SvcDomainName is ".", server operators
+SHOULD NOT include these hints, because they are unlikely to convey any
+performance benefit.<a href="#section-6.4-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="https">
+<section id="section-7">
+      <h2 id="name-using-svcb-with-https-and-h">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-using-svcb-with-https-and-h" class="section-name selfRef">Using SVCB with HTTPS and HTTP</a>
+      </h2>
+<p id="section-7-1">Use of any protocol with SVCB requires a protocol-specific mapping
+specification.  This section specifies the mapping for HTTPS and HTTP.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<p id="section-7-2">To enable special handling for the HTTPS and HTTP use-cases,
+the HTTPSSVC RR type is defined as an SVCB-compatible RR type,
+specific to the https and http schemes.  Clients MUST NOT
+perform SVCB queries or accept SVCB responses for "https"
+or "http" schemes.<a href="#section-7-2" class="pilcrow">¶</a></p>
+<p id="section-7-3">The HTTPSSVC wire format and presentation format are
+identical to SVCB, and both share the SvcParamKey registry.  SVCB
+semantics apply equally to HTTPSSVC unless specified otherwise.
+All the SvcParamKeys defined in <a href="#keys" class="xref">Section 6</a> are permitted for use in
+HTTPSSVC, and the "alpn" SvcParamKey is REQUIRED.  Its value MUST
+be an ALPN that is suitable for use with HTTPS.  For example, the
+value MAY be "http/1.1", "h2", or "h3", but MUST NOT be "h2c" or
+"ftp".<a href="#section-7-3" class="pilcrow">¶</a></p>
+<p id="section-7-4">The presence of an HTTPSSVC record for an origin also indicates
+that all HTTP resources are available over HTTPS, as
+discussed in <a href="#hsts" class="xref">Section 7.4</a>.  This allows HTTPSSVC RRs to apply to
+pre-existing "http" scheme URLs, while ensuring that the client uses a
+secure and authenticated HTTPS connection.<a href="#section-7-4" class="pilcrow">¶</a></p>
+<p id="section-7-5">The HTTPSSVC RR parallels the concepts
+introduced in the HTTP Alternative Services proposed standard
+<span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>.  Clients and servers that implement HTTPSSVC are NOT
+REQUIRED to implement Alt-Svc.  However, many clients and servers
+will implement both, and a partial mapping exists between them
+(<a href="#map2altsvc" class="xref">Appendix A</a>).<a href="#section-7-5" class="pilcrow">¶</a></p>
+<div id="httpsnames">
+<section id="section-7.1">
+        <h3 id="name-owner-names-for-httpssvc-re">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-owner-names-for-httpssvc-re" class="section-name selfRef">Owner names for HTTPSSVC records</a>
+        </h3>
+<p id="section-7.1-1">The HTTPSSVC RR extends the behavior for determining
+a QNAME specified above in <a href="#svcb-names" class="xref">Section 2.3</a>.
+In particular, if the scheme is "https" with port 443
+then the client's original QNAME is
+equal to the origin host name.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.1-2">By removing the <span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span> labels
+used in SVCB, this construction enables offline DNSSEC signing of
+wildcard domains, which are commonly used with HTTPS.  Reusing the
+origin hostname also allows the targets of existing CNAME chains
+(e.g. CDN hosts) to start returning HTTPSSVC responses without
+requiring origin domains to configure and maintain an additional
+delegation.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+<p id="section-7.1-3">For HTTPS origins with ports other than 443,
+the port and scheme continue to be prefixed to the hostname
+as described in <a href="#svcb-names" class="xref">Section 2.3</a>.  Following of HTTPSSVC AliasForm and
+CNAME aliases is also unchanged from SVCB.<a href="#section-7.1-3" class="pilcrow">¶</a></p>
+<p id="section-7.1-4">Clients always convert "http" URLS to "https" before performing an
+HTTPSSVC query using the process described in <a href="#hsts" class="xref">Section 7.4</a>, so domain owners
+MUST NOT publish HTTPSSVC records with a prefix of "_http".<a href="#section-7.1-4" class="pilcrow">¶</a></p>
+<p id="section-7.1-5">Note that none of these forms alter the HTTPS origin or authority.
+For example, clients MUST continue to validate TLS certificate
+hostnames based on the origin host.<a href="#section-7.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="populating-alt-used">
+<section id="section-7.2">
+        <h3 id="name-populating-alt-used">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-populating-alt-used" class="section-name selfRef">Populating Alt-Used</a>
+        </h3>
+<p id="section-7.2-1">When using an HTTPSSVC RR in ServiceForm, all clients SHOULD
+include the "Alt-Used" HTTP header (Section 5 of <span>[<a href="#RFC7838" class="xref">RFC7838</a>]</span>).
+The header's value (in ABNF) SHOULD be<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-7.2-2">
+<pre>
+uri-host ":" port
+</pre><a href="#section-7.2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-7.2-3">where uri-host is the final value of HOST ({client-behavior}) minus
+the trailing ".", and port is the port number in use.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="differences-from-alt-svc">
+<section id="section-7.3">
+        <h3 id="name-differences-from-alt-svc">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-differences-from-alt-svc" class="section-name selfRef">Differences from Alt-Svc</a>
+        </h3>
+<p id="section-7.3-1">Publishing a ServiceForm HTTPSSVC record in DNS is intended
+to be similar to transmitting the corresponding Alt-Svc field value over
+HTTPS, and receiving an HTTPSSVC record is intended to be similar to
+receiving that field value over HTTPS.  However, there are some
+differences in the intended client and server behavior.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<div id="untrusted-channel">
+<section id="section-7.3.1">
+          <h4 id="name-untrusted-channel">
+<a href="#section-7.3.1" class="section-number selfRef">7.3.1. </a><a href="#name-untrusted-channel" class="section-name selfRef">Untrusted channel</a>
+          </h4>
+<p id="section-7.3.1-1">SVCB does not require or provide any assurance of authenticity.  (DNSSEC
+signing and verification, which would provide such assurance, are OPTIONAL.)
+The DNS resolution process is treated as an untrusted channel that learns
+only the QNAME, and is prevented from mounting any attack beyond denial of
+service.<a href="#section-7.3.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.3.1-2">Alt-Svc parameters that cannot be safely received in this model MUST NOT
+have a corresponding defined SvcParamKey.  For example, there is no
+SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
+this parameter is not safe to accept over an untrusted channel.<a href="#section-7.3.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="caching-and-granularity">
+<section id="section-7.3.2">
+          <h4 id="name-caching-and-granularity">
+<a href="#section-7.3.2" class="section-number selfRef">7.3.2. </a><a href="#name-caching-and-granularity" class="section-name selfRef">Caching and granularity</a>
+          </h4>
+<p id="section-7.3.2-1">There is no SvcParamKey corresponding to the Alt-Svc "ma" (max age) parameter.
+Instead, server operators SHOULD encode the expiration time in the DNS TTL.<a href="#section-7.3.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.3.2-2">Some DNS caching systems incorrectly extend the lifetime of DNS
+records beyond the stated TTL.  Server operators MUST NOT rely on
+HTTPSSVC records expiring on time, and MAY shorten the TTL to compensate.<a href="#section-7.3.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.3.2-3">Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
+Field Value specifically to the client.  When using an HTTPSSVC DNS
+record, groups of clients will necessarily receive the same Alt-Svc
+Field Value.  Therefore, HTTPSSVC is not suitable for uses that
+require single-client granularity.<a href="#section-7.3.2-3" class="pilcrow">¶</a></p>
+<p id="section-7.3.2-4">If the client has an Alt-Svc cache, and a usable Alt-Svc value is
+present in that cache, then the client MAY skip the HTTPSSVC query.<a href="#section-7.3.2-4" class="pilcrow">¶</a></p>
+<p id="section-7.3.2-5">If the client has a cached Alt-Svc entry that is expiring, the
+client MAY perform an HTTPSSVC query to refresh the entry.<a href="#section-7.3.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="hsts">
+<section id="section-7.4">
+        <h3 id="name-http-strict-transport-secur">
+<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-http-strict-transport-secur" class="section-name selfRef">HTTP Strict Transport Security</a>
+        </h3>
+<p id="section-7.4-1">By publishing an HTTPSSVC record, the server
+operator indicates that all useful HTTP resources on that origin are
+reachable over HTTPS, similar to HTTP Strict Transport Security
+<span>[<a href="#HSTS" class="xref">HSTS</a>]</span>.  When an HTTPSSVC record is present for an origin,
+all "http" scheme requests for that origin SHOULD logically be redirected
+to "https".<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+<p id="section-7.4-2">Prior to making an "http" scheme request, the client SHOULD perform a lookup
+to determine if an HTTPSSVC record is available for that origin.  To do so,
+the client SHOULD construct a corresponding "https" URL as follows:<a href="#section-7.4-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal" id="section-7.4-3">
+          <li id="section-7.4-3.1">Replace the "http" scheme with "https".<a href="#section-7.4-3.1" class="pilcrow">¶</a>
+</li>
+<li id="section-7.4-3.2">If the "http" URL explicitly specifies port 80, specify port 443.<a href="#section-7.4-3.2" class="pilcrow">¶</a>
+</li>
+<li id="section-7.4-3.3">Do not alter any other aspect of the URL.<a href="#section-7.4-3.3" class="pilcrow">¶</a>
+</li>
+</ol>
+<p id="section-7.4-4">This construction is equivalent to Section 8.3 of <span>[<a href="#HSTS" class="xref">HSTS</a>]</span>, point 5.<a href="#section-7.4-4" class="pilcrow">¶</a></p>
+<p id="section-7.4-5">If an HTTPSSVC record is present for this "https" URL, the client
+should treat this as the equivalent of receiving an HTTP "307
+Temporary Redirect" redirect to the "https" URL.
+Because HTTPSSVC is received over an often insecure channel (DNS),
+clients MUST NOT place any more trust in this signal than if they
+had received a 307 redirect over cleartext HTTP.<a href="#section-7.4-5" class="pilcrow">¶</a></p>
+<p id="section-7.4-6">If the HTTPSSVC query results in a SERVFAIL error, and the connection
+between the client and the recursive resolver is cryptographically protected
+(e.g. using TLS <span>[<a href="#RFC7858" class="xref">RFC7858</a>]</span> or HTTPS <span>[<a href="#RFC8484" class="xref">RFC8484</a>]</span>), the client SHOULD
+abandon the connection attempt and display an error message.  A SERVFAIL
+error can occur if the domain is DNSSEC-signed, the recursive resolver is
+DNSSEC-validating, and an active attacker between the recursive resolver
+and the authoritative DNS server is attempting to prevent the upgrade to
+HTTPS.<a href="#section-7.4-6" class="pilcrow">¶</a></p>
+<p id="section-7.4-7">Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
+it SHOULD abandon the connection attempt if the HTTPSSVC response fails
+to validate.<a href="#section-7.4-7" class="pilcrow">¶</a></p>
+<p id="section-7.4-8">Finally, when making an "https" scheme request to an origin with an HTTPSSVC
+record, either directly or via the above redirect, the client SHOULD terminate the
+connection if there are any errors with the underlying secure transport, such as
+errors in certificate validation. This aligns with Section 8.4 and Section 12.1
+of <span>[<a href="#HSTS" class="xref">HSTS</a>]</span>.<a href="#section-7.4-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="esniconfig">
+<section id="section-8">
+      <h2 id="name-alt-svc-and-svcb-httpssvc-p">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-alt-svc-and-svcb-httpssvc-p" class="section-name selfRef">Alt-Svc and SVCB/HTTPSSVC parameter for ESNI keys</a>
+      </h2>
+<p id="section-8-1">Both SVCB/HTTPSSVC and Alt-Svc "esniconfig" parameters are defined for
+conveying the ESNI configuration of an alternative service.
+The value of the parameter is an ESNIConfig structure <span>[<a href="#ESNI" class="xref">ESNI</a>]</span>
+or the empty string.  ESNI-aware clients SHOULD prefer alt-values
+and SVCB/HTTPSSVC RRs with non-empty esniconfig.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">Both the SVCB SvcParamValue presentation format as well
+as the Alt-Svc parameter value is the ESNIConfig structure <span>[<a href="#ESNI" class="xref">ESNI</a>]</span>
+encoded in <span>[<a href="#base64" class="xref">base64</a>]</span> or the empty string.
+The SVCB SvcParamValue wire format is the octet string
+containing the binary ESNIConfig structure.<a href="#section-8-2" class="pilcrow">¶</a></p>
+<p id="section-8-3">This parameter MAY also be sent in Alt-Svc HTTP response
+headers and HTTP/2 ALTSVC frames.  This parameter MUST NOT appear more than
+once in a single alt-value.<a href="#section-8-3" class="pilcrow">¶</a></p>
+<div id="handling-a-mixture-of-alternatives-not-supporting-esni">
+<section id="section-8.1">
+        <h3 id="name-handling-a-mixture-of-alter">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-handling-a-mixture-of-alter" class="section-name selfRef">Handling a mixture of alternatives not supporting ESNI</a>
+        </h3>
+<p id="section-8.1-1">The Alt-Svc specification states that "the client MAY fall back to using
+the origin" in case of connection failure (Section 2.4 of <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>).
+This behavior is
+not suitable for ESNI, because fallback would negate the privacy benefits of
+ESNI.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+<p id="section-8.1-2">Accordingly, any connection attempt that uses ESNI MUST fall back only to
+another alt-value that also has the esniconfig parameter.  If the parameter's
+value is the empty string, the client SHOULD connect as it would in the
+absence of any ESNIConfig information.<a href="#section-8.1-2" class="pilcrow">¶</a></p>
+<p id="section-8.1-3">For example, suppose a server operator has two alternatives.  Alternative A
+is reliably accessible but does not support ESNI.  Alternative B supports
+ESNI but is not reliably accessible.  The server operator could include a
+full esniconfig value in Alternative B, and mark Alternative A with esniconfig=""
+to indicate that fallback from B to A is allowed.<a href="#section-8.1-3" class="pilcrow">¶</a></p>
+<p id="section-8.1-4">Other clients and services implementing SVCB or HTTPSSVC with esniconfig
+are encouraged to take a similar approach.<a href="#section-8.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="interaction-with-other-standards">
+<section id="section-9">
+      <h2 id="name-interaction-with-other-stan">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-interaction-with-other-stan" class="section-name selfRef">Interaction with other standards</a>
+      </h2>
+<p id="section-9-1">This standard is intended to reduce connection latency and
+improve user privacy.  Server operators implementing this standard
+SHOULD also implement TLS 1.3 <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span> and OCSP Stapling
+<span>[<a href="#RFC6066" class="xref">RFC6066</a>]</span>, both of which confer substantial performance and privacy
+benefits when used in combination with SVCB records.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<p id="section-9-2">To realize the greatest privacy benefits, this proposal is intended for
+use over a privacy-preserving DNS transport (like DNS over TLS
+<span>[<a href="#RFC7858" class="xref">RFC7858</a>]</span> or DNS over HTTPS <span>[<a href="#RFC8484" class="xref">RFC8484</a>]</span>).
+However, performance improvements, and some modest privacy improvements,
+are possible without the use of those standards.<a href="#section-9-2" class="pilcrow">¶</a></p>
+<p id="section-9-3">Any specification for use of SVCB with a protocol MUST have an entry
+for its scheme under the SVCB RR type in
+the IANA DNS Underscore Global Scoped Entry Registry
+<span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span>.  The scheme SHOULD have an
+entry in the IANA URI Schemes Registry <span>[<a href="#RFC7595" class="xref">RFC7595</a>]</span>.  The scheme
+SHOULD have a defined specification for use with SVCB.<a href="#section-9-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-10">
+      <h2 id="name-security-considerations">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-10-1">SVCB/HTTPSSVC RRs are intended for distribution over untrusted
+channels, and clients are REQUIRED to verify that the alternative
+service is authoritative for the origin (Section 2.1 of <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>).
+Therefore, DNSSEC signing and validation are OPTIONAL for publishing
+and using SVCB and HTTPSSVC records.<a href="#section-10-1" class="pilcrow">¶</a></p>
+<p id="section-10-2">Clients MUST ensure that their DNS cache is partitioned for each local
+network, or flushed on network changes, to prevent a local adversary in one
+network from implanting a forged DNS record that allows them to
+track users or hinder their connections after they leave that network.<a href="#section-10-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-11">
+      <h2 id="name-iana-considerations">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<div id="svcparamregistry">
+<section id="section-11.1">
+        <h3 id="name-new-registry-for-service-pa">
+<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-new-registry-for-service-pa" class="section-name selfRef">New registry for Service Parameters</a>
+        </h3>
+<p id="section-11.1-1">The "Service Binding (SVCB) Parameter Registry" defines the name space
+for parameters, including string representations and numeric
+SvcParamKey values.  This registry is shared with other SVCB-compatible
+RR types, such as HTTPSSVC.<a href="#section-11.1-1" class="pilcrow">¶</a></p>
+<p id="section-11.1-2">ACTION: create and include a reference to this registry.<a href="#section-11.1-2" class="pilcrow">¶</a></p>
+<div id="procedure">
+<section id="section-11.1.1">
+          <h4 id="name-procedure">
+<a href="#section-11.1.1" class="section-number selfRef">11.1.1. </a><a href="#name-procedure" class="section-name selfRef">Procedure</a>
+          </h4>
+<p id="section-11.1.1-1">A registration MUST include the following fields:<a href="#section-11.1.1-1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-11.1.1-2.1">Name: Service parameter key name<a href="#section-11.1.1-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-11.1.1-2.2">SvcParamKey: Service parameter key numeric identifier (range 0-65535)<a href="#section-11.1.1-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-11.1.1-2.3">Meaning: a short description<a href="#section-11.1.1-2.3" class="pilcrow">¶</a>
+</li>
+<li id="section-11.1.1-2.4">Pointer to specification text<a href="#section-11.1.1-2.4" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-11.1.1-3">Values to be added to this name space require Expert Review (see
+<span>[<a href="#RFC5226" class="xref">RFC5226</a>]</span>, Section 4.1).  Apart from the initial contents, the name
+MUST NOT start with "key".<a href="#section-11.1.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="initial-contents">
+<section id="section-11.1.2">
+          <h4 id="name-initial-contents">
+<a href="#section-11.1.2" class="section-number selfRef">11.1.2. </a><a href="#name-initial-contents" class="section-name selfRef">Initial contents</a>
+          </h4>
+<p id="section-11.1.2-1">The "Service Binding (SVCB) Parameter Registry" shall initially
+be populated with the registrations below:<a href="#section-11.1.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+            <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">SvcParamKey</th>
+                <th class="text-left" rowspan="1" colspan="1">NAME</th>
+                <th class="text-left" rowspan="1" colspan="1">Meaning</th>
+                <th class="text-left" rowspan="1" colspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0</td>
+                <td class="text-left" rowspan="1" colspan="1">key0</td>
+                <td class="text-left" rowspan="1" colspan="1">Reserved</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">1</td>
+                <td class="text-left" rowspan="1" colspan="1">alpn</td>
+                <td class="text-left" rowspan="1" colspan="1">ALPN for alternative service</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">2</td>
+                <td class="text-left" rowspan="1" colspan="1">port</td>
+                <td class="text-left" rowspan="1" colspan="1">Port for alternative service</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">3</td>
+                <td class="text-left" rowspan="1" colspan="1">esniconfig</td>
+                <td class="text-left" rowspan="1" colspan="1">Encrypted SNI configuration</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">4</td>
+                <td class="text-left" rowspan="1" colspan="1">ipv4hint</td>
+                <td class="text-left" rowspan="1" colspan="1">IPv4 address hints</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">5</td>
+                <td class="text-left" rowspan="1" colspan="1">key5</td>
+                <td class="text-left" rowspan="1" colspan="1">Reserved</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">6</td>
+                <td class="text-left" rowspan="1" colspan="1">ipv6hint</td>
+                <td class="text-left" rowspan="1" colspan="1">IPv6 address hints</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">65280-65534</td>
+                <td class="text-left" rowspan="1" colspan="1">keyNNNNN</td>
+                <td class="text-left" rowspan="1" colspan="1">Private Use</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">65535</td>
+                <td class="text-left" rowspan="1" colspan="1">key65535</td>
+                <td class="text-left" rowspan="1" colspan="1">Reserved</td>
+                <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-11.1.2-3">TODO: do we also want to reserve a range for greasing?<a href="#section-11.1.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="registry-updates">
+<section id="section-11.2">
+        <h3 id="name-registry-updates">
+<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-registry-updates" class="section-name selfRef">Registry updates</a>
+        </h3>
+<p id="section-11.2-1">Per <span>[<a href="#RFC6895" class="xref">RFC6895</a>]</span>, please add the following entry to the data type
+range of the Resource Record (RR) TYPEs registry:<a href="#section-11.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-2">
+          <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">TYPE</th>
+              <th class="text-left" rowspan="1" colspan="1">Meaning</th>
+              <th class="text-left" rowspan="1" colspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SVCB</td>
+              <td class="text-left" rowspan="1" colspan="1">Service Location and Parameter Binding</td>
+              <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">HTTPSSVC</td>
+              <td class="text-left" rowspan="1" colspan="1">HTTPS Service Location and Parameter Binding</td>
+              <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-11.2-3">Per <span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span>, please add the following entry to the DNS Underscore
+Global Scoped Entry Registry:<a href="#section-11.2-3" class="pilcrow">¶</a></p>
+<table class="center" id="table-3">
+          <caption><a href="#table-3" class="selfRef">Table 3</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">RR TYPE</th>
+              <th class="text-left" rowspan="1" colspan="1">_NODE NAME</th>
+              <th class="text-left" rowspan="1" colspan="1">Meaning</th>
+              <th class="text-left" rowspan="1" colspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">HTTPSSVC</td>
+              <td class="text-left" rowspan="1" colspan="1">_https</td>
+              <td class="text-left" rowspan="1" colspan="1">Alt-Svc for HTTPS</td>
+              <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-11.2-5">Per <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>, please add the following entry to the HTTP Alt-Svc
+Parameter Registry:<a href="#section-11.2-5" class="pilcrow">¶</a></p>
+<table class="center" id="table-4">
+          <caption><a href="#table-4" class="selfRef">Table 4</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Alt-Svc Parameter</th>
+              <th class="text-left" rowspan="1" colspan="1">Meaning</th>
+              <th class="text-left" rowspan="1" colspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">esniconfig</td>
+              <td class="text-left" rowspan="1" colspan="1">Encrypted SNI configuration</td>
+              <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+            </tr>
+          </tbody>
+        </table>
+</section>
+</div>
+</section>
+</div>
+<div id="acknowledgments-and-related-proposals">
+<section id="section-12">
+      <h2 id="name-acknowledgments-and-related">
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-acknowledgments-and-related" class="section-name selfRef">Acknowledgments and Related Proposals</a>
+      </h2>
+<p id="section-12-1">There have been a wide range of proposed solutions over the years to
+the "CNAME at the Zone Apex" challenge proposed.  These include
+<span>[<a href="#I-D.draft-bellis-dnsop-http-record-00" class="xref">I-D.draft-bellis-dnsop-http-record-00</a>]</span>,
+<span>[<a href="#I-D.draft-ietf-dnsop-aname-03" class="xref">I-D.draft-ietf-dnsop-aname-03</a>]</span>, and others.<a href="#section-12-1" class="pilcrow">¶</a></p>
+<p id="section-12-2">Thank you to Ian Swett, Ralf Weber, Jon Reed,
+Martin Thompson, Lucas Pardue, Ilari Liusvaara,
+Tim Wicinski, Tommy Pauly, Chris Wood,
+and others for their feedback and suggestions on this draft.<a href="#section-12-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<section id="section-13">
+      <h2 id="name-references">
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<section id="section-13.1">
+        <h3 id="name-normative-references">
+<a href="#section-13.1" class="section-number selfRef">13.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="AltSvc">[AltSvc]</dt>
+<dd>
+<span class="refAuthor">Nottingham, M.</span><span class="refAuthor">, McManus, P.</span><span class="refAuthor">, and J. Reschke</span>, <span class="refTitle">"HTTP Alternative Services"</span>, <span class="seriesInfo">RFC 7838</span>, <span class="seriesInfo">DOI 10.17487/RFC7838</span>, <time datetime="2016-04">April 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7838">https://www.rfc-editor.org/info/rfc7838</a>&gt;</span>. </dd>
+<dt id="AltSvcSNI">[AltSvcSNI]</dt>
+<dd>
+<span class="refAuthor">Bishop, M.</span>, <span class="refTitle">"The "SNI" Alt-Svc Parameter"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bishop-httpbis-sni-altsvc-02</span>, <time datetime="2018-05-24">24 May 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-bishop-httpbis-sni-altsvc-02.txt">http://www.ietf.org/internet-drafts/draft-bishop-httpbis-sni-altsvc-02.txt</a>&gt;</span>. </dd>
+<dt id="Attrleaf">[Attrleaf]</dt>
+<dd>
+<span class="refAuthor">Crocker, D.</span>, <span class="refTitle">"DNS Scoped Data Through "Underscore" Naming of Attribute Leaves"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dnsop-attrleaf-16</span>, <time datetime="2018-11-16">16 November 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-dnsop-attrleaf-16.txt">http://www.ietf.org/internet-drafts/draft-ietf-dnsop-attrleaf-16.txt</a>&gt;</span>. </dd>
+<dt id="base64">[base64]</dt>
+<dd>
+<span class="refAuthor">Josefsson, S.</span>, <span class="refTitle">"The Base16, Base32, and Base64 Data Encodings"</span>, <span class="seriesInfo">RFC 4648</span>, <span class="seriesInfo">DOI 10.17487/RFC4648</span>, <time datetime="2006-10">October 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4648">https://www.rfc-editor.org/info/rfc4648</a>&gt;</span>. </dd>
+<dt id="ESNI">[ESNI]</dt>
+<dd>
+<span class="refAuthor">Rescorla, E.</span><span class="refAuthor">, Oku, K.</span><span class="refAuthor">, Sullivan, N.</span><span class="refAuthor">, and C. Wood</span>, <span class="refTitle">"Encrypted Server Name Indication for TLS 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-esni-05</span>, <time datetime="2019-11-04">4 November 2019</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-05.txt">http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-05.txt</a>&gt;</span>. </dd>
+<dt id="HappyEyeballsV2">[HappyEyeballsV2]</dt>
+<dd>
+<span class="refAuthor">Schinazi, D.</span><span class="refAuthor"> and T. Pauly</span>, <span class="refTitle">"Happy Eyeballs Version 2: Better Connectivity Using Concurrency"</span>, <span class="seriesInfo">RFC 8305</span>, <span class="seriesInfo">DOI 10.17487/RFC8305</span>, <time datetime="2017-12">December 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8305">https://www.rfc-editor.org/info/rfc8305</a>&gt;</span>. </dd>
+<dt id="HSTS">[HSTS]</dt>
+<dd>
+<span class="refAuthor">Hodges, J.</span><span class="refAuthor">, Jackson, C.</span><span class="refAuthor">, and A. Barth</span>, <span class="refTitle">"HTTP Strict Transport Security (HSTS)"</span>, <span class="seriesInfo">RFC 6797</span>, <span class="seriesInfo">DOI 10.17487/RFC6797</span>, <time datetime="2012-11">November 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6797">https://www.rfc-editor.org/info/rfc6797</a>&gt;</span>. </dd>
+<dt id="HTTP3">[HTTP3]</dt>
+<dd>
+<span class="refAuthor">Bishop, M.</span>, <span class="refTitle">"Hypertext Transfer Protocol Version 3 (HTTP/3)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-quic-http-20</span>, <time datetime="2019-04-23">23 April 2019</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-quic-http-20.txt">http://www.ietf.org/internet-drafts/draft-ietf-quic-http-20.txt</a>&gt;</span>. </dd>
+<dt id="RFC1035">[RFC1035]</dt>
+<dd>
+<span class="refAuthor">Mockapetris, P.V.</span>, <span class="refTitle">"Domain names - implementation and specification"</span>, <span class="seriesInfo">STD 13</span>, <span class="seriesInfo">RFC 1035</span>, <span class="seriesInfo">DOI 10.17487/RFC1035</span>, <time datetime="1987-11">November 1987</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc1035">https://www.rfc-editor.org/info/rfc1035</a>&gt;</span>. </dd>
+<dt id="RFC1928">[RFC1928]</dt>
+<dd>
+<span class="refAuthor">Leech, M.</span><span class="refAuthor">, Ganis, M.</span><span class="refAuthor">, Lee, Y.</span><span class="refAuthor">, Kuris, R.</span><span class="refAuthor">, Koblas, D.</span><span class="refAuthor">, and L. Jones</span>, <span class="refTitle">"SOCKS Protocol Version 5"</span>, <span class="seriesInfo">RFC 1928</span>, <span class="seriesInfo">DOI 10.17487/RFC1928</span>, <time datetime="1996-03">March 1996</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc1928">https://www.rfc-editor.org/info/rfc1928</a>&gt;</span>. </dd>
+<dt id="RFC2119">[RFC2119]</dt>
+<dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-editor.org/info/rfc2119</a>&gt;</span>. </dd>
+<dt id="RFC2181">[RFC2181]</dt>
+<dd>
+<span class="refAuthor">Elz, R.</span><span class="refAuthor"> and R. Bush</span>, <span class="refTitle">"Clarifications to the DNS Specification"</span>, <span class="seriesInfo">RFC 2181</span>, <span class="seriesInfo">DOI 10.17487/RFC2181</span>, <time datetime="1997-07">July 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2181">https://www.rfc-editor.org/info/rfc2181</a>&gt;</span>. </dd>
+<dt id="RFC3225">[RFC3225]</dt>
+<dd>
+<span class="refAuthor">Conrad, D.</span>, <span class="refTitle">"Indicating Resolver Support of DNSSEC"</span>, <span class="seriesInfo">RFC 3225</span>, <span class="seriesInfo">DOI 10.17487/RFC3225</span>, <time datetime="2001-12">December 2001</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3225">https://www.rfc-editor.org/info/rfc3225</a>&gt;</span>. </dd>
+<dt id="RFC3597">[RFC3597]</dt>
+<dd>
+<span class="refAuthor">Gustafsson, A.</span>, <span class="refTitle">"Handling of Unknown DNS Resource Record (RR) Types"</span>, <span class="seriesInfo">RFC 3597</span>, <span class="seriesInfo">DOI 10.17487/RFC3597</span>, <time datetime="2003-09">September 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3597">https://www.rfc-editor.org/info/rfc3597</a>&gt;</span>. </dd>
+<dt id="RFC5226">[RFC5226]</dt>
+<dd>
+<span class="refAuthor">Narten, T.</span><span class="refAuthor"> and H. Alvestrand</span>, <span class="refTitle">"Guidelines for Writing an IANA Considerations Section in RFCs"</span>, <span class="seriesInfo">RFC 5226</span>, <span class="seriesInfo">DOI 10.17487/RFC5226</span>, <time datetime="2008-05">May 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5226">https://www.rfc-editor.org/info/rfc5226</a>&gt;</span>. </dd>
+<dt id="RFC5234">[RFC5234]</dt>
+<dd>
+<span class="refAuthor">Crocker, D., Ed.</span><span class="refAuthor"> and P. Overell</span>, <span class="refTitle">"Augmented BNF for Syntax Specifications: ABNF"</span>, <span class="seriesInfo">STD 68</span>, <span class="seriesInfo">RFC 5234</span>, <span class="seriesInfo">DOI 10.17487/RFC5234</span>, <time datetime="2008-01">January 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5234">https://www.rfc-editor.org/info/rfc5234</a>&gt;</span>. </dd>
+<dt id="RFC5952">[RFC5952]</dt>
+<dd>
+<span class="refAuthor">Kawamura, S.</span><span class="refAuthor"> and M. Kawashima</span>, <span class="refTitle">"A Recommendation for IPv6 Address Text Representation"</span>, <span class="seriesInfo">RFC 5952</span>, <span class="seriesInfo">DOI 10.17487/RFC5952</span>, <time datetime="2010-08">August 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5952">https://www.rfc-editor.org/info/rfc5952</a>&gt;</span>. </dd>
+<dt id="RFC6066">[RFC6066]</dt>
+<dd>
+<span class="refAuthor">Eastlake 3rd, D.</span>, <span class="refTitle">"Transport Layer Security (TLS) Extensions: Extension Definitions"</span>, <span class="seriesInfo">RFC 6066</span>, <span class="seriesInfo">DOI 10.17487/RFC6066</span>, <time datetime="2011-01">January 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6066">https://www.rfc-editor.org/info/rfc6066</a>&gt;</span>. </dd>
+<dt id="RFC6147">[RFC6147]</dt>
+<dd>
+<span class="refAuthor">Bagnulo, M.</span><span class="refAuthor">, Sullivan, A.</span><span class="refAuthor">, Matthews, P.</span><span class="refAuthor">, and I. van Beijnum</span>, <span class="refTitle">"DNS64: DNS Extensions for Network Address Translation from IPv6 Clients to IPv4 Servers"</span>, <span class="seriesInfo">RFC 6147</span>, <span class="seriesInfo">DOI 10.17487/RFC6147</span>, <time datetime="2011-04">April 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6147">https://www.rfc-editor.org/info/rfc6147</a>&gt;</span>. </dd>
+<dt id="RFC6454">[RFC6454]</dt>
+<dd>
+<span class="refAuthor">Barth, A.</span>, <span class="refTitle">"The Web Origin Concept"</span>, <span class="seriesInfo">RFC 6454</span>, <span class="seriesInfo">DOI 10.17487/RFC6454</span>, <time datetime="2011-12">December 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6454">https://www.rfc-editor.org/info/rfc6454</a>&gt;</span>. </dd>
+<dt id="RFC7050">[RFC7050]</dt>
+<dd>
+<span class="refAuthor">Savolainen, T.</span><span class="refAuthor">, Korhonen, J.</span><span class="refAuthor">, and D. Wing</span>, <span class="refTitle">"Discovery of the IPv6 Prefix Used for IPv6 Address Synthesis"</span>, <span class="seriesInfo">RFC 7050</span>, <span class="seriesInfo">DOI 10.17487/RFC7050</span>, <time datetime="2013-11">November 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7050">https://www.rfc-editor.org/info/rfc7050</a>&gt;</span>. </dd>
+<dt id="RFC7231">[RFC7231]</dt>
+<dd>
+<span class="refAuthor">Fielding, R., Ed.</span><span class="refAuthor"> and J. Reschke, Ed.</span>, <span class="refTitle">"Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content"</span>, <span class="seriesInfo">RFC 7231</span>, <span class="seriesInfo">DOI 10.17487/RFC7231</span>, <time datetime="2014-06">June 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7231">https://www.rfc-editor.org/info/rfc7231</a>&gt;</span>. </dd>
+<dt id="RFC7595">[RFC7595]</dt>
+<dd>
+<span class="refAuthor">Thaler, D., Ed.</span><span class="refAuthor">, Hansen, T.</span><span class="refAuthor">, and T. Hardie</span>, <span class="refTitle">"Guidelines and Registration Procedures for URI Schemes"</span>, <span class="seriesInfo">BCP 35</span>, <span class="seriesInfo">RFC 7595</span>, <span class="seriesInfo">DOI 10.17487/RFC7595</span>, <time datetime="2015-06">June 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7595">https://www.rfc-editor.org/info/rfc7595</a>&gt;</span>. </dd>
+<dt id="RFC7838">[RFC7838]</dt>
+<dd>
+<span class="refAuthor">Nottingham, M.</span><span class="refAuthor">, McManus, P.</span><span class="refAuthor">, and J. Reschke</span>, <span class="refTitle">"HTTP Alternative Services"</span>, <span class="seriesInfo">RFC 7838</span>, <span class="seriesInfo">DOI 10.17487/RFC7838</span>, <time datetime="2016-04">April 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7838">https://www.rfc-editor.org/info/rfc7838</a>&gt;</span>. </dd>
+<dt id="RFC7858">[RFC7858]</dt>
+<dd>
+<span class="refAuthor">Hu, Z.</span><span class="refAuthor">, Zhu, L.</span><span class="refAuthor">, Heidemann, J.</span><span class="refAuthor">, Mankin, A.</span><span class="refAuthor">, Wessels, D.</span><span class="refAuthor">, and P. Hoffman</span>, <span class="refTitle">"Specification for DNS over Transport Layer Security (TLS)"</span>, <span class="seriesInfo">RFC 7858</span>, <span class="seriesInfo">DOI 10.17487/RFC7858</span>, <time datetime="2016-05">May 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7858">https://www.rfc-editor.org/info/rfc7858</a>&gt;</span>. </dd>
+<dt id="RFC8174">[RFC8174]</dt>
+<dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8174">https://www.rfc-editor.org/info/rfc8174</a>&gt;</span>. </dd>
+<dt id="RFC8446">[RFC8446]</dt>
+<dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 8446</span>, <span class="seriesInfo">DOI 10.17487/RFC8446</span>, <time datetime="2018-08">August 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8446">https://www.rfc-editor.org/info/rfc8446</a>&gt;</span>. </dd>
+<dt id="RFC8484">[RFC8484]</dt>
+<dd>
+<span class="refAuthor">Hoffman, P.</span><span class="refAuthor"> and P. McManus</span>, <span class="refTitle">"DNS Queries over HTTPS (DoH)"</span>, <span class="seriesInfo">RFC 8484</span>, <span class="seriesInfo">DOI 10.17487/RFC8484</span>, <time datetime="2018-10">October 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8484">https://www.rfc-editor.org/info/rfc8484</a>&gt;</span>. </dd>
+</dl>
+</section>
+<section id="section-13.2">
+        <h3 id="name-informative-references">
+<a href="#section-13.2" class="section-number selfRef">13.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="DNSTerm">[DNSTerm]</dt>
+<dd>
+<span class="refAuthor">Hoffman, P.</span><span class="refAuthor">, Sullivan, A.</span><span class="refAuthor">, and K. Fujiwara</span>, <span class="refTitle">"DNS Terminology"</span>, <span class="seriesInfo">BCP 219</span>, <span class="seriesInfo">RFC 8499</span>, <span class="seriesInfo">DOI 10.17487/RFC8499</span>, <time datetime="2019-01">January 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8499">https://www.rfc-editor.org/info/rfc8499</a>&gt;</span>. </dd>
+<dt id="HTTP">[HTTP]</dt>
+<dd>
+<span class="refAuthor">Fielding, R., Ed.</span><span class="refAuthor"> and J. Reschke, Ed.</span>, <span class="refTitle">"Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing"</span>, <span class="seriesInfo">RFC 7230</span>, <span class="seriesInfo">DOI 10.17487/RFC7230</span>, <time datetime="2014-06">June 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7230">https://www.rfc-editor.org/info/rfc7230</a>&gt;</span>. </dd>
+<dt id="I-D.draft-bellis-dnsop-http-record-00">[I-D.draft-bellis-dnsop-http-record-00]</dt>
+<dd>
+<span class="refAuthor">Bellis, R.</span>, <span class="refTitle">"A DNS Resource Record for HTTP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bellis-dnsop-http-record-00</span>, <time datetime="2018-11-03">3 November 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-bellis-dnsop-http-record-00.txt">http://www.ietf.org/internet-drafts/draft-bellis-dnsop-http-record-00.txt</a>&gt;</span>. </dd>
+<dt id="I-D.draft-ietf-dnsop-aname-03">[I-D.draft-ietf-dnsop-aname-03]</dt>
+<dd>
+<span class="refAuthor">Finch, T.</span><span class="refAuthor">, Hunt, E.</span><span class="refAuthor">, Dijk, P.</span><span class="refAuthor">, Eden, A.</span><span class="refAuthor">, and W. Mekking</span>, <span class="refTitle">"Address-specific DNS aliases (ANAME)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dnsop-aname-03</span>, <time datetime="2019-04-15">15 April 2019</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-dnsop-aname-03.txt">http://www.ietf.org/internet-drafts/draft-ietf-dnsop-aname-03.txt</a>&gt;</span>. </dd>
+<dt id="RFC2782">[RFC2782]</dt>
+<dd>
+<span class="refAuthor">Gulbrandsen, A.</span><span class="refAuthor">, Vixie, P.</span><span class="refAuthor">, and L. Esibov</span>, <span class="refTitle">"A DNS RR for specifying the location of services (DNS SRV)"</span>, <span class="seriesInfo">RFC 2782</span>, <span class="seriesInfo">DOI 10.17487/RFC2782</span>, <time datetime="2000-02">February 2000</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2782">https://www.rfc-editor.org/info/rfc2782</a>&gt;</span>. </dd>
+<dt id="RFC6895">[RFC6895]</dt>
+<dd>
+<span class="refAuthor">Eastlake 3rd, D.</span>, <span class="refTitle">"Domain Name System (DNS) IANA Considerations"</span>, <span class="seriesInfo">BCP 42</span>, <span class="seriesInfo">RFC 6895</span>, <span class="seriesInfo">DOI 10.17487/RFC6895</span>, <time datetime="2013-04">April 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6895">https://www.rfc-editor.org/info/rfc6895</a>&gt;</span>. </dd>
+</dl>
+</section>
+</section>
+<div id="map2altsvc">
+<section id="section-appendix.a">
+      <h2 id="name-mapping-between-httpssvc-an">
+<a href="#section-appendix.a" class="section-number selfRef">Appendix A. </a><a href="#name-mapping-between-httpssvc-an" class="section-name selfRef">Mapping between HTTPSSVC and Alt-Svc</a>
+      </h2>
+<p id="section-appendix.a-1">Conversion between HTTPSSVC's ServiceForm and Alt-Svc is possible.
+Note that conversion in either direction can be lossy, because
+some parameters are only defined for HTTPSSVC or Alt-Svc.<a href="#section-appendix.a-1" class="pilcrow">¶</a></p>
+<p id="section-appendix.a-2">To construct an Alt-Svc Field Value (as defined in Section 4 of
+<span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>) from an HTTPSSVC record:<a href="#section-appendix.a-2" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.a-3.1">The SvcDomainName is mapped into the uri-host portion of alt-authority
+with the trailing "." removed.
+(If SvcDomainName is ".", the special handling described in
+<a href="#svcdomainnamedot" class="xref">Section 2.6.1</a> MUST be applied first.)<a href="#section-appendix.a-3.1" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.a-3.2">The SvcParamValue of the "port" service parameter, or 443 if no such
+parameter is present, is written to the port portion of the alt-authority.<a href="#section-appendix.a-3.2" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.a-3.3">The SvcParamValue of the "alpn" service parameter is mapped to the
+protocol-id.  This MUST follow the normalization and encoding
+requirements for protocol-id specified in <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span> Section 3.
+This parameter is MANDATORY.<a href="#section-appendix.a-3.3" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.a-3.4">The DNS TTL is mapped to the "ma" (max age) Alt-Svc parameter.<a href="#section-appendix.a-3.4" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.a-3.5">For SVCB parameters with defined mappings to HTTPS Alt-Svc, each should be
+included as an Alt-Svc parameter, typically as the SvcParamKey name
+"=" a defined encoding of the SvcParamValue.<a href="#section-appendix.a-3.5" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-appendix.a-4">Converting an Alt-Svc Field Value into an HTTPSSVC record follows the reverse
+of this procedure.<a href="#section-appendix.a-4" class="pilcrow">¶</a></p>
+<p id="section-appendix.a-5">Conversion between HTTPSSVC and Alt-Svc Field Value MUST ignore any
+SvcParamKeys and Alt-Svc parameters that are unrecognized or do not have
+a defined mapping.<a href="#section-appendix.a-5" class="pilcrow">¶</a></p>
+<p id="section-appendix.a-6">For example, if the operator of https://www.example.com
+intends to include an HTTP response header like<a href="#section-appendix.a-6" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-appendix.a-7">
+<pre>
+Alt-Svc: h3="svc.example.net:8003"; ma=3600; foo=123, \
+         h2="svc.example.net:8002"; ma=3600; foo=123
+</pre><a href="#section-appendix.a-7" class="pilcrow">¶</a>
+</div>
+<p id="section-appendix.a-8">they could also publish an HTTPSSVC DNS RRSet like<a href="#section-appendix.a-8" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-appendix.a-9">
+<pre>
+www.example.com. 3600 IN HTTPSSVC 2 svc.example.net. (
+                                    alpn=h3 port=8003 foo=123 )
+                         HTTPSSVC 3 svc.example.net. (
+                                    alpn=h2 port=8002 foo=123 )
+</pre><a href="#section-appendix.a-9" class="pilcrow">¶</a>
+</div>
+<p id="section-appendix.a-10">Where "foo" is a hypothetical future HTTPSSVC and Alt-Svc parameter.<a href="#section-appendix.a-10" class="pilcrow">¶</a></p>
+<p id="section-appendix.a-11">This data type can also be represented as an Unknown RR as described in
+<span>[<a href="#RFC3597" class="xref">RFC3597</a>]</span>:<a href="#section-appendix.a-11" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-appendix.a-12">
+<pre>
+www.example.com. 3600 IN TYPE??? \\# TBD:WRITEME
+</pre><a href="#section-appendix.a-12" class="pilcrow">¶</a>
+</div>
+<div id="pri">
+<section id="section-a.1">
+        <h2 id="name-multiple-records-and-prefer">
+<a href="#section-a.1" class="section-number selfRef">A.1. </a><a href="#name-multiple-records-and-prefer" class="section-name selfRef">Multiple records and preference ordering</a>
+        </h2>
+<p id="section-a.1-1">Server operators MAY publish multiple ServiceForm HTTPSSVC
+records as an RRSet.  When converting a collection of alt-values
+into an HTTPSSVC RRSet, the server operator MUST set the
+overall TTL to a value no larger than the minimum
+of the "max age" values (following Section 5.2 of <span>[<a href="#RFC2181" class="xref">RFC2181</a>]</span>).<a href="#section-a.1-1" class="pilcrow">¶</a></p>
+<p id="section-a.1-2">Each RR corresponds to exactly one alt-value, as described
+in Section 3 of <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>.<a href="#section-a.1-2" class="pilcrow">¶</a></p>
+<p id="section-a.1-3">As discussed in <a href="#svcfieldpri" class="xref">Section 2.6.2</a>, HTTPSSVC RRs with
+a smaller SvcFieldPriority value SHOULD be sorted ahead of and given
+preference over RRs with a larger SvcFieldPriority value.<a href="#section-a.1-3" class="pilcrow">¶</a></p>
+<p id="section-a.1-4">When constructing equivalent Alt-Svc headers from an RRSet:<a href="#section-a.1-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal" id="section-a.1-5">
+          <li id="section-a.1-5.1">The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling
+for equal SvcFieldPriority values.  Clients MAY choose to further
+prioritize alt-values where address records are immediately
+available for the alt-value's SvcDomainName.<a href="#section-a.1-5.1" class="pilcrow">¶</a>
+</li>
+<li id="section-a.1-5.2">The client SHOULD concatenate the thus-transformed-and-ordered
+SvcFieldValues in the RRSet, separated by commas.  (This is
+semantically equivalent to receiving multiple Alt-Svc HTTP response
+headers, according to Section 3.2.2 of <span>[<a href="#HTTP" class="xref">HTTP</a>]</span>).<a href="#section-a.1-5.2" class="pilcrow">¶</a>
+</li>
+</ol>
+</section>
+</div>
+<div id="additional-examples">
+<section id="section-a.2">
+        <h2 id="name-additional-examples">
+<a href="#section-a.2" class="section-number selfRef">A.2. </a><a href="#name-additional-examples" class="section-name selfRef">Additional examples</a>
+        </h2>
+<p id="section-a.2-1">The following:<a href="#section-a.2-1" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-a.2-2">
+<pre>
+www.example.com.  7200  IN CNAME    svc.example.net.
+example.com.      7200  IN HTTPSSVC 0 svc.example.net.
+svc.example.net.  7200  IN HTTPSSVC 2 svc3.example.net. (
+    alpn=h3 port=8003 esniconfig="ABC..." )
+svc.example.net.  7200  IN HTTPSSVC 3 . (
+    alpn=h2 port=8002 esniconfig="123..." )
+</pre><a href="#section-a.2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-a.2-3">is equivalent to the Alt-Svc record:<a href="#section-a.2-3" class="pilcrow">¶</a></p>
+<div class="artwork art-text alignLeft" id="section-a.2-4">
+<pre>
+Alt-Svc: h3="svc3.example.net:8003"; esniconfig="ABC..."; ma=7200, \
+         h2="svc.example.net:8002"; esniconfig="123..."; ma=7200
+</pre><a href="#section-a.2-4" class="pilcrow">¶</a>
+</div>
+<p id="section-a.2-5">for the origins of both "https://www.example.com" and "https://example.com".<a href="#section-a.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="comparison-with-alternatives">
+<section id="section-appendix.b">
+      <h2 id="name-comparison-with-alternative">
+<a href="#section-appendix.b" class="section-number selfRef">Appendix B. </a><a href="#name-comparison-with-alternative" class="section-name selfRef">Comparison with alternatives</a>
+      </h2>
+<p id="section-appendix.b-1">The SVCB and HTTPSSVC record types closely resemble,
+and are inspired by, some existing
+record types and proposals.  A complaint with all of the alternatives
+is that web clients have seemed unenthusiastic about implementing
+them.  The hope here is that by providing an extensible solution that
+solves multiple problems we will overcome the inertia and have a path
+to achieve client implementation.<a href="#section-appendix.b-1" class="pilcrow">¶</a></p>
+<div id="differences-from-the-srv-rr-type">
+<section id="section-b.1">
+        <h2 id="name-differences-from-the-srv-rr">
+<a href="#section-b.1" class="section-number selfRef">B.1. </a><a href="#name-differences-from-the-srv-rr" class="section-name selfRef">Differences from the SRV RR type</a>
+        </h2>
+<p id="section-b.1-1">An SRV record <span>[<a href="#RFC2782" class="xref">RFC2782</a>]</span> can perform a similar function to the SVCB record,
+informing a client to look in a different location for a service.
+However, there are several differences:<a href="#section-b.1-1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-b.1-2.1">SRV records are typically mandatory, whereas clients will always
+continue to function correctly without making use of Alt-Svc or SVCB.<a href="#section-b.1-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-b.1-2.2">SRV records cannot instruct the client to switch or upgrade
+protocols, whereas Alt-Svc can signal such an upgrade (e.g. to
+HTTP/2).<a href="#section-b.1-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-b.1-2.3">SRV records are not extensible, whereas SVCB and HTTPSSVC
+can be extended with new parameters.<a href="#section-b.1-2.3" class="pilcrow">¶</a>
+</li>
+<li id="section-b.1-2.4">Using SRV records would not allow an HTTPS client to skip processing of the
+Alt-Svc information in a subsequent connection, so it does not confer
+a performance advantage.<a href="#section-b.1-2.4" class="pilcrow">¶</a>
+</li>
+</ul>
+</section>
+</div>
+<div id="differences-from-the-proposed-http-record">
+<section id="section-b.2">
+        <h2 id="name-differences-from-the-propos">
+<a href="#section-b.2" class="section-number selfRef">B.2. </a><a href="#name-differences-from-the-propos" class="section-name selfRef">Differences from the proposed HTTP record</a>
+        </h2>
+<p id="section-b.2-1">Unlike <span>[<a href="#I-D.draft-bellis-dnsop-http-record-00" class="xref">I-D.draft-bellis-dnsop-http-record-00</a>]</span>, this approach is
+extensible to cover Alt-Svc and ESNI use-cases.  Like that
+proposal, this addresses the zone apex CNAME challenge.<a href="#section-b.2-1" class="pilcrow">¶</a></p>
+<p id="section-b.2-2">Like that proposal it remains necessary to continue to include
+address records at the zone apex for legacy clients.<a href="#section-b.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="differences-from-the-proposed-aname-record">
+<section id="section-b.3">
+        <h2 id="name-differences-from-the-propose">
+<a href="#section-b.3" class="section-number selfRef">B.3. </a><a href="#name-differences-from-the-propose" class="section-name selfRef">Differences from the proposed ANAME record</a>
+        </h2>
+<p id="section-b.3-1">Unlike <span>[<a href="#I-D.draft-ietf-dnsop-aname-03" class="xref">I-D.draft-ietf-dnsop-aname-03</a>]</span>, this approach is extensible to
+cover Alt-Svc and ESNI use-cases.  This approach also does not
+require any changes or special handling on either authoritative or
+master servers, beyond optionally returning in-bailiwick additional records.<a href="#section-b.3-1" class="pilcrow">¶</a></p>
+<p id="section-b.3-2">Like that proposal, this addresses the zone apex CNAME challenge
+for clients that implement this.<a href="#section-b.3-2" class="pilcrow">¶</a></p>
+<p id="section-b.3-3">However with this SVCB proposal it remains necessary to continue
+to include address records at the zone apex for legacy clients.
+If deployment of this standard is successful, the number of legacy clients
+will fall over time.  As the number of legacy clients declines, the operational
+effort required to serve these users without the benefit of SVCB indirection
+should fall.  Server operators can easily observe how much traffic reaches this
+legacy endpoint, and may remove the apex's address records if the observed legacy
+traffic has fallen to negligible levels.<a href="#section-b.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="differences-from-the-proposed-esni-record">
+<section id="section-b.4">
+        <h2 id="name-differences-from-the-proposed">
+<a href="#section-b.4" class="section-number selfRef">B.4. </a><a href="#name-differences-from-the-proposed" class="section-name selfRef">Differences from the proposed ESNI record</a>
+        </h2>
+<p id="section-b.4-1">Unlike <span>[<a href="#ESNI" class="xref">ESNI</a>]</span>, this approach is extensible and covers
+the Alt-Svc case as well as addresses the zone apex CNAME challenge.<a href="#section-b.4-1" class="pilcrow">¶</a></p>
+<p id="section-b.4-2">By using the Alt-Svc model we also provide a way to solve
+the ESNI multi-CDN challenges in a general case.<a href="#section-b.4-2" class="pilcrow">¶</a></p>
+<p id="section-b.4-3">Unlike ESNI, SVCB allows specifying different ESNI configurations for
+different protocols and ports, rather than applying a single configuration
+to all ports on a domain.<a href="#section-b.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sni-alt-svc-parameter">
+<section id="section-b.5">
+        <h2 id="name-sni-alt-svc-parameter">
+<a href="#section-b.5" class="section-number selfRef">B.5. </a><a href="#name-sni-alt-svc-parameter" class="section-name selfRef">SNI Alt-Svc parameter</a>
+        </h2>
+<p id="section-b.5-1">Defining an Alt-Svc sni= parameter
+(such as from <span>[<a href="#AltSvcSNI" class="xref">AltSvcSNI</a>]</span>) would
+have provided some benefits to clients and servers not implementing ESNI,
+such as for specifying that "_wildcard.example.com" could be sent as an SNI
+value rather than the full name.  There is nothing precluding SVCB from
+being used with an sni= parameter if one were to be defined, but it
+is not included here to reduce scope, complexity, and additional potential
+security and tracking risks.<a href="#section-b.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="design-considerations-and-open-issues">
+<section id="section-appendix.c">
+      <h2 id="name-design-considerations-and-o">
+<a href="#section-appendix.c" class="section-number selfRef">Appendix C. </a><a href="#name-design-considerations-and-o" class="section-name selfRef">Design Considerations and Open Issues</a>
+      </h2>
+<p id="section-appendix.c-1">This draft is intended to be a work-in-progress for discussion.
+Many details are expected to change with subsequent refinement.
+Some known issues or topics for discussion are listed below.<a href="#section-appendix.c-1" class="pilcrow">¶</a></p>
+<div id="record-name">
+<section id="section-c.1">
+        <h2 id="name-record-name">
+<a href="#section-c.1" class="section-number selfRef">C.1. </a><a href="#name-record-name" class="section-name selfRef">Record Name</a>
+        </h2>
+<p id="section-c.1-1">Naming is hard.  "SVCB" and "HTTPSSVC" are proposed as placeholders
+that are easy to search for and replace when a final
+name is chosen.
+Other names for this record might include B, ALTSVC,
+HTTPS, HTTPSSRV, HTTPSSVC, SVCHTTPS, or something else.<a href="#section-c.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="generality">
+<section id="section-c.2">
+        <h2 id="name-generality">
+<a href="#section-c.2" class="section-number selfRef">C.2. </a><a href="#name-generality" class="section-name selfRef">Generality</a>
+        </h2>
+<p id="section-c.2-1">The SVCB record was designed as a generalization of HTTPSSVC,
+based on feedback requesting a solution that applied to protocols
+pther than HTTP.  Past efforts
+to over-generalize have not met with broad success, but we
+hope that HTTPSSVC and SVCB have struck an acceptable balance between
+generality and focus.<a href="#section-c.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="wire-format">
+<section id="section-c.3">
+        <h2 id="name-wire-format">
+<a href="#section-c.3" class="section-number selfRef">C.3. </a><a href="#name-wire-format" class="section-name selfRef">Wire Format</a>
+        </h2>
+<p id="section-c.3-1">Advice from experts in DNS wire format best practices would be greatly
+appreciated to refine the proposed details, overall.<a href="#section-c.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="where-to-include-priority">
+<section id="section-c.4">
+        <h2 id="name-where-to-include-priority">
+<a href="#section-c.4" class="section-number selfRef">C.4. </a><a href="#name-where-to-include-priority" class="section-name selfRef">Where to include Priority</a>
+        </h2>
+<p id="section-c.4-1">The SvcFieldPriority could alternately be included as a pri= Alt-Svc attribute.
+It wouldn't be applicable for Alt-Svc returned via HTTP, but it is also
+not necessarily needed by DNS servers.  It is also not used for AliasForm RRs.<a href="#section-c.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="whether-to-include-weight">
+<section id="section-c.5">
+        <h2 id="name-whether-to-include-weight">
+<a href="#section-c.5" class="section-number selfRef">C.5. </a><a href="#name-whether-to-include-weight" class="section-name selfRef">Whether to include Weight</a>
+        </h2>
+<p id="section-c.5-1">Some other similar mechanisms such as SRV have a weight in-addition
+to priority.  That is excluded here for simplicity.  It could always be
+added as an optional SVCB parameter.<a href="#section-c.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="change-history">
+<section id="section-appendix.d">
+      <h2 id="name-change-history">
+<a href="#section-appendix.d" class="section-number selfRef">Appendix D. </a><a href="#name-change-history" class="section-name selfRef">Change history</a>
+      </h2>
+<ul>
+<li id="section-appendix.d-1.1">
+          <p id="section-appendix.d-1.1.1">draft-ietf-dnsop-svcb-httpssvc-01<a href="#section-appendix.d-1.1.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.d-1.1.2.1">Reduce the emphasis on conversion between HTTPSSVC and Alt-Svc<a href="#section-appendix.d-1.1.2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.1.2.2">Make the "untrusted channel" concept more precise.<a href="#section-appendix.d-1.1.2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.1.2.3">Make SvcFieldPriority = 0 the definition of AliasForm, instead of a requirement.<a href="#section-appendix.d-1.1.2.3" class="pilcrow">¶</a>
+</li>
+</ul>
+</li>
+<li id="section-appendix.d-1.2">
+          <p id="section-appendix.d-1.2.1">draft-ietf-dnsop-svcb-httpssvc-00<a href="#section-appendix.d-1.2.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.d-1.2.2.1">Document an optimization for optimistic pre-connection. (Chris Wood)<a href="#section-appendix.d-1.2.2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.2.2.2">Relax IP hint handling requirements. (Eric Rescorla)<a href="#section-appendix.d-1.2.2.2" class="pilcrow">¶</a>
+</li>
+</ul>
+</li>
+<li id="section-appendix.d-1.3">
+          <p id="section-appendix.d-1.3.1">draft-nygren-dnsop-svcb-httpssvc-00<a href="#section-appendix.d-1.3.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.d-1.3.2.1">Generalize to an SVCB record, with special-case
+handling for Alt-Svc and HTTPS separated out
+to dedicated sections.<a href="#section-appendix.d-1.3.2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.3.2.2">Split out a separate HTTPSSVC record for
+the HTTPS use-case.<a href="#section-appendix.d-1.3.2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.3.2.3">Remove the explicit SvcRecordType=0/1 and instead
+make the AliasForm vs ServiceForm be implicit.
+This was based on feedback recommending against
+subtyping RR type.<a href="#section-appendix.d-1.3.2.3" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.3.2.4">Remove one optimization.<a href="#section-appendix.d-1.3.2.4" class="pilcrow">¶</a>
+</li>
+</ul>
+</li>
+<li id="section-appendix.d-1.4">
+          <p id="section-appendix.d-1.4.1">draft-nygren-httpbis-httpssvc-03<a href="#section-appendix.d-1.4.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.d-1.4.2.1">Change redirect type for HSTS-style behavior
+from 302 to 307 to reduce ambiguities.<a href="#section-appendix.d-1.4.2.1" class="pilcrow">¶</a>
+</li>
+</ul>
+</li>
+<li id="section-appendix.d-1.5">
+          <p id="section-appendix.d-1.5.1">draft-nygren-httpbis-httpssvc-02<a href="#section-appendix.d-1.5.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.d-1.5.2.1">Remove the redundant length fields from the wire format.<a href="#section-appendix.d-1.5.2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.5.2.2">Define a SvcDomainName of "." for SvcRecordType=1
+as being the HTTPSSVC RRNAME.<a href="#section-appendix.d-1.5.2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-appendix.d-1.5.2.3">Replace "hq" with "h3".<a href="#section-appendix.d-1.5.2.3" class="pilcrow">¶</a>
+</li>
+</ul>
+</li>
+<li id="section-appendix.d-1.6">
+          <p id="section-appendix.d-1.6.1">draft-nygren-httpbis-httpssvc-01<a href="#section-appendix.d-1.6.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.d-1.6.2.1">Fixes of record name.  Replace references to "HTTPSVC" with "HTTPSSVC".<a href="#section-appendix.d-1.6.2.1" class="pilcrow">¶</a>
+</li>
+</ul>
+</li>
+<li id="section-appendix.d-1.7">
+          <p id="section-appendix.d-1.7.1">draft-nygren-httpbis-httpssvc-00<a href="#section-appendix.d-1.7.1" class="pilcrow">¶</a></p>
+<ul>
+<li id="section-appendix.d-1.7.2.1">Initial version<a href="#section-appendix.d-1.7.2.1" class="pilcrow">¶</a>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="section-appendix.e">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Ben Schwartz</span></div>
+<div dir="auto" class="left"><span class="org">Google</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:bemasc@google.com" class="email">bemasc@google.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Mike Bishop</span></div>
+<div dir="auto" class="left"><span class="org">Akamai Technologies</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:mbishop@evequefou.be" class="email">mbishop@evequefou.be</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Erik Nygren</span></div>
+<div dir="auto" class="left"><span class="org">Akamai Technologies</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:erik+ietf@nygren.org" class="email">erik+ietf@nygren.org</a>
+</div>
+</address>
+</section>
+</div>
+<script>var toc = document.getElementById("toc");
+var tocToggle = toc.querySelector("h2");
+var tocNav = toc.querySelector("nav");
+
+// mobile menu toggle
+tocToggle.onclick = function(event) {
+    if (window.innerWidth < 1024) {
+ var tocNavDisplay = tocNav.currentStyle ? tocNav.currentStyle.display : getComputedStyle(tocNav, null).display;
+ if (tocNavDisplay == "none") {
+     tocNav.style.display = "block";
+ } else {
+     tocNav.style.display = "none";
+ }
+    }
+}
+
+// toc anchor scroll to anchor
+tocNav.addEventListener("click", function (event) {
+    event.preventDefault();
+    if (event.target.nodeName == 'A') {
+ if (window.innerWidth < 1024) {
+     tocNav.style.display = "none";
+ }
+ var href = event.target.getAttribute("href");
+ var anchorId = href.substr(1);
+ var anchor =  document.getElementById(anchorId);
+ anchor.scrollIntoView(true);
+ window.history.pushState("","",href);
+    }
+});
+
+// switch toc mode when window resized
+window.onresize = function () {
+    if (window.innerWidth < 1024) {
+ tocNav.style.display = "none";
+    } else {
+ tocNav.style.display = "block";
+    }
+}
+</script>
+</body>
+</html>

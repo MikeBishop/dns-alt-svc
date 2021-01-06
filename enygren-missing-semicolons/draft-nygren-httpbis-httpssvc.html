@@ -1,0 +1,1126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head profile="http://www.w3.org/2006/03/hcard http://dublincore.org/documents/2008/08/04/dc-html/">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+
+  <title>HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSSVC)</title>
+
+  
+<style type="text/css">/*<![CDATA[*/
+
+body {
+  font: 16px "Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
+  color: #333;
+  font-size-adjust: 0.5;
+  line-height: 24px;
+  margin: 75px auto;
+  max-width: 624px;
+  padding: 0 5px;
+}
+
+.title, .filename, h1, h2, h3, h4, h5 {
+  font: 16px "Roboto Condensed","Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
+  font-size-adjust: 0.5;
+  font-weight: bold;
+  color: #333;
+  line-height: 100%;
+  margin: 1.2em 0 0.3em;
+}
+.title, #rfc\.title h1 { font-size: 32px; }
+h1, section h1, h2, section h2, section h3, nav h2 { font-size: 20px; }
+h3, section h4, h4, section h5 { font-size: 16px; }
+h1 a[href], h2 a[href], h3 a[href], h4 a[href] {
+  color: #333;
+}
+
+table {
+  margin-left: 0em;
+  border-collapse: collapse;
+}
+th {
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+td {
+  border-top: 1px solid #ddd;
+  vertical-align: top;
+}
+tr:nth-child(2n+1) > td,
+tr:nth-child(2n+1) > th {
+  background-color: #f9f9f9;
+}
+td.reference {
+  max-width: 200px;
+  border-top: none;
+  padding-right: 1em;
+}
+.right {
+  text-align: right;
+}
+
+
+table.header, table#rfc\.headerblock {
+  width: 100%;
+}
+table.header td, table#rfc\.headerblock td {
+  border: none;
+  background-color: transparent;
+  color: black;
+  padding: 0;
+}
+.filename {
+  display: block;
+  color: rgb(119, 119, 119);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 100%;
+  margin: 10px 0 32px;
+}
+#rfc\.abstract+p, #rfc\.abstract+p code, #rfc\.abstract+p samp, #rfc\.abstract+p tt {
+  font-size: 20px;
+  line-height: 28px;
+}
+
+samp, tt, code, pre, span.tt {
+  font-size: 13.5px;
+  font-family: Consolas, monospace;
+  font-size-adjust: none;
+}
+pre {
+  background-color: #eee;
+  border: 1px solid #ddd;
+  overflow-x: auto;
+  padding: 5px;
+  margin: 5px;
+}
+.figure, caption {
+  font-style: italic;
+  margin: 0 1.5em;
+  text-align: left;
+}
+
+address {
+  margin: 16px 2px;
+  line-height: 20px;
+}
+.vcard {
+  font-style: normal;
+}
+.vcardline {
+  display: block;
+}
+.vcardline .fn, address b {
+  font-weight: normal;
+}
+.vcardline .hidden {
+  display: none;
+}
+
+dl {
+  margin-left: 1em;
+}
+dl.dl-horizontal: {
+  margin-left: 0;
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.nohang > dt {
+  float: none;
+}
+dl > dd {
+  margin-bottom: .5em;
+}
+dl.compact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+ul.empty {
+  list-style-type: none;
+}
+ul.empty li {
+  margin-top: .5em;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+}
+hr.noprint {
+  display: none;
+}
+
+a {
+  text-decoration: none;
+}
+a[href] {
+  color: #2a6496;
+}
+a[href]:hover {
+  background-color: #eee;
+}
+
+p, ol, ul, li {
+  padding: 0;
+}
+p {
+  margin: 0.5em 0;
+}
+ol, ul {
+  margin: 0.2em 0 0.2em 2em;
+}
+li {
+  margin: 0.2em 0;
+}
+address {
+  font-style: normal;
+}
+
+ul.toc ul {
+  margin: 0 0 0 2em;
+}
+ul.toc li {
+  list-style: none;
+  margin: 0;
+}
+
+@media screen and (min-width: 924px) {
+  body {
+    padding-right: 350px;
+  }
+  body>ul.toc, body>#rfc\.toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 500px);
+    width: 300px;
+    z-index: 1;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  body>#rfc\.toc {
+    top: 55px;
+  }
+  body>ul.toc {
+    top: 100px;
+  }
+
+  ul.toc {
+    margin: 0 0 0 4px;
+    font-size: 12px;
+    line-height: 20px;
+  }
+  ul.toc ul {
+    margin-left: 1.2em;
+  }
+}
+
+.github-fork-ribbon-wrapper {
+  display: none;
+}
+@media screen and (min-width: 800px) {
+  /* "Fork me on GitHub" CSS ribbon based on
+   * https://github.com/simonwhitaker/github-fork-ribbon-css
+   */
+  .github-fork-ribbon {
+    position: absolute;
+    padding: 2px 0;
+    background-color: #a00;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
+    font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+    pointer-events: auto;
+
+    top: 38px;
+    right: -45px;
+
+    transform: rotate(45deg);
+  }
+
+  .github-fork-ribbon a[href],
+  .github-fork-ribbon a[href]:hover {
+    color: #fff;
+    background-color: transparent;
+    text-decoration: none;
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+
+    width: 190px;
+    line-height: 18px;
+
+    display: inline-block;
+    padding: 2px 0;
+
+    border: 1.5px dotted #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .github-fork-ribbon-wrapper {
+    display: block;
+    width: 130px;
+    height: 130px;
+    position: absolute;
+    overflow: hidden;
+    top: 0; right: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+@media screen and (min-width: 1000px) {
+  .github-fork-ribbon-wrapper {
+    position: fixed;
+  }
+  /*]]>*/</style>
+  <meta name="viewport" content="initial-scale=1.0">
+
+
+  <link href="#rfc.toc" rel="Contents">
+<link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
+<link href="#rfc.section.1.1" rel="Chapter" title="1.1 Introductory Example">
+<link href="#rfc.section.1.2" rel="Chapter" title="1.2 Goals of the HTTPSSVC RR">
+<link href="#rfc.section.1.3" rel="Chapter" title="1.3 Overview of the HTTPSSVC RR">
+<link href="#rfc.section.1.4" rel="Chapter" title="1.4 Additional Alt-Svc parameters">
+<link href="#rfc.section.1.5" rel="Chapter" title="1.5 Terminology">
+<link href="#rfc.section.2" rel="Chapter" title="2 The HTTPSSVC record type">
+<link href="#rfc.section.2.1" rel="Chapter" title="2.1 HTTPSSVC RDATA Wire Format">
+<link href="#rfc.section.2.2" rel="Chapter" title="2.2 RRNames">
+<link href="#rfc.section.2.3" rel="Chapter" title="2.3 SvcRecordType">
+<link href="#rfc.section.2.4" rel="Chapter" title="2.4 HTTPSSVC records: alias form">
+<link href="#rfc.section.2.5" rel="Chapter" title="2.5 HTTPSSVC records: alternative service form">
+<link href="#rfc.section.3" rel="Chapter" title="3 Differences from Alt-Svc as transmitted over HTTP">
+<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Omitting Max Age and Persist">
+<link href="#rfc.section.3.2" rel="Chapter" title="3.2 Multiple records and preference ordering">
+<link href="#rfc.section.3.3" rel="Chapter" title="3.3 Constructing Alt-Svc equivalent headers">
+<link href="#rfc.section.3.4" rel="Chapter" title="3.4 Granularity and lifetime control">
+<link href="#rfc.section.4" rel="Chapter" title="4 Client behaviors">
+<link href="#rfc.section.4.1" rel="Chapter" title="4.1 Client resolution">
+<link href="#rfc.section.4.2" rel="Chapter" title="4.2 HTTP Strict Transport Security">
+<link href="#rfc.section.4.3" rel="Chapter" title="4.3 Cache interaction">
+<link href="#rfc.section.5" rel="Chapter" title="5 DNS Server Behaviors">
+<link href="#rfc.section.6" rel="Chapter" title="6 Performance optimizations">
+<link href="#rfc.section.7" rel="Chapter" title="7 Extensions to enhance privacy">
+<link href="#rfc.section.7.1" rel="Chapter" title="7.1 Alt-Svc parameter for ESNI keys">
+<link href="#rfc.section.7.2" rel="Chapter" title="7.2 Interaction with other standards">
+<link href="#rfc.section.8" rel="Chapter" title="8 Security Considerations">
+<link href="#rfc.section.9" rel="Chapter" title="9 IANA Considerations">
+<link href="#rfc.section.10" rel="Chapter" title="10 Acknowledgements and Related Proposals">
+<link href="#rfc.references" rel="Chapter" title="11 References">
+<link href="#rfc.references.1" rel="Chapter" title="11.1 Normative References">
+<link href="#rfc.references.2" rel="Chapter" title="11.2 Informative References">
+<link href="#rfc.appendix.A" rel="Chapter" title="A Additional examples">
+<link href="#rfc.appendix.A.1" rel="Chapter" title="A.1 Equivalence to Alt-Svc records">
+<link href="#rfc.appendix.B" rel="Chapter" title="B Comparison with alternatives">
+<link href="#rfc.appendix.B.1" rel="Chapter" title="B.1 Differences from the SRV RRTYPE">
+<link href="#rfc.appendix.B.2" rel="Chapter" title="B.2 Differences from the proposed HTTP record">
+<link href="#rfc.appendix.B.3" rel="Chapter" title="B.3 Differences from the proposed ANAME record">
+<link href="#rfc.appendix.B.4" rel="Chapter" title="B.4 Differences from the proposed ESNI record">
+<link href="#rfc.appendix.B.5" rel="Chapter" title="B.5 SNI Alt-Svc parameter">
+<link href="#rfc.appendix.C" rel="Chapter" title="C Design Considerations and Open Issues">
+<link href="#rfc.appendix.C.1" rel="Chapter" title="C.1 Record Name">
+<link href="#rfc.appendix.C.2" rel="Chapter" title="C.2 Applicability to other schemes">
+<link href="#rfc.appendix.C.3" rel="Chapter" title="C.3 Wire Format">
+<link href="#rfc.appendix.C.4" rel="Chapter" title="C.4 Extensibility of SvcRecordType">
+<link href="#rfc.appendix.C.5" rel="Chapter" title="C.5 Where to include Priority">
+<link href="#rfc.appendix.C.6" rel="Chapter" title="C.6 Whether to include Weight">
+<link href="#rfc.appendix.D" rel="Chapter" title="D Change history">
+<link href="#rfc.authors" rel="Chapter">
+
+
+  <meta name="generator" content="xml2rfc version 2.22.2 - https://tools.ietf.org/tools/xml2rfc" />
+  <link rel="schema.dct" href="http://purl.org/dc/terms/" />
+
+  <meta name="dct.creator" content="Schwartz, B., Bishop, M., and E. Nygren" />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-nygren-httpbis-httpssvc-latest" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-08" />
+  <meta name="dct.abstract" content="This document specifies an &#8220;HTTPSSVC&#8221; DNS resource record type to facilitate the lookup of information needed to make connections for HTTPS URIs.  The HTTPSSVC DNS RR mechanism allows an HTTPS origin hostname to be served from multiple network services, each with associated parameters (such as transport protocol and keying material for encrypting TLS SNI).  It also provides a solution for the inability of the DNS to allow a CNAME to be placed at the apex of a domain name.  Finally, it provides a way to indicate that the origin supports HTTPS without having to resort to redirects, allowing clients to remove HTTP from the bootstrapping process.By allowing this information to be bootstrapped in the DNS, it allows for clients to learn of alternative services before their first contact with the origin.  This arrangement offers potential benefits to both performance and privacy.TO BE REMOVED: This proposal is inspired by and based on recent DNS usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long standing desires to have SRV or a functional equivalent implemented for HTTP).   These proposals each provide an important function but are potentially incompatible with each other, such as when an origin is load-balanced across multiple hosting providers (multi-CDN).  Furthermore, these each add potential cases for adding additional record lookups in-addition to AAAA/A lookups. This design attempts to provide a unified framework that encompasses the key functionality of these proposals, as well as providing some extensibility for addressing similar future challenges." />
+  <meta name="description" content="This document specifies an &#8220;HTTPSSVC&#8221; DNS resource record type to facilitate the lookup of information needed to make connections for HTTPS URIs.  The HTTPSSVC DNS RR mechanism allows an HTTPS origin hostname to be served from multiple network services, each with associated parameters (such as transport protocol and keying material for encrypting TLS SNI).  It also provides a solution for the inability of the DNS to allow a CNAME to be placed at the apex of a domain name.  Finally, it provides a way to indicate that the origin supports HTTPS without having to resort to redirects, allowing clients to remove HTTP from the bootstrapping process.By allowing this information to be bootstrapped in the DNS, it allows for clients to learn of alternative services before their first contact with the origin.  This arrangement offers potential benefits to both performance and privacy.TO BE REMOVED: This proposal is inspired by and based on recent DNS usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long standing desires to have SRV or a functional equivalent implemented for HTTP).   These proposals each provide an important function but are potentially incompatible with each other, such as when an origin is load-balanced across multiple hosting providers (multi-CDN).  Furthermore, these each add potential cases for adding additional record lookups in-addition to AAAA/A lookups. This design attempts to provide a unified framework that encompasses the key functionality of these proposals, as well as providing some extensibility for addressing similar future challenges." />
+
+</head>
+
+<body>
+
+  <table class="header">
+    <tbody>
+    
+    	<tr>
+<td class="left">HTTP Working Group</td>
+<td class="right">B. Schwartz</td>
+</tr>
+<tr>
+<td class="left">Internet-Draft</td>
+<td class="right">Google</td>
+</tr>
+<tr>
+<td class="left">Intended status: Standards Track</td>
+<td class="right">M. Bishop</td>
+</tr>
+<tr>
+<td class="left">Expires: January 9, 2020</td>
+<td class="right">E. Nygren</td>
+</tr>
+<tr>
+<td class="left"></td>
+<td class="right">Akamai Technologies</td>
+</tr>
+<tr>
+<td class="left"></td>
+<td class="right">July 8, 2019</td>
+</tr>
+
+    	
+    </tbody>
+  </table>
+
+  <p class="title">HTTPSSVC service location and parameter specification via the DNS (DNS HTTPSSVC)<br />
+  <span class="filename">draft-nygren-httpbis-httpssvc-latest</span></p>
+  
+  <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
+<p>This document specifies an &#8220;HTTPSSVC&#8221; DNS resource record type to facilitate the lookup of information needed to make connections for HTTPS URIs.  The HTTPSSVC DNS RR mechanism allows an HTTPS origin hostname to be served from multiple network services, each with associated parameters (such as transport protocol and keying material for encrypting TLS SNI).  It also provides a solution for the inability of the DNS to allow a CNAME to be placed at the apex of a domain name.  Finally, it provides a way to indicate that the origin supports HTTPS without having to resort to redirects, allowing clients to remove HTTP from the bootstrapping process.</p>
+<p>By allowing this information to be bootstrapped in the DNS, it allows for clients to learn of alternative services before their first contact with the origin.  This arrangement offers potential benefits to both performance and privacy.</p>
+<p>TO BE REMOVED: This proposal is inspired by and based on recent DNS usage proposals such as ALTSVC, ANAME, and ESNIKEYS (as well as long standing desires to have SRV or a functional equivalent implemented for HTTP).   These proposals each provide an important function but are potentially incompatible with each other, such as when an origin is load-balanced across multiple hosting providers (multi-CDN).  Furthermore, these each add potential cases for adding additional record lookups in-addition to AAAA/A lookups. This design attempts to provide a unified framework that encompasses the key functionality of these proposals, as well as providing some extensibility for addressing similar future challenges.</p>
+<h1 id="rfc.status"><a href="#rfc.status">Status of This Memo</a></h1>
+<p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
+<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
+<p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
+<p>This Internet-Draft will expire on January 9, 2020.</p>
+<h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
+<p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
+<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+
+  
+  <hr class="noprint" />
+  <h1 class="np" id="rfc.toc"><a href="#rfc.toc">Table of Contents</a></h1>
+  <ul class="toc">
+
+  	<li>1.   <a href="#rfc.section.1">Introduction</a>
+</li>
+<ul><li>1.1.   <a href="#rfc.section.1.1">Introductory Example</a>
+</li>
+<li>1.2.   <a href="#rfc.section.1.2">Goals of the HTTPSSVC RR</a>
+</li>
+<li>1.3.   <a href="#rfc.section.1.3">Overview of the HTTPSSVC RR</a>
+</li>
+<li>1.4.   <a href="#rfc.section.1.4">Additional Alt-Svc parameters</a>
+</li>
+<li>1.5.   <a href="#rfc.section.1.5">Terminology</a>
+</li>
+</ul><li>2.   <a href="#rfc.section.2">The HTTPSSVC record type</a>
+</li>
+<ul><li>2.1.   <a href="#rfc.section.2.1">HTTPSSVC RDATA Wire Format</a>
+</li>
+<li>2.2.   <a href="#rfc.section.2.2">RRNames</a>
+</li>
+<li>2.3.   <a href="#rfc.section.2.3">SvcRecordType</a>
+</li>
+<li>2.4.   <a href="#rfc.section.2.4">HTTPSSVC records: alias form</a>
+</li>
+<li>2.5.   <a href="#rfc.section.2.5">HTTPSSVC records: alternative service form</a>
+</li>
+</ul><li>3.   <a href="#rfc.section.3">Differences from Alt-Svc as transmitted over HTTP</a>
+</li>
+<ul><li>3.1.   <a href="#rfc.section.3.1">Omitting Max Age and Persist</a>
+</li>
+<li>3.2.   <a href="#rfc.section.3.2">Multiple records and preference ordering</a>
+</li>
+<li>3.3.   <a href="#rfc.section.3.3">Constructing Alt-Svc equivalent headers</a>
+</li>
+<li>3.4.   <a href="#rfc.section.3.4">Granularity and lifetime control</a>
+</li>
+</ul><li>4.   <a href="#rfc.section.4">Client behaviors</a>
+</li>
+<ul><li>4.1.   <a href="#rfc.section.4.1">Client resolution</a>
+</li>
+<li>4.2.   <a href="#rfc.section.4.2">HTTP Strict Transport Security</a>
+</li>
+<li>4.3.   <a href="#rfc.section.4.3">Cache interaction</a>
+</li>
+</ul><li>5.   <a href="#rfc.section.5">DNS Server Behaviors</a>
+</li>
+<li>6.   <a href="#rfc.section.6">Performance optimizations</a>
+</li>
+<li>7.   <a href="#rfc.section.7">Extensions to enhance privacy</a>
+</li>
+<ul><li>7.1.   <a href="#rfc.section.7.1">Alt-Svc parameter for ESNI keys</a>
+</li>
+<li>7.2.   <a href="#rfc.section.7.2">Interaction with other standards</a>
+</li>
+</ul><li>8.   <a href="#rfc.section.8">Security Considerations</a>
+</li>
+<li>9.   <a href="#rfc.section.9">IANA Considerations</a>
+</li>
+<li>10.   <a href="#rfc.section.10">Acknowledgements and Related Proposals</a>
+</li>
+<li>11.   <a href="#rfc.references">References</a>
+</li>
+<ul><li>11.1.   <a href="#rfc.references.1">Normative References</a>
+</li>
+<li>11.2.   <a href="#rfc.references.2">Informative References</a>
+</li>
+</ul><li>Appendix A.   <a href="#rfc.appendix.A">Additional examples</a>
+</li>
+<ul><li>A.1.   <a href="#rfc.appendix.A.1">Equivalence to Alt-Svc records</a>
+</li>
+</ul><li>Appendix B.   <a href="#rfc.appendix.B">Comparison with alternatives</a>
+</li>
+<ul><li>B.1.   <a href="#rfc.appendix.B.1">Differences from the SRV RRTYPE</a>
+</li>
+<li>B.2.   <a href="#rfc.appendix.B.2">Differences from the proposed HTTP record</a>
+</li>
+<li>B.3.   <a href="#rfc.appendix.B.3">Differences from the proposed ANAME record</a>
+</li>
+<li>B.4.   <a href="#rfc.appendix.B.4">Differences from the proposed ESNI record</a>
+</li>
+<li>B.5.   <a href="#rfc.appendix.B.5">SNI Alt-Svc parameter</a>
+</li>
+</ul><li>Appendix C.   <a href="#rfc.appendix.C">Design Considerations and Open Issues</a>
+</li>
+<ul><li>C.1.   <a href="#rfc.appendix.C.1">Record Name</a>
+</li>
+<li>C.2.   <a href="#rfc.appendix.C.2">Applicability to other schemes</a>
+</li>
+<li>C.3.   <a href="#rfc.appendix.C.3">Wire Format</a>
+</li>
+<li>C.4.   <a href="#rfc.appendix.C.4">Extensibility of SvcRecordType</a>
+</li>
+<li>C.5.   <a href="#rfc.appendix.C.5">Where to include Priority</a>
+</li>
+<li>C.6.   <a href="#rfc.appendix.C.6">Whether to include Weight</a>
+</li>
+</ul><li>Appendix D.   <a href="#rfc.appendix.D">Change history</a>
+</li>
+<li><a href="#rfc.authors">Authors' Addresses</a>
+</li>
+
+
+  </ul>
+
+  <h1 id="rfc.section.1">
+<a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
+</h1>
+<p id="rfc.section.1.p.1">The HTTPSSVC RR is intended to address a number of challenges facing HTTPS clients and services, while also providing an extensible model to handle similar use-cases without forcing clients to perform additional DNS lookups and without forcing them to first make connections to a default service for the origin.</p>
+<p id="rfc.section.1.p.2">When clients need to make a connection to fetch resources associated with an HTTPS URI, they must first resolve A and/or AAAA address resource records for the origin hostname.  This is adequate when clients default to TCP port 443, do not support Encrypted SNI <a href="#ESNI" class="xref">[ESNI]</a>, and where the origin service operator does not have a desire to put an CNAME at a zone apex (such as for &#8220;https://example.com&#8221;).  Handling situations beyond this within the DNS requires learning additional information, and it is highly desirable to minimize the number of round-trip and lookups required to learn this additional information.</p>
+<h1 id="rfc.section.1.1">
+<a href="#rfc.section.1.1">1.1.</a> <a href="#introductory-example" id="introductory-example">Introductory Example</a>
+</h1>
+<p id="rfc.section.1.1.p.1">As an introductory example, a set of example HTTPSSVC and associated A+AAAA records might be:</p>
+<pre>
+www.example.com.  2H  IN CNAME   svc.example.net.
+example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
+svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
+                                   esnikeys=\"...\""
+svc.example.net.  2H  IN HTTPSSVC 1 3 svc2.example.net. "h2=\":8002\"; \
+                                   esnikeys=\"...\""
+svc2.example.net. 300 IN A       192.0.2.2
+svc2.example.net. 300 IN AAAA    2001:db8::2
+svc3.example.net. 300 IN A       192.0.2.3
+svc3.example.net. 300 IN AAAA    2001:db8::3
+</pre>
+<p id="rfc.section.1.1.p.2">In the preceding example, both of the &#8220;example.com&#8221; and &#8220;www.example.com&#8221; origin names are aliased to use service endpoints offered as &#8220;svc.example.net&#8221; (with &#8220;www.example.com&#8221; continuing to use a CNAME alias).  HTTP/2 is available on a cluster of machines located at svc2.example.net with TCP port 8002 and HTTP/3 is available on a cluster of machines located at svc3.example.net with UDP port 8003.  An ESNI key is specified which allows the SNI values of &#8220;example.com&#8221; and &#8220;www.example.com&#8221; to be encrypted in the handshake with these service endpoints.  When connecting, clients will continue to treat the authoritative origins as &#8220;https://example.com&#8221; and &#8220;https://www.example.com&#8221;, respectively.</p>
+<h1 id="rfc.section.1.2">
+<a href="#rfc.section.1.2">1.2.</a> <a href="#goals-of-the-httpssvc-rr" id="goals-of-the-httpssvc-rr">Goals of the HTTPSSVC RR</a>
+</h1>
+<p id="rfc.section.1.2.p.1">The goal of the HTTSSVC RR is to allow clients to resolve a single additional DNS RR in a way that:</p>
+<p></p>
+
+<ul>
+<li>Provides service endpoints authoritative for an origin, along with parameters associated with each of these endpoints.  In particular: <ul>
+<li>to support connecting directly to <a href="#HTTP3" class="xref">[HTTP3]</a> (QUIC transport) service endpoints</li>
+<li>to obtain the <a href="#ESNI" class="xref">[ESNI]</a> keys associated with a service endpoint</li>
+</ul>
+</li>
+<li>Does not assume that all service endpoints have the same parameters (such as ESNI keys) or capabilities (such as <a href="#HTTP3" class="xref">[HTTP3]</a>) or are even operated by the same entity.  This is important as DNS does not provide any way to tie together multiple RRs for the same name.  For example, if www.example.com is a CNAME alias that switches between one of three CDNs or hosting enviroments, records (such as A and AAAA) for that name may have been sourced from different environments.</li>
+<li>Enables the functional equivalent of a CNAME at a zone apex (such as &#8220;example.com&#8221;) for HTTPS traffic, and generally enables delegation of operational authority for an HTTPS origin within the DNS to an alternate name.  This addresses a set of long-standing issues due to HTTP(S) clients not implementing support for SRV records, as well as due to a limitation that a DNS name can not have both a CNAME record as well as NS RRs (as is the case for zone apex names)</li>
+</ul>
+<h1 id="rfc.section.1.3">
+<a href="#rfc.section.1.3">1.3.</a> <a href="#overview-of-the-httpssvc-rr" id="overview-of-the-httpssvc-rr">Overview of the HTTPSSVC RR</a>
+</h1>
+<p id="rfc.section.1.3.p.1">This subsection briefly describes the HTTPSSVC RR in a non-normative manner.</p>
+<p id="rfc.section.1.3.p.2">The HTTPSSVC RR has four primary fields:</p>
+<p></p>
+
+<ol>
+<li>SvcRecordType: A numeric flag indicating how to interpret the subsequent fields.  When &#8220;0&#8221;, it indicates that the RR contains an alias.  When &#8220;1&#8221;, it indicates that the RR contains an alternative service definition.</li>
+<li>SvcFieldPriority: The priority of this record (relative to others, with lower values preferred).  Applicable when SvcRecordType is &#8220;1&#8221;, and otherwise has value &#8220;0&#8221;.  (Described in <a href="#pri" class="xref">Section 3.2</a>.)</li>
+<li>SvcDomainName: The domain name of either the alias target (when SvcRecordType is &#8220;0&#8221;) or the uri-host domain name of the alternative service endpoint (when SvcRecordType is &#8220;1&#8221;).</li>
+<li>SvcFieldValue: An Alternative Service field value describing the alternative service endpoint for the domain name specified in SvcDomainName (only when SvcRecordType is &#8220;1&#8221; and otherwise empty).</li>
+</ol>
+<p id="rfc.section.1.3.p.4">Cooperating DNS recursive resolvers will perform subsequent record resolution (for HTTPSSVC, A, and AAAA records) and return them in the Additional Section of the response.  Clients must either use responses included in the additional section returned by the recursive resolver or perform necessary HTTPSSVC, A, and AAAA record resolutions.  DNS authoritative servers may attach in-bailiwick HTTPSSVC, A, AAAA, and CNAME records in the Additional Section to responses for an HTTPSSVC query.</p>
+<p id="rfc.section.1.3.p.5">When SvcRecordType is &#8220;1&#8221;, the HTTPSSVC RR extends the concept introduced in the HTTP Alternative Services proposed standard <a href="#AltSvc" class="xref">[AltSvc]</a>.  Alt-Svc defines:</p>
+<p></p>
+
+<ul>
+<li>an extensible data model for describing alternative network endpoints that are authoritative for an origin</li>
+<li>the &#8220;Alt-Svc Field Value&#8221;, a text format for representing this information</li>
+<li>standards for sending information in this format from a server to a client over HTTP/1.1 and HTTP/2.</li>
+</ul>
+<p id="rfc.section.1.3.p.7">Together, these components provide a toolkit that has proven useful and effective for informing a client of alternative services for an origin.  However, making use of an alternative service requires contacting the origin server first.  This creates an obvious performance cost: users wait for a full HTTP connection initiation (multiple roundtrips) before learning of an alternative service that is preferred by the origin.  The first connection also publicly reveals the user&#8217;s intended destination to all entities along the network path.</p>
+<p id="rfc.section.1.3.p.8">The SvcFieldValue includes the Alt-Svc Field Value through the DNS.  This is in its standard text format, with the uri-host portion of the alt-authority component moved into the SvcDomainName field of the HTTPSSVC RR.  A client receiving this information during DNS resolution can skip the initial connection and proceed directly to an alternative service.</p>
+<h1 id="rfc.section.1.4">
+<a href="#rfc.section.1.4">1.4.</a> <a href="#additional-alt-svc-parameters" id="additional-alt-svc-parameters">Additional Alt-Svc parameters</a>
+</h1>
+<p id="rfc.section.1.4.p.1">This document also defines one additional Alt-Svc parameter that can be used within SvcFieldValue:</p>
+<p></p>
+
+<ul><li>esnikeys (<a href="#esnikeys" class="xref">Section 7.1</a>): The ESNIKeys structure from Section 4.1 of <a href="#ESNI" class="xref">[ESNI]</a> for use in encrypting the actual origin hostname in the TLS handshake.</li></ul>
+<h1 id="rfc.section.1.5">
+<a href="#rfc.section.1.5">1.5.</a> <a href="#terminology" id="terminology">Terminology</a>
+</h1>
+<p id="rfc.section.1.5.p.1">For consistency with <a href="#AltSvc" class="xref">[AltSvc]</a>, we adopt the following definitions:</p>
+<p></p>
+
+<ul>
+<li>An &#8220;origin&#8221; is an information source as in <a href="#RFC6454" class="xref">[RFC6454]</a>.</li>
+<li>The &#8220;origin server&#8221; is the server that the client would reach when accessing the origin in the absence of Alt-Svc.</li>
+<li>An &#8220;alternative service&#8221; is a different server that can serve the origin.</li>
+</ul>
+<p id="rfc.section.1.5.p.3">Abstractly, the origin consists of a scheme (typically &#8220;https&#8221;), a host name, and a port (typically &#8220;443&#8221;).</p>
+<p id="rfc.section.1.5.p.4">Additional DNS terminology intends to be consistent with <a href="#DNSTerm" class="xref">[DNSTerm]</a>.</p>
+<p id="rfc.section.1.5.p.5">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in BCP 14 <a href="#RFC2119" class="xref">[RFC2119]</a> <a href="#RFC8174" class="xref">[RFC8174]</a> when, and only when, they appear in all capitals, as shown here.</p>
+<h1 id="rfc.section.2">
+<a href="#rfc.section.2">2.</a> <a href="#the-httpssvc-record-type" id="the-httpssvc-record-type">The HTTPSSVC record type</a>
+</h1>
+<p id="rfc.section.2.p.1">The HTTPSSVC DNS resource record (RR) type (RRTYPE ???) is used to locate endpoints that can service an &#8220;https&#8221; origin.  The presentation format of the record is:</p>
+<p id="rfc.section.2.p.2">RRName TTL Class HTTPSSVC SvcRecordType SvcFieldPriority \ SvcDomainName SvcFieldValue</p>
+<p id="rfc.section.2.p.3">where SvcRecordType is a numeric value of either &#8220;0&#8221; or &#8220;1&#8221;, SvcFieldPriority is a number in the range 0-65535, SvcDomainName is a domain name, and SvcFieldValue is a string present when SvcRecordType is &#8220;1&#8221;.</p>
+<p id="rfc.section.2.p.4">The algorithm for resolving HTTPSSVC records and associated address records is specified in <a href="#resolution" class="xref">Section 4.1</a>.</p>
+<h1 id="rfc.section.2.1">
+<a href="#rfc.section.2.1">2.1.</a> <a href="#httpssvc-rdata-wire-format" id="httpssvc-rdata-wire-format">HTTPSSVC RDATA Wire Format</a>
+</h1>
+<p id="rfc.section.2.1.p.1">The RDATA for the HTTPSSVC RR consists of:</p>
+<p></p>
+
+<ul>
+<li>a 1 octet flag field for SvcRecordType, interpreted as an unsigned numeric value (0 to 255, with only values &#8220;0&#8221; and &#8220;1&#8221; defined here)</li>
+<li>a 2 octet field for SvcFieldPriority as an integer in network byte order. If SvcRecordType is &#8220;0&#8221;, SvcFieldPriority MUST be 0.</li>
+<li>the uncompressed SvcDomainName, represented as a sequence of length-prefixed labels as in Section 3.1 of <a href="#RFC1035" class="xref">[RFC1035]</a>.</li>
+<li>the SvcFieldValue byte string, consuming the remainder of the record (so smaller than 65535 octets and constrained by the RRDATA and DNS message sizes).</li>
+</ul>
+<p id="rfc.section.2.1.p.3">When SvcRecordType is &#8220;0&#8221;, the SvcFieldValue SHOULD be empty (&#8220;&#8221;) and clients MUST ignore the contents of non-empty SvcFieldValue fields.</p>
+<h1 id="rfc.section.2.2">
+<a href="#rfc.section.2.2">2.2.</a> <a href="#rrnames" id="rrnames">RRNames</a>
+</h1>
+<p id="rfc.section.2.2.p.1">In the case of the HTTPSSVC RR, an origin is translated into the RRName in the following manner:</p>
+<p></p>
+
+<ol>
+<li>If the scheme is &#8220;https&#8221; and the port is 443, then the RRName is equal to the origin host name.  Otherwise the RRName is represented by prefixing the port and scheme with &#8220;_&#8221;, then concatenating them with the host name, resulting in a domain name like &#8220;_8443._https.www.example.com.&#8221;.</li>
+<li>When a prior CNAME or HTTPSSVC record has aliased to an HTTPSSVC record, RRName shall be the name of the alias target.</li>
+</ol>
+<p id="rfc.section.2.2.p.3">Note that none of these forms alter the HTTPS origin or authority.  For example, clients MUST continue to validate TLS certificate hostnames based on the origin host.</p>
+<p id="rfc.section.2.2.p.4">As an example for schemes and ports other than &#8220;https&#8221; and port 443:</p>
+<pre>
+_8443._wss.api.example.com. 2H IN HTTPSSVC 0 0 svc4.example.net.
+svc4.example.net.  2H  IN HTTPSSVC 1 3 svc4.example.net. "h2=\":8004\"; \
+                                   esnikeys=\"...\""
+</pre>
+<p id="rfc.section.2.2.p.5">would indicate that &#8220;wss://api.example.com:8443&#8221; is aliased to use HTTP/2 service endpoints offered as &#8220;svc4.example.net&#8221; on port 8004.</p>
+<h1 id="rfc.section.2.3">
+<a href="#rfc.section.2.3">2.3.</a> <a href="#svcrecordtype" id="svcrecordtype">SvcRecordType</a>
+</h1>
+<p id="rfc.section.2.3.p.1">The SvcRecordType field is a numeric value defined to be either &#8220;0&#8221; or &#8220;1&#8221;. Within an HTTPSSVC RRSet, all RRs must have the same value for SvcRecordType.  Clients and recursive servers MUST ignore HTTPSSVC resource records with other SvcRecordType values. If an RRSet contains a record with type &#8220;0&#8221;, the client MUST ignore any records in the set with type &#8220;1&#8221;.</p>
+<p id="rfc.section.2.3.p.2">When SvcRecordType is &#8220;0&#8221;, the HTTPSSVC is defined to be in &#8220;alias form&#8221;.</p>
+<p id="rfc.section.2.3.p.3">When SvcRecordType is &#8220;1&#8221;, the HTTPSSVC is defined to be in &#8220;alternative service form&#8221;.</p>
+<h1 id="rfc.section.2.4">
+<a href="#rfc.section.2.4">2.4.</a> <a href="#httpssvc-records-alias-form" id="httpssvc-records-alias-form">HTTPSSVC records: alias form</a>
+</h1>
+<p id="rfc.section.2.4.p.1">When SvcRecordType is &#8220;0&#8221;, the HTTPSSVC record is to be treated similar to a CNAME alias pointing to the domain name specified in SvcDomainName.  HTTPSSVC RRSets MUST only have a single resource record in this form.  If multiple are present, clients or recursive resolvers SHOULD pick one non-determinstically.</p>
+<p id="rfc.section.2.4.p.2">The common use-case for this form of the HTTPSSVC record is as an alternative to CNAMEs at the zone apex where they are not allowed.  For example, if an operator of https://example.com wanted to point HTTPS requests to a service operating at svc.example.net, they would publish a record such as:</p>
+<pre>
+example.com. 3600 IN HTTPSSVC 0 0 svc.example.net.
+</pre>
+<p id="rfc.section.2.4.p.3">The SvcDomainName MUST point to a domain name that contains another HTTPSSVC record and/or address (AAAA and/or A) records.</p>
+<p id="rfc.section.2.4.p.4">Note that the RRName and the SvcDomainName MAY themselves be CNAMEs.  Clients and recursive resolvers MUST follow CNAMEs as normal.</p>
+<p id="rfc.section.2.4.p.5">Due to the risk of loops, clients and recursive resolvers MUST implement loop detection.  Chains of consecutive HTTPSSVC and CNAME records SHOULD be limited to (8?) prior to reaching terminal address records.</p>
+<p id="rfc.section.2.4.p.6">The SvcFieldValue in this form SHOULD be an empty string and clients MUST ignore its contents.</p>
+<p id="rfc.section.2.4.p.7">As legacy clients will not know to use this record, service operators will likely need to retain fallback AAAA and A records alongside this HTTPSSVC record, although in a common case the target of the HTTPSSVC record might have better performance, and therefore would be preferable for clients implementing this specification to use.</p>
+<h1 id="rfc.section.2.5">
+<a href="#rfc.section.2.5">2.5.</a> <a href="#httpssvc-records-alternative-service-form" id="httpssvc-records-alternative-service-form">HTTPSSVC records: alternative service form</a>
+</h1>
+<p id="rfc.section.2.5.p.1">When SvcRecordType is &#8220;1&#8221;, the combination of SvcDomainName and SvcFieldValue within each resource record associates an Alternative Service Field Value with an origin.</p>
+<p id="rfc.section.2.5.p.2">The SvcFieldValue of the HTTPSSVC resource record contains an Alt-Svc Field Value, exactly as defined in Section 4 of <a href="#AltSvc" class="xref">[AltSvc]</a>, but with the uri-host moved to the SvcDomainName field.</p>
+<p id="rfc.section.2.5.p.3">For example, if the operator of https://www.example.com intends to include an HTTP response header like</p>
+<pre>
+Alt-Svc: h3="svc.example.net:8003"; ma=3600, \
+         h2="svc.example.net:8002"; ma=3600
+</pre>
+<p id="rfc.section.2.5.p.4">they could also publish an HTTPSSVC DNS RRSet like</p>
+<pre>
+www.example.com. 3600 IN HTTPSSVC 1 2 svc.example.net. "h3=\":8003\""
+                         HTTPSSVC 1 3 svc.example.net. "h2=\":8002\""
+</pre>
+<p id="rfc.section.2.5.p.5">This data type can be represented as an Unknown RR as described in <a href="#RFC3597" class="xref">[RFC3597]</a>:</p>
+<pre>
+www.example.com. 3600 IN TYPE??? \\# TBD:WRITEME
+</pre>
+<p id="rfc.section.2.5.p.6">This construction is intended to be extensible in two ways.  First, any extensions that are made to the Alt-Svc format for transmission over HTTPS are also applicable here, unless expressly mentioned otherwise.</p>
+<p id="rfc.section.2.5.p.7">Second, by defining a way to map non-HTTPS schemes and non-default ports (<a href="#rrnames" class="xref">Section 2.2</a>), we provide a way for the HTTPSSVC to be used for them as needed.  However, by using the origin name for the RRName for scheme https and port 443 we allow HTTPSSVC records to be included at the end of CNAME chains for existing site implementations without requiring changes in the zone containing the origin.</p>
+<h1 id="rfc.section.3">
+<a href="#rfc.section.3">3.</a> <a href="#differences-from-alt-svc-as-transmitted-over-http" id="differences-from-alt-svc-as-transmitted-over-http">Differences from Alt-Svc as transmitted over HTTP</a>
+</h1>
+<p id="rfc.section.3.p.1">Publishing an alternative services form HTTPSSVC record in DNS is intended to be equivalent to transmitting this field value over HTTPS, and receiving an HTTPSSVC record is intended to be equivalent to receiving this field value over HTTPS.  However, there are some small differences in the intended client and server behavior.</p>
+<h1 id="rfc.section.3.1">
+<a href="#rfc.section.3.1">3.1.</a> <a href="#omitting-max-age-and-persist" id="omitting-max-age-and-persist">Omitting Max Age and Persist</a>
+</h1>
+<p id="rfc.section.3.1.p.1">When publishing an HTTPSSVC record in DNS, server operators MUST omit the &#8220;ma&#8221; parameter, which encodes the &#8220;max age&#8221; (i.e. expiration time) of an Alt-Svc Field Value.  Instead, server operators SHOULD encode the expiration time in the DNS TTL, and MUST NOT set a TTL longer than the intended &#8220;max age&#8221;.</p>
+<p id="rfc.section.3.1.p.2">When receiving an HTTPSSVC record, clients SHOULD synthesize a new &#8220;ma&#8221; parameter from the DNS TTL if the resulting alt-value is being passed to a subsystem that might employ caching.</p>
+<p id="rfc.section.3.1.p.3">When publishing an HTTPSSVC record, server operators MUST omit the &#8220;persist&#8221; parameter, which indicates whether the client should use this record on other network paths.  When receiving an HTTPSSVC record, clients MUST discard any records that contain a &#8220;persist&#8221; flag.  Disabling persistence is important to prevent a local adversary in one network from implanting a forged DNS record that allows them to track users or hinder their connections after they leave that network.</p>
+<h1 id="rfc.section.3.2">
+<a href="#rfc.section.3.2">3.2.</a> <a href="#pri" id="pri">Multiple records and preference ordering</a>
+</h1>
+<p id="rfc.section.3.2.p.1">Server operators MAY publish multiple SvcRecordType &#8220;1&#8221; HTTPSSVC records as an RRSET.  When converting a collection of alt-values into an HTTPSSVC RRSET, the server operator MUST set the overall TTL to a value no larger than the minimum of the &#8220;max age&#8221; values (following Section 5.2 of <a href="#RFC2181" class="xref">[RFC2181]</a>).</p>
+<p id="rfc.section.3.2.p.2">Each RR MUST contain exactly one alt-value, as described in Section 3 of <a href="#AltSvc" class="xref">[AltSvc]</a>.</p>
+<p id="rfc.section.3.2.p.3">As RRs within an RRSET are explicitly unordered collections, the SvcFieldPriority value is introduced to indicate priority.  HTTPSSVC RRs with a smaller SvcFieldPriority value SHOULD be given preference over RRs with a larger SvcFieldPriority value.</p>
+<p id="rfc.section.3.2.p.4">Alt-values received via HTTPS are preferred over any Alt-value received via DNS.</p>
+<p id="rfc.section.3.2.p.5">When receiving an RRSET containing multiple HTTPSSVC records with the same SvcFieldPriority value, clients SHOULD apply a random shuffle within a priority level to the records before using them, to ensure randomized load-balancing.</p>
+<h1 id="rfc.section.3.3">
+<a href="#rfc.section.3.3">3.3.</a> <a href="#constructing-alt-svc-equivalent-headers" id="constructing-alt-svc-equivalent-headers">Constructing Alt-Svc equivalent headers</a>
+</h1>
+<p id="rfc.section.3.3.p.1">For a client to construct the equivalent of an Alt-Svc HTTP response header:</p>
+<p></p>
+
+<ol>
+<li>For each RR, the SvcDomainName MUST be inserted as the uri-host.  If SvcDomainName is has the value &#8220;.&#8221; then the RRNAME for the final HTTPSSVC record MUST be inserted as the uri-host.  (In the case of a CNAME or a HTTPSSVC SvcRecordType &#8220;0&#8221; record pointing to an HTTPSSVC record with SvcRecordType &#8220;1&#8221; and SvcDomainName &#8220;.&#8221; then it is the RRNAME for the terminal HTTPSSVC record that must be inserted as the uri-host.)</li>
+<li>The RRs SHOULD be ordered by increasing SvcFieldPriority, with shuffling for equal SvcFieldPriority values.  Clients MAY choose to further prioritize alt-values where address records are immediately available for the alt-value&#8217;s SvcDomainName.</li>
+<li>The client SHOULD concatenate the thus-transformed-and-ordered SvcFieldValues in the RRSET, separated by commas.  (This is semantically equivalent to receiving multiple Alt-Svc HTTP response headers, according to Section 3.2.2 of <a href="#HTTP" class="xref">[HTTP]</a>).</li>
+</ol>
+<h1 id="rfc.section.3.4">
+<a href="#rfc.section.3.4">3.4.</a> <a href="#granularity-and-lifetime-control" id="granularity-and-lifetime-control">Granularity and lifetime control</a>
+</h1>
+<p id="rfc.section.3.4.p.1">Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc Field Value specifically to the client.  When using an HTTPSSVC DNS record, groups of clients will necessarily receive the same Alt-Svc Field Value.  Therefore, this standard is not suitable for uses that require single-client granularity in Alt-Svc.</p>
+<p id="rfc.section.3.4.p.2">Some DNS caching systems incorrectly extend the lifetime of DNS records beyond the stated TTL.  Server operators MUST NOT rely on HTTPSSVC records expiring on time, and MAY shorten the TTL to compensate.</p>
+<h1 id="rfc.section.4">
+<a href="#rfc.section.4">4.</a> <a href="#client-behaviors" id="client-behaviors">Client behaviors</a>
+</h1>
+<h1 id="rfc.section.4.1">
+<a href="#rfc.section.4.1">4.1.</a> <a href="#resolution" id="resolution">Client resolution</a>
+</h1>
+<p id="rfc.section.4.1.p.1">When attempting to resolve a name HOST, clients should follow in-order:</p>
+<p></p>
+
+<ol>
+<li>Issue parallel AAAA/A and HTTPSSVC queries for the name HOST.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.</li>
+<li>If an HTTPSSVC record of SvcRecordType &#8220;0&#8221; is returned for HOST, clients should loop back to step 1 replacing HOST with SvcDomainName, subject to loop detection heuristics.</li>
+<li>If one or more HTTPSSVC record of SvcRecordType &#8220;1&#8221; is returned for HOST, clients should synthesize equivalent Alt-Svc Field Values based on the SvcDomainName and SvcFieldValue.  If one of these alt-values is selected to be used in a connection, the client will need to resolve AAAA and/or A records for SvcDomainName.</li>
+<li>If only AAAA and/or A records are present for HOST (and no HTTPSSVC), clients should make a connection to one of the IP addresses contained in these records and proceed normally.</li>
+</ol>
+<p id="rfc.section.4.1.p.3">When selecting between AAAA and A records to use, clients may use an approach such as <a href="#HappyEyeballsV2" class="xref">[HappyEyeballsV2]</a></p>
+<p id="rfc.section.4.1.p.4">Some possible optimizations are discussed in <a href="#optimizations" class="xref">Section 6</a> to reduce latency impact in comparison to ordinary AAAA/A lookups.</p>
+<h1 id="rfc.section.4.2">
+<a href="#rfc.section.4.2">4.2.</a> <a href="#http-strict-transport-security" id="http-strict-transport-security">HTTP Strict Transport Security</a>
+</h1>
+<p id="rfc.section.4.2.p.1">By publishing an HTTPSSVC record, the server operator indicates that all useful HTTP resources on that origin are reachable over HTTPS, similar to HTTP Strict Transport Security <a href="#HSTS" class="xref">[HSTS]</a>.  When an HTTPSSVC record is present for an origin, all &#8220;http&#8221; scheme requests for that origin SHOULD logically be redirected to &#8220;https&#8221;.</p>
+<p id="rfc.section.4.2.p.2">Prior to making an &#8220;http&#8221; scheme request, the client SHOULD perform a lookup to determine if an HTTPSSVC record is available for that origin.  To do so, the client SHOULD construct a corresponding &#8220;https&#8221; URL as follows:</p>
+<p></p>
+
+<ol>
+<li>Replace the &#8220;http&#8221; scheme with &#8220;https&#8221;.</li>
+<li>If the &#8220;http&#8221; URL explicitly specifies port 80, specify port 443.</li>
+<li>Do not alter any other aspect of the URL.</li>
+</ol>
+<p id="rfc.section.4.2.p.4">This construction is equivalent to Section 8.3 of <a href="#HSTS" class="xref">[HSTS]</a> , point 5.</p>
+<p id="rfc.section.4.2.p.5">If an HTTPSSVC record is present for this &#8220;https&#8221; URL, the client should treat this as the equivalent of receiving an HTTP &#8220;302 Found&#8221; redirect to the &#8220;https&#8221; URL.  Because HTTPSSVC is received over an often insecure channel (DNS), clients MUST NOT place any more trust in this signal than if they had received a 302 redirect over cleartext HTTP.</p>
+<p id="rfc.section.4.2.p.6">If the HTTPSSVC query results in a SERVFAIL error, and the connection between the client and the recursive resolver is cryptographically protected (e.g. using TLS <a href="#RFC7858" class="xref">[RFC7858]</a> or HTTPS <a href="#RFC8484" class="xref">[RFC8484]</a>), the client SHOULD abandon the connection attempt and display an error message.  A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive resolver is DNSSEC-validating, and an active attacker between the recursive resolver and the authoritative DNS server is attempting to prevent the upgrade to HTTPS.</p>
+<p id="rfc.section.4.2.p.7">Similarly, if the client enforces DNSSEC validation on A/AAAA RRs, it SHOULD abandon the connection attempt if the HTTPSSVC RR fails to validate.</p>
+<h1 id="rfc.section.4.3">
+<a href="#rfc.section.4.3">4.3.</a> <a href="#cache-interaction" id="cache-interaction">Cache interaction</a>
+</h1>
+<p id="rfc.section.4.3.p.1">If the client has an Alt-Svc cache, and a usable Alt-Svc value is present in that cache, then the client SHOULD NOT issue an HTTPSSVC DNS query.  Instead, the client SHOULD proceed with alternative service connection as usual.</p>
+<p id="rfc.section.4.3.p.2">If the client has a cached Alt-Svc entry that is expiring, the client MAY perform an HTTPSSVC query to refresh the entry.</p>
+<h1 id="rfc.section.5">
+<a href="#rfc.section.5">5.</a> <a href="#dns-server-behaviors" id="dns-server-behaviors">DNS Server Behaviors</a>
+</h1>
+<p id="rfc.section.5.p.1">Recursive DNS servers SHOULD resolve SvcDomainName records and include them in the Additional Section (along with any relevant CNAME records).  For SvcRecordType=0, recursive DNS servers SHOULD attempt to resolve and include A, AAAA, and HTTPSSVC records.  For SvcRecordType=1, recursive DNS servers SHOULD attempt to resolve and include A and AAAA records.</p>
+<p id="rfc.section.5.p.2">Authoritative DNS servers SHOULD return A, AAAA, and HTTPSSVC records (as well as any relevant CNAME records) in the Additional Section for any in-bailiwick SvcDomainNames.</p>
+<h1 id="rfc.section.6">
+<a href="#rfc.section.6">6.</a> <a href="#optimizations" id="optimizations">Performance optimizations</a>
+</h1>
+<p id="rfc.section.6.p.1">For optimal performance (i.e. minimum connection setup time), clients SHOULD issue address (AAAA and/or A) and HTTPSSVC queries simultaneously, and SHOULD implement a client-side DNS cache.  With these optimizations in place, and conforming DNS servers, using HTTPSSVC does not add network latency to connection setup.</p>
+<p id="rfc.section.6.p.2">A nonconforming recursive resolver might return an HTTPSSVC response with a nonempty SvcDomainName, without the corresponding address records.  If all the HTTPSSVC RRs in the response have nonempty SvcDomainName values, and the client does not have address records for any of these values in its DNS cache, the client SHOULD perform an additional address query for the selected SvcDomainName.</p>
+<p id="rfc.section.6.p.3">The additional DNS query in this case introduces a delay.  To avoid causing a delay for clients using a nonconforming recursive resolver, domain owners SHOULD choose the SvcDomainName to be a name in the origin hostname&#8217;s CNAME chain if possible.  This will ensure that the required address records are already present in the client&#8217;s DNS cache as part of the responses to the address queries that were issued in parallel.</p>
+<p id="rfc.section.6.p.4">Highly performance-sensitive clients MAY implement the following special- case shortcut to avoid increased connection time: if (1) one of the HTTPSSVC records returned has SvcRecordType=0, (2) its SvcDomainName is not in the DNS cache, and (3) the address queries for the origin domain return usable IP addresses, then the client MAY ignore the HTTPSSVC records and connect directly to the origin domain.  When the SvcDomainNames and any needed HTTPSSVC records are available, the client SHOULD make subsequent requests over connections specified by the HTTPSSVC records.</p>
+<p id="rfc.section.6.p.5">Server operators can therefore expect that publishing HTTPSSVC records with SvcRecordType=0 should not cause an additional DNS query for performance-sensitive clients.  Server operators who wish to prevent this optimization should use SvcRecordType=1.</p>
+<h1 id="rfc.section.7">
+<a href="#rfc.section.7">7.</a> <a href="#extensions-to-enhance-privacy" id="extensions-to-enhance-privacy">Extensions to enhance privacy</a>
+</h1>
+<h1 id="rfc.section.7.1">
+<a href="#rfc.section.7.1">7.1.</a> <a href="#esnikeys" id="esnikeys">Alt-Svc parameter for ESNI keys</a>
+</h1>
+<p id="rfc.section.7.1.p.1">An Alt-Svc &#8220;esnikeys&#8221; parameter is defined for specifying ESNI keys corresponding to an alternative service.  The value of the parameter is an ESNIKeys structure <a href="#ESNI" class="xref">[ESNI]</a> encoded in <a href="#base64" class="xref">[base64]</a>, or the empty string.  ESNI-aware clients SHOULD prefer alt-values with nonempty esnikeys.</p>
+<p id="rfc.section.7.1.p.2">This parameter MAY also be sent in Alt-Svc HTTP response headers and HTTP/2 ALTSVC frames.</p>
+<p id="rfc.section.7.1.p.3">The Alt-Svc specification states that &#8220;the client MAY fall back to using the origin&#8221; in case of connection failure <a href="#AltSvc" class="xref">[AltSvc]</a>.  This behavior is not suitable for ESNI, because fallback would negate the privacy benefits of ESNI.</p>
+<p id="rfc.section.7.1.p.4">Accordingly, any connection attempt that uses ESNI MUST fall back only to another alt-value that also has the esnikeys parameter.  If the parameter&#8217;s value is the empty string, the client SHOULD connect as it would in the absence of any ESNIKeys information.</p>
+<p id="rfc.section.7.1.p.5">For example, suppose a server operator has two alternatives.  Alternative A is reliably accessible but does not support ESNI.  Alternative B supports ESNI but is not reliably accessible.  The server operator could include a full esnikeys value in Alternative B, and mark Alternative A with esnikeys=&#8221;&#8221; to indicate that fallback from B to A is allowed.</p>
+<h1 id="rfc.section.7.2">
+<a href="#rfc.section.7.2">7.2.</a> <a href="#interaction-with-other-standards" id="interaction-with-other-standards">Interaction with other standards</a>
+</h1>
+<p id="rfc.section.7.2.p.1">The purpose of this standard is to reduce connection latency and improve user privacy.  Server operators implementing this standard SHOULD also implement TLS 1.3 <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a> and OCSP Stapling <a href="#RFC6066" class="xref">[RFC6066]</a>, both of which confer substantial performance and privacy benefits when used in combination with HTTPSSVC records.</p>
+<p id="rfc.section.7.2.p.2">To realize the greatest privacy benefits, this proposal is intended for use with a privacy-preserving DNS transport (like DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a> or DNS over HTTPS <a href="#RFC8484" class="xref">[RFC8484]</a>).  However, performance improvements, and some modest privacy improvements, are possible without the use of those standards.</p>
+<p id="rfc.section.7.2.p.3">This RRType could be extended to support schemes other than &#8220;https&#8221;.  Any such scheme MUST have an entry under the HTTPSSVC RRType in the IANA DNS Underscore Global Scoped Entry Registry <a href="#Attrleaf" class="xref">[Attrleaf]</a> The scheme SHOULD have an entry in the IANA URI Schemes Registry <a href="#RFC7595" class="xref">[RFC7595]</a>.  The scheme SHOULD be one for which Alt-Svc is defined.</p>
+<h1 id="rfc.section.8">
+<a href="#rfc.section.8">8.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
+</h1>
+<p id="rfc.section.8.p.1">Alt-Svc Field Values are intended for distribution over untrusted channels, and clients are REQUIRED to verify that the alternative service is authoritative for the origin (Section 2.1 of <a href="#AltSvc" class="xref">[AltSvc]</a>).  Therefore, DNSSEC signing and validation are OPTIONAL for publishing and using HTTPSSVC records.</p>
+<p id="rfc.section.8.p.2">TBD: expand this section in more detail.  In particular: * Just as with <a href="#AltSvc" class="xref">[AltSvc]</a>, clients must validate the TLS server certificate against hostname associated with the origin.  Clients MUST NOT use the SvcDomainName as any part of the server TLS certificate validation.  * &#8230;</p>
+<h1 id="rfc.section.9">
+<a href="#rfc.section.9">9.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
+</h1>
+<p id="rfc.section.9.p.1">Per <a href="#RFC6895" class="xref">[RFC6895]</a>, please add the following entry to the data type range of the Resource Record (RR) TYPEs registry:</p>
+<table cellpadding="3" cellspacing="0" class="tt full center">
+<thead><tr>
+<th class="left">TYPE</th>
+<th class="left">Meaning</th>
+<th class="left">Reference</th>
+</tr></thead>
+<tbody><tr>
+<td class="left">HTTPSSVC</td>
+<td class="left">HTTPS Service Location</td>
+<td class="left">(This document)</td>
+</tr></tbody>
+</table>
+<p id="rfc.section.9.p.2">Per <a href="#Attrleaf" class="xref">[Attrleaf]</a>, please add the following entries to the DNS Underscore Global Scoped Entry Registry:</p>
+<table cellpadding="3" cellspacing="0" class="tt full center">
+<thead><tr>
+<th class="left">RR TYPE</th>
+<th class="left">_NODE NAME</th>
+<th class="left">Meaning</th>
+<th class="left">Reference</th>
+</tr></thead>
+<tbody><tr>
+<td class="left">HTTPSSVC</td>
+<td class="left">_https</td>
+<td class="left">Alt-Svc for HTTPS</td>
+<td class="left">(This document)</td>
+</tr></tbody>
+</table>
+<p id="rfc.section.9.p.3">Per <a href="#AltSvc" class="xref">[AltSvc]</a>, please add the following entries to the HTTP Alt-Svc Parameter Registry:</p>
+<table cellpadding="3" cellspacing="0" class="tt full center">
+<thead><tr>
+<th class="left">Alt-Svc Parameter</th>
+<th class="left">Meaning</th>
+<th class="left">Reference</th>
+</tr></thead>
+<tbody><tr>
+<td class="left">esnikeys</td>
+<td class="left">Encrypted SNI keys</td>
+<td class="left">(This document)</td>
+</tr></tbody>
+</table>
+<h1 id="rfc.section.10">
+<a href="#rfc.section.10">10.</a> <a href="#acknowledgements-and-related-proposals" id="acknowledgements-and-related-proposals">Acknowledgements and Related Proposals</a>
+</h1>
+<p id="rfc.section.10.p.1">There have been a wide range of proposed solutions over the years to the &#8220;CNAME at the Zone Apex&#8221; challenge proposed.  These include <a href="#I-D.draft-bellis-dnsop-http-record-00" class="xref">[I-D.draft-bellis-dnsop-http-record-00]</a>, <a href="#I-D.draft-ietf-dnsop-aname-03" class="xref">[I-D.draft-ietf-dnsop-aname-03]</a>, and others.</p>
+<p id="rfc.section.10.p.2">Thank you to Ian Swett, Ralf Weber, Jon Reed, Martin Thompson, Lucas Pardue, Ilari Liusvaara, and others for their feedback and suggestions on this draft.</p>
+<h1 id="rfc.references">
+<a href="#rfc.references">11.</a> References</h1>
+<h1 id="rfc.references.1">
+<a href="#rfc.references.1">11.1.</a> Normative References</h1>
+<table><tbody>
+<tr>
+<td class="reference"><b id="AltSvc">[AltSvc]</b></td>
+<td class="top">
+<a>Nottingham, M.</a>, <a>McManus, P.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7838">HTTP Alternative Services</a>", RFC 7838, DOI 10.17487/RFC7838, April 2016.</td>
+</tr>
+<tr>
+<td class="reference"><b id="AltSvcSNI">[AltSvcSNI]</b></td>
+<td class="top">
+<a>Bishop, M.</a>, "<a href="https://tools.ietf.org/html/draft-bishop-httpbis-sni-altsvc-02">The "SNI" Alt-Svc Parameter</a>", Internet-Draft draft-bishop-httpbis-sni-altsvc-02, May 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="Attrleaf">[Attrleaf]</b></td>
+<td class="top">
+<a>Crocker, D.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dnsop-attrleaf-16">DNS Scoped Data Through "Underscore" Naming of Attribute Leaves</a>", Internet-Draft draft-ietf-dnsop-attrleaf-16, November 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="base64">[base64]</b></td>
+<td class="top">
+<a>Josefsson, S.</a>, "<a href="https://tools.ietf.org/html/rfc4648">The Base16, Base32, and Base64 Data Encodings</a>", RFC 4648, DOI 10.17487/RFC4648, October 2006.</td>
+</tr>
+<tr>
+<td class="reference"><b id="ESNI">[ESNI]</b></td>
+<td class="top">
+<a>Rescorla, E.</a>, <a>Oku, K.</a>, <a>Sullivan, N.</a> and <a>C. Wood</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-esni-03">Encrypted Server Name Indication for TLS 1.3</a>", Internet-Draft draft-ietf-tls-esni-03, March 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="HappyEyeballsV2">[HappyEyeballsV2]</b></td>
+<td class="top">
+<a>Schinazi, D.</a> and <a>T. Pauly</a>, "<a href="https://tools.ietf.org/html/rfc8305">Happy Eyeballs Version 2: Better Connectivity Using Concurrency</a>", RFC 8305, DOI 10.17487/RFC8305, December 2017.</td>
+</tr>
+<tr>
+<td class="reference"><b id="HSTS">[HSTS]</b></td>
+<td class="top">
+<a>Hodges, J.</a>, <a>Jackson, C.</a> and <a>A. Barth</a>, "<a href="https://tools.ietf.org/html/rfc6797">HTTP Strict Transport Security (HSTS)</a>", RFC 6797, DOI 10.17487/RFC6797, November 2012.</td>
+</tr>
+<tr>
+<td class="reference"><b id="HTTP3">[HTTP3]</b></td>
+<td class="top">
+<a>Bishop, M.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-quic-http-20">Hypertext Transfer Protocol Version 3 (HTTP/3)</a>", Internet-Draft draft-ietf-quic-http-20, April 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</b></td>
+<td class="top">
+<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-tls13-28">The Transport Layer Security (TLS) Protocol Version 1.3</a>", Internet-Draft draft-ietf-tls-tls13-28, March 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC1035">[RFC1035]</b></td>
+<td class="top">
+<a>Mockapetris, P.</a>, "<a href="https://tools.ietf.org/html/rfc1035">Domain names - implementation and specification</a>", STD 13, RFC 1035, DOI 10.17487/RFC1035, November 1987.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC2119">[RFC2119]</b></td>
+<td class="top">
+<a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC2181">[RFC2181]</b></td>
+<td class="top">
+<a>Elz, R.</a> and <a>R. Bush</a>, "<a href="https://tools.ietf.org/html/rfc2181">Clarifications to the DNS Specification</a>", RFC 2181, DOI 10.17487/RFC2181, July 1997.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC3597">[RFC3597]</b></td>
+<td class="top">
+<a>Gustafsson, A.</a>, "<a href="https://tools.ietf.org/html/rfc3597">Handling of Unknown DNS Resource Record (RR) Types</a>", RFC 3597, DOI 10.17487/RFC3597, September 2003.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6066">[RFC6066]</b></td>
+<td class="top">
+<a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6066">Transport Layer Security (TLS) Extensions: Extension Definitions</a>", RFC 6066, DOI 10.17487/RFC6066, January 2011.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6454">[RFC6454]</b></td>
+<td class="top">
+<a>Barth, A.</a>, "<a href="https://tools.ietf.org/html/rfc6454">The Web Origin Concept</a>", RFC 6454, DOI 10.17487/RFC6454, December 2011.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7595">[RFC7595]</b></td>
+<td class="top">
+<a>Thaler, D.</a>, <a>Hansen, T.</a> and <a>T. Hardie</a>, "<a href="https://tools.ietf.org/html/rfc7595">Guidelines and Registration Procedures for URI Schemes</a>", BCP 35, RFC 7595, DOI 10.17487/RFC7595, June 2015.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7858">[RFC7858]</b></td>
+<td class="top">
+<a>Hu, Z.</a>, <a>Zhu, L.</a>, <a>Heidemann, J.</a>, <a>Mankin, A.</a>, <a>Wessels, D.</a> and <a>P. Hoffman</a>, "<a href="https://tools.ietf.org/html/rfc7858">Specification for DNS over Transport Layer Security (TLS)</a>", RFC 7858, DOI 10.17487/RFC7858, May 2016.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8174">[RFC8174]</b></td>
+<td class="top">
+<a>Leiba, B.</a>, "<a href="https://tools.ietf.org/html/rfc8174">Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</a>", BCP 14, RFC 8174, DOI 10.17487/RFC8174, May 2017.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8484">[RFC8484]</b></td>
+<td class="top">
+<a>Hoffman, P.</a> and <a>P. McManus</a>, "<a href="https://tools.ietf.org/html/rfc8484">DNS Queries over HTTPS (DoH)</a>", RFC 8484, DOI 10.17487/RFC8484, October 2018.</td>
+</tr>
+</tbody></table>
+<h1 id="rfc.references.2">
+<a href="#rfc.references.2">11.2.</a> Informative References</h1>
+<table><tbody>
+<tr>
+<td class="reference"><b id="DNSTerm">[DNSTerm]</b></td>
+<td class="top">
+<a>Hoffman, P.</a>, <a>Sullivan, A.</a> and <a>K. Fujiwara</a>, "<a href="https://tools.ietf.org/html/rfc8499">DNS Terminology</a>", BCP 219, RFC 8499, DOI 10.17487/RFC8499, January 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="HTTP">[HTTP]</b></td>
+<td class="top">
+<a>Fielding, R.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7230">Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing</a>", RFC 7230, DOI 10.17487/RFC7230, June 2014.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.draft-bellis-dnsop-http-record-00">[I-D.draft-bellis-dnsop-http-record-00]</b></td>
+<td class="top">
+<a>Bellis, R.</a>, "<a href="https://tools.ietf.org/html/draft-bellis-dnsop-http-record-00">A DNS Resource Record for HTTP</a>", Internet-Draft draft-bellis-dnsop-http-record-00, November 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.draft-ietf-dnsop-aname-03">[I-D.draft-ietf-dnsop-aname-03]</b></td>
+<td class="top">
+<a>Finch, T.</a>, <a>Hunt, E.</a>, <a>Dijk, P.</a>, <a>Eden, A.</a> and <a>W. Mekking</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dnsop-aname-03">Address-specific DNS aliases (ANAME)</a>", Internet-Draft draft-ietf-dnsop-aname-03, April 2019.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC2782">[RFC2782]</b></td>
+<td class="top">
+<a>Gulbrandsen, A.</a>, <a>Vixie, P.</a> and <a>L. Esibov</a>, "<a href="https://tools.ietf.org/html/rfc2782">A DNS RR for specifying the location of services (DNS SRV)</a>", RFC 2782, DOI 10.17487/RFC2782, February 2000.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6895">[RFC6895]</b></td>
+<td class="top">
+<a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6895">Domain Name System (DNS) IANA Considerations</a>", BCP 42, RFC 6895, DOI 10.17487/RFC6895, April 2013.</td>
+</tr>
+</tbody></table>
+<h1 id="rfc.appendix.A">
+<a href="#rfc.appendix.A">Appendix A.</a> <a href="#additional-examples" id="additional-examples">Additional examples</a>
+</h1>
+<h1 id="rfc.appendix.A.1">
+<a href="#rfc.appendix.A.1">A.1.</a> <a href="#equivalence-to-alt-svc-records" id="equivalence-to-alt-svc-records">Equivalence to Alt-Svc records</a>
+</h1>
+<p id="rfc.section.A.1.p.1">The following:</p>
+<pre>
+www.example.com.  2H  IN CNAME   svc.example.net.
+example.com.      2H  IN HTTPSSVC 0 0 svc.example.net.
+svc.example.net.  2H  IN HTTPSSVC 1 2 svc3.example.net. "h3=\":8003\"; \
+                                   esnikeys=\"ABC...\""
+svc.example.net.  2H  IN HTTPSSVC 1 3 . "h2=\":8002\"; \
+                                   esnikeys=\"123...\""
+</pre>
+<p id="rfc.section.A.1.p.2">is equivalent to the Alt-Svc record:</p>
+<pre>
+Alt-Svc: h3="svc3.example.net:8003"; esnikeys="ABC..."; ma=7200, \
+         h2="svc.example.net:8002"; esnikeys="123..."; ma=7200
+</pre>
+<p id="rfc.section.A.1.p.3">for the origins of both &#8220;https://www.example.com&#8221; and &#8220;https://example.com&#8221;.</p>
+<h1 id="rfc.appendix.B">
+<a href="#rfc.appendix.B">Appendix B.</a> <a href="#comparison-with-alternatives" id="comparison-with-alternatives">Comparison with alternatives</a>
+</h1>
+<p id="rfc.section.B.p.1">The HTTPSSVC record type closely resembles some existing record types and proposals.  A complaint with all of the alternatives is that web clients have seemed unenthusiastic about implementing them.  The hope here is that by providing an extensible solution that solves multiple problems we will overcome the inertia and have a path to achieve client implementation.</p>
+<h1 id="rfc.appendix.B.1">
+<a href="#rfc.appendix.B.1">B.1.</a> <a href="#differences-from-the-srv-rrtype" id="differences-from-the-srv-rrtype">Differences from the SRV RRTYPE</a>
+</h1>
+<p id="rfc.section.B.1.p.1">An SRV record <a href="#RFC2782" class="xref">[RFC2782]</a> can perform a similar function to the HTTPSSVC record, informing a client to look in a different location for a service.  However, there are several differences:</p>
+<p></p>
+
+<ul>
+<li>SRV records are typically mandatory, whereas clients will always continue to function correctly without making use of Alt-Svc or HTTPSSVC.</li>
+<li>SRV records cannot instruct the client to switch or upgrade protocols, whereas Alt-Svc can signal such an upgrade (e.g. to HTTP/2).</li>
+<li>SRV records are not extensible, whereas Alt-Svc and thus HTTPSSVC can be extended with new parameters.  For example, this is what allows the incorporation of ESNI keys in HTTPSSVC.</li>
+<li>Using SRV records would not allow a client to skip processing of the Alt-Svc information in a subsequent connection, so it does not confer a performance advantage.</li>
+</ul>
+<h1 id="rfc.appendix.B.2">
+<a href="#rfc.appendix.B.2">B.2.</a> <a href="#differences-from-the-proposed-http-record" id="differences-from-the-proposed-http-record">Differences from the proposed HTTP record</a>
+</h1>
+<p id="rfc.section.B.2.p.1">Unlike <a href="#I-D.draft-bellis-dnsop-http-record-00" class="xref">[I-D.draft-bellis-dnsop-http-record-00]</a>, this approach is extensible to cover Alt-Svc and ESNIKeys use-cases.  Like that proposal, this addresses the zone apex CNAME challenge.</p>
+<p id="rfc.section.B.2.p.2">Like that proposal it remains necessary to continue to include address records at the zone apex for legacy clients.</p>
+<h1 id="rfc.appendix.B.3">
+<a href="#rfc.appendix.B.3">B.3.</a> <a href="#differences-from-the-proposed-aname-record" id="differences-from-the-proposed-aname-record">Differences from the proposed ANAME record</a>
+</h1>
+<p id="rfc.section.B.3.p.1">Unlike <a href="#I-D.draft-ietf-dnsop-aname-03" class="xref">[I-D.draft-ietf-dnsop-aname-03]</a>, this approach is extensible to cover Alt-Svc and ESNIKeys use-cases.  This approach also does not require any changes or special handling on either authoritative or master servers, beyond optionally returning in-bailiwick additional records.</p>
+<p id="rfc.section.B.3.p.2">Like that proposal, this addresses the zone apex CNAME challenge for clients that implement this.</p>
+<p id="rfc.section.B.3.p.3">However with this HTTPSSVC proposal it remains necessary to continue to include address records at the zone apex for legacy clients.  If deployment of this standard is successful, the number of legacy clients will fall over time.  As the number of legacy clients declines, the operational effort required to serve these users without the benefit of HTTPSSVC indirection should fall.  Server operators can easily observe how much traffic reaches this legacy endpoint, and may remove the apex&#8217;s address records if the observed legacy traffic has fallen to negligible levels.</p>
+<h1 id="rfc.appendix.B.4">
+<a href="#rfc.appendix.B.4">B.4.</a> <a href="#differences-from-the-proposed-esni-record" id="differences-from-the-proposed-esni-record">Differences from the proposed ESNI record</a>
+</h1>
+<p id="rfc.section.B.4.p.1">Unlike <a href="#ESNI" class="xref">[ESNI]</a>, this approach is extensible and covers the Alt-Svc case as well as addresses the zone apex CNAME challenge.</p>
+<p id="rfc.section.B.4.p.2">By using the Alt-Svc model we also provide a way to solve the ESNI multi-CDN challenges in a general case.</p>
+<p id="rfc.section.B.4.p.3">Unlike ESNI, this is focused on the specific case of HTTPS, although this approach could be extended for other protocols.  It also allows specifying ESNI keys for a specific port, not an entire host.</p>
+<h1 id="rfc.appendix.B.5">
+<a href="#rfc.appendix.B.5">B.5.</a> <a href="#sni-alt-svc-parameter" id="sni-alt-svc-parameter">SNI Alt-Svc parameter</a>
+</h1>
+<p id="rfc.section.B.5.p.1">Defining an Alt-Svc sni= parameter (such as from <a href="#AltSvcSNI" class="xref">[AltSvcSNI]</a>) would have provided some benefits to clients and servers not implementing ESNI, such as for specifying that &#8220;_wildcard.example.com&#8221; could be sent as an SNI value rather than the full name.  There is nothing precluding HTTPSSVC from being used with an sni= parameter if one were to be defined, but it is not included here to reduce scope, complexity, and additional potential security and tracking risks.</p>
+<h1 id="rfc.appendix.C">
+<a href="#rfc.appendix.C">Appendix C.</a> <a href="#design-considerations-and-open-issues" id="design-considerations-and-open-issues">Design Considerations and Open Issues</a>
+</h1>
+<p id="rfc.section.C.p.1">This draft is intended to be a work-in-progress for discussion.  Many details are expected to change with subsequent refinement.  Some known issues or topics for discussion are listed below.</p>
+<h1 id="rfc.appendix.C.1">
+<a href="#rfc.appendix.C.1">C.1.</a> <a href="#record-name" id="record-name">Record Name</a>
+</h1>
+<p id="rfc.section.C.1.p.1">Naming is hard.  The &#8220;HTTPSSVC&#8221; is proposed as a placeholder.  Other names for this record might include ALTSVC, HTTPS, HTTPSSRV, B, or something else.</p>
+<h1 id="rfc.appendix.C.2">
+<a href="#rfc.appendix.C.2">C.2.</a> <a href="#applicability-to-other-schemes" id="applicability-to-other-schemes">Applicability to other schemes</a>
+</h1>
+<p id="rfc.section.C.2.p.1">The focus of this record is on optimizing the common case of the &#8220;https&#8221; scheme.  It is worth discussing whether this is a valid assumption or if a more general solution is applicable.  Past efforts to over-generalize have not met with broad success.</p>
+<h1 id="rfc.appendix.C.3">
+<a href="#rfc.appendix.C.3">C.3.</a> <a href="#wire-format" id="wire-format">Wire Format</a>
+</h1>
+<p id="rfc.section.C.3.p.1">Advice from experts in DNS wire format best practices would be greatly appreciated to refine the proposed details, overall.</p>
+<h1 id="rfc.appendix.C.4">
+<a href="#rfc.appendix.C.4">C.4.</a> <a href="#extensibility-of-svcrecordtype" id="extensibility-of-svcrecordtype">Extensibility of SvcRecordType</a>
+</h1>
+<p id="rfc.section.C.4.p.1">Only values of &#8220;0&#8221; and &#8220;1&#8221; are allowed for SvcRecordType.  Should we give more thought to potential future values?  The current version tries to leave this open by indicating that resource records with unknown SvcRecordType values should be ignored (and perhaps should be switched to MUST be ignored)?</p>
+<h1 id="rfc.appendix.C.5">
+<a href="#rfc.appendix.C.5">C.5.</a> <a href="#where-to-include-priority" id="where-to-include-priority">Where to include Priority</a>
+</h1>
+<p id="rfc.section.C.5.p.1">The SvcFieldPriority could alternately be included as a pri= Alt-Svc attribute.  It wouldn&#8217;t be applicable for Alt-Svc returned via HTTP, but it is also not necessarily needed by DNS servers.  It is also not used when SvcRecordType=0.  A related question is whether to omit it from the textual representation when SvcRecordType=0.  Regardless, having a series of sequential numeric values in the textual representation has risk of user error, especially as MX, SRV, and others all have their own variations here.</p>
+<h1 id="rfc.appendix.C.6">
+<a href="#rfc.appendix.C.6">C.6.</a> <a href="#whether-to-include-weight" id="whether-to-include-weight">Whether to include Weight</a>
+</h1>
+<p id="rfc.section.C.6.p.1">Some other similar mechanisms such as SRV have a weight in-addition to priority.  That is excluded here for simplicity.  It could always be added as an optional Alt-Svc attribute.</p>
+<h1 id="rfc.appendix.D">
+<a href="#rfc.appendix.D">Appendix D.</a> <a href="#change-history" id="change-history">Change history</a>
+</h1>
+<p></p>
+
+<ul>
+<li>draft-nygren-httpbis-httpssvc-02 <ul>
+<li>Remove the redundant length fields from the wire format.</li>
+<li>Define aSvcDomainName of &#8220;.&#8221; for SvcRecordType=1 as being the HTTPSSVC RRNAME.</li>
+<li>Replace &#8220;hq&#8221; with &#8220;h3&#8221;.</li>
+</ul>
+</li>
+<li>draft-nygren-httpbis-httpssvc-01 <ul><li>Fixes of record name.  Replace references to &#8220;HTTPSVC&#8221; with &#8220;HTTPSSVC&#8221;.</li></ul>
+</li>
+<li>draft-nygren-httpbis-httpssvc-00 <ul><li>Initial version</li></ul>
+</li>
+</ul>
+<h1 id="rfc.authors"><a href="#rfc.authors">Authors' Addresses</a></h1>
+<div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Ben Schwartz</span> 
+	  <span class="n hidden">
+		<span class="family-name">Schwartz</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Google</span>
+	<span class="adr">
+	  
+	  <span class="vcardline">
+		<span class="locality"></span> 
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline"></span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:bemasc@google.com">bemasc@google.com</a></span>
+
+  </address>
+</div><div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Mike Bishop</span> 
+	  <span class="n hidden">
+		<span class="family-name">Bishop</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Akamai Technologies</span>
+	<span class="adr">
+	  
+	  <span class="vcardline">
+		<span class="locality"></span> 
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline"></span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:mbishop@evequefou.be">mbishop@evequefou.be</a></span>
+
+  </address>
+</div><div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Erik Nygren</span> 
+	  <span class="n hidden">
+		<span class="family-name">Nygren</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Akamai Technologies</span>
+	<span class="adr">
+	  
+	  <span class="vcardline">
+		<span class="locality"></span> 
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline"></span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:erik+ietf@nygren.org">erik+ietf@nygren.org</a></span>
+
+  </address>
+</div>
+
+</body>
+</html>
+

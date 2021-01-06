@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Finding HTTP Alternative Services via the Domain Name Service</title>
+<meta content="Ben Schwartz" name="author">
+<meta content="Mike Bishop" name="author">
+<meta content="
+       The HTTP Alternative Services (Alt-Svc) mechanism allows an
+HTTP origin to be served from multiple network endpoints, and over
+multiple protocols.  However, the client must first contact the
+origin server, in order to learn of the alternative services.  This
+draft proposes a straightforward mapping of Alt-Svc into
+DNS, allowing clients to learn of these services before their first
+contact with the origin.  This arrangement offers potential benefits to
+both performance and privacy. 
+    " name="description">
+<meta content="xml2rfc 2.45.2" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-schwartz-httpbis-dns-alt-svc-latest" name="ietf.draft">
+<link href="draft-schwartz-httpbis-dns-alt-svc.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@import url('https://martinthomson.github.io/i-d-template/fonts.css');
+
+html {
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --small-font-size: 14.5px;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+#title {
+  padding: 1em 0 0.2em;
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 26px;
+}
+h4, h5, h6 {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p, #abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 18px;
+  line-height: 24px;
+}
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+dd.break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href].selfRef {
+  color: var(--text-color);
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px 'Oxygen Mono', monospace;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  pre {
+    display: inline-block;
+    overflow-x: auto;
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  pre + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+  table {
+    display: inline-block;
+    overflow-x: auto;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  text-align: left;
+  background-color: #eee;
+}
+tr:nth-child(2n) > td {
+  background-color: var(--background-color);
+}
+tr:nth-child(2n+1) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody > tr:nth-child(2n) > td {
+  background-color: var(--highlight-color);
+}
+thead+tbody > tr:nth-child(2n+1) > td {
+  background-color: var(--background-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 1em;
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  visibility: hidden;
+  user-select: none;
+}
+a.pilcrow[href] { color: #ddd; }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media screen {
+  :hover > a.pilcrow {
+    visibility: visible;
+  }
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 8em;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  margin: 0;
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0 0 0 calc(1em + var(--identifier-width));
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+#toc a.xref {
+  white-space: normal;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 500px) {
+  .index ul {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  .index ul ul {
+    column-count: 1;
+    column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul p, #toc ul li {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table .text-left, table .text-left {
+  text-align: left;
+}
+table .text-center, table .text-center {
+  text-align: center;
+}
+table .text-right, table .text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+</style>
+<link href="rfc-local.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">Alt-Svc via DNS</td>
+<td class="right">June 2020</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Schwartz &amp; Bishop</td>
+<td class="center">Expires 13 December 2020</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">HTTP Working Group</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-schwartz-httpbis-dns-alt-svc-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2020-06-11" class="published">11 June 2020</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2020-12-13">13 December 2020</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">B. Schwartz</div>
+<div class="org">Google</div>
+</div>
+<div class="author">
+      <div class="author-name">M. Bishop</div>
+<div class="org">Akamai Technologies</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Finding HTTP Alternative Services via the Domain Name Service</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">The HTTP Alternative Services (Alt-Svc) mechanism allows an
+HTTP origin to be served from multiple network endpoints, and over
+multiple protocols.  However, the client must first contact the
+origin server, in order to learn of the alternative services.  This
+draft proposes a straightforward mapping of Alt-Svc into
+DNS, allowing clients to learn of these services before their first
+contact with the origin.  This arrangement offers potential benefits to
+both performance and privacy.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 13 December 2020.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2020 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Simplified BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Simplified BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="ulEmpty toc compact">
+<li class="ulEmpty toc compact" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="xref">1</a>.  <a href="#name-introduction" class="xref">Introduction</a><a href="#section-toc.1-1.1.1" class="pilcrow">¶</a></p>
+<ul class="ulEmpty toc compact">
+<li class="ulEmpty toc compact" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="xref">1.1</a>.  <a href="#name-terminology" class="xref">Terminology</a><a href="#section-toc.1-1.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="xref">2</a>.  <a href="#name-the-altsvc-record-type" class="xref">The ALTSVC record type</a><a href="#section-toc.1-1.2.1" class="pilcrow">¶</a></p>
+<ul class="ulEmpty toc compact">
+<li class="ulEmpty toc compact" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="xref">2.1</a>.  <a href="#name-comparison-with-alternative" class="xref">Comparison with alternatives</a><a href="#section-toc.1-1.2.2.1.1" class="pilcrow">¶</a></p>
+<ul class="ulEmpty toc compact">
+<li class="ulEmpty toc compact" id="section-toc.1-1.2.2.1.2.1">
+                    <p id="section-toc.1-1.2.2.1.2.1.1" class="keepWithNext"><a href="#section-2.1.1" class="xref">2.1.1</a>.  <a href="#name-differences-from-the-srv-rr" class="xref">Differences from the SRV RRTYPE</a><a href="#section-toc.1-1.2.2.1.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.2.2.1.2.2">
+                    <p id="section-toc.1-1.2.2.1.2.2.1"><a href="#section-2.1.2" class="xref">2.1.2</a>.  <a href="#name-differences-from-the-txt-rr" class="xref">Differences from the TXT RRTYPE</a><a href="#section-toc.1-1.2.2.1.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="xref">3</a>.  <a href="#name-differences-from-alt-svc-as" class="xref">Differences from Alt-Svc as transmitted over HTTP</a><a href="#section-toc.1-1.3.1" class="pilcrow">¶</a></p>
+<ul class="ulEmpty toc compact">
+<li class="ulEmpty toc compact" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="xref">3.1</a>.  <a href="#name-omitting-max-age" class="xref">Omitting Max Age</a><a href="#section-toc.1-1.3.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="xref">3.2</a>.  <a href="#name-multiple-records-and-values" class="xref">Multiple records and values</a><a href="#section-toc.1-1.3.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="xref">3.3</a>.  <a href="#name-interaction-with-other-stan" class="xref">Interaction with other standards</a><a href="#section-toc.1-1.3.2.3.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.3.2.4">
+                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="xref">3.4</a>.  <a href="#name-granularity-and-lifetime-co" class="xref">Granularity and lifetime control</a><a href="#section-toc.1-1.3.2.4.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-client-behaviors" class="xref">Client behaviors</a><a href="#section-toc.1-1.4.1" class="pilcrow">¶</a></p>
+<ul class="ulEmpty toc compact">
+<li class="ulEmpty toc compact" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="xref">4.1</a>.  <a href="#name-cache-interaction" class="xref">Cache interaction</a><a href="#section-toc.1-1.4.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="xref">4.2</a>.  <a href="#name-optimizing-for-performance" class="xref">Optimizing for performance</a><a href="#section-toc.1-1.4.2.2.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="xref">4.3</a>.  <a href="#name-optimizing-for-privacy" class="xref">Optimizing for privacy</a><a href="#section-toc.1-1.4.2.3.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-security-considerations" class="xref">Security Considerations</a><a href="#section-toc.1-1.5.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="xref">6</a>.  <a href="#name-iana-considerations" class="xref">IANA Considerations</a><a href="#section-toc.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="xref">7</a>.  <a href="#name-references" class="xref">References</a><a href="#section-toc.1-1.7.1" class="pilcrow">¶</a></p>
+<ul class="ulEmpty toc compact">
+<li class="ulEmpty toc compact" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="xref">7.1</a>.  <a href="#name-normative-references" class="xref">Normative References</a><a href="#section-toc.1-1.7.2.1.1" class="pilcrow">¶</a></p>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="xref">7.2</a>.  <a href="#name-informative-references" class="xref">Informative References</a><a href="#section-toc.1-1.7.2.2.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</li>
+<li class="ulEmpty toc compact" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-appendix.a" class="xref"></a><a href="#name-authors-addresses" class="xref">Authors' Addresses</a><a href="#section-toc.1-1.8.1" class="pilcrow">¶</a></p>
+</li>
+</ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">The HTTP Alternative Services standard <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span> defines<a href="#section-1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-2.1">an extensible data model for describing alternative network endpoints
+that are authoritative for an origin<a href="#section-1-2.1" class="pilcrow">¶</a>
+</li>
+<li class="normal" id="section-1-2.2">the "Alt-Svc Field Value", a text format for representing this
+information<a href="#section-1-2.2" class="pilcrow">¶</a>
+</li>
+<li class="normal" id="section-1-2.3">standards for sending information in this format from a server to a
+client over HTTP/1.1 and HTTP/2.<a href="#section-1-2.3" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-1-3">Together, these components provide a toolkit that has proven useful and
+effective for informing a client of alternative services for an origin.
+However, making use of an alternative service requires contacting the
+origin server first.  This creates an obvious performance cost: users
+wait for a full HTTP connection initiation (multiple roundtrips) before
+learning of an alternative service that is preferred by the origin.  The
+first connection also publicly reveals the user's intended destination
+to all entities along the network path.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This draft proposes a straightforward mechanism to distribute the
+Alt-Svc Field Value, in its standard text format, through
+the DNS.  If a client receives this information during DNS resolution,
+it can skip the initial connection and proceed directly to an
+alternative service.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<div id="terminology">
+<section id="section-1.1">
+        <h3 id="name-terminology">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<p id="section-1.1-1">For consistency with <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>, we adopt the following definitions<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.1-2.1">An "origin" is an information source as in <span>[<a href="#RFC6454" class="xref">RFC6454</a>]</span>.<a href="#section-1.1-2.1" class="pilcrow">¶</a>
+</li>
+<li class="normal" id="section-1.1-2.2">The "origin server" is the server that the client would reach when
+accessing the origin in the absence of Alt-Svc.<a href="#section-1.1-2.2" class="pilcrow">¶</a>
+</li>
+<li class="normal" id="section-1.1-2.3">An "alternative service" is a different server that can serve the
+origin.<a href="#section-1.1-2.3" class="pilcrow">¶</a>
+</li>
+</ul>
+<p id="section-1.1-3">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+"MAY", and "OPTIONAL" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="the-altsvc-record-type">
+<section id="section-2">
+      <h2 id="name-the-altsvc-record-type">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-the-altsvc-record-type" class="section-name selfRef">The ALTSVC record type</a>
+      </h2>
+<p id="section-2-1">The ALTSVC DNS resource record (RR) type (RRTYPE ???) is used to
+associate an Alternative Service Field Value with an origin.
+Abstractly, the origin consists of a scheme (typically "https"), a host
+name, and a port (typically "443").<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">In the case of the ALTSVC RR, the origin is represented by prefixing the
+port and scheme with "_", then concatenating them with the host,
+resulting in a domain name like "_443._https.www.example.com.".<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-3">The IANA DNS Underscore Global Scoped Entry Registry
+<span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span> MUST have an entry under the ALTSVC RRType
+for this scheme.  The scheme SHOULD have an entry in the IANA URI Schemes
+Registry <span>[<a href="#RFC7595" class="xref">RFC7595</a>]</span>.  The scheme SHOULD be one for which Alt-Svc is defined
+(currently "http" or "https").<a href="#section-2-3" class="pilcrow">¶</a></p>
+<p id="section-2-4">The RDATA portion of an ALTSVC resource record contains an Alt-Svc
+Field Value, exactly as defined in Section 4 of <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>.<a href="#section-2-4" class="pilcrow">¶</a></p>
+<p id="section-2-5">For example, if the operator of https://www.example.com
+intends to include an HTTP response header like<a href="#section-2-5" class="pilcrow">¶</a></p>
+<p id="section-2-6">Alt-Svc: h2=":8000"; ma=60<a href="#section-2-6" class="pilcrow">¶</a></p>
+<p id="section-2-7">They would also publish an ALTSVC DNS record like<a href="#section-2-7" class="pilcrow">¶</a></p>
+<p id="section-2-8">_443._https.www.example.com. 60S IN ALTSVC "h2=\":8000\""<a href="#section-2-8" class="pilcrow">¶</a></p>
+<p id="section-2-9">This data type can be represented as an Unknown RR as described in
+<span>[<a href="#RFC3597" class="xref">RFC3597</a>]</span>:<a href="#section-2-9" class="pilcrow">¶</a></p>
+<p id="section-2-10">_443._https.www.example.com. 60S IN TYPE??? \# 10 68323D223A3830303022<a href="#section-2-10" class="pilcrow">¶</a></p>
+<p id="section-2-11">This construction is intended to be extensible in two ways.  First,
+any extensions that are made to the Alt-Svc format for transmission over
+HTTPS are also applicable here, unless expressly mentioned otherwise.
+Second, including the scheme in the DNS name allows for ALTSVC to serve
+schemes other than HTTPS, such as HTTP with Opportunistic Security
+<span>[<a href="#RFC8164" class="xref">RFC8164</a>]</span> and any future schemes for which Alt-Svc may be defined.<a href="#section-2-11" class="pilcrow">¶</a></p>
+<div id="comparison-with-alternatives">
+<section id="section-2.1">
+        <h3 id="name-comparison-with-alternative">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-comparison-with-alternative" class="section-name selfRef">Comparison with alternatives</a>
+        </h3>
+<p id="section-2.1-1">The ALTSVC record type closely resembles some existing record types.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<div id="differences-from-the-srv-rrtype">
+<section id="section-2.1.1">
+          <h4 id="name-differences-from-the-srv-rr">
+<a href="#section-2.1.1" class="section-number selfRef">2.1.1. </a><a href="#name-differences-from-the-srv-rr" class="section-name selfRef">Differences from the SRV RRTYPE</a>
+          </h4>
+<p id="section-2.1.1-1">An SRV record can perform a similar function to the ALTSVC record,
+informing a client to look in a different location for a service.
+However, there are several differences:<a href="#section-2.1.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.1.1-2.1">SRV records are typically mandatory, whereas clients will always
+continue to function correctly without making use of Alt-Svc.<a href="#section-2.1.1-2.1" class="pilcrow">¶</a>
+</li>
+<li class="normal" id="section-2.1.1-2.2">SRV records cannot instruct the client to switch or upgrade
+protocols, whereas Alt-Svc can signal such an upgrade (e.g. to
+HTTP/2).<a href="#section-2.1.1-2.2" class="pilcrow">¶</a>
+</li>
+<li class="normal" id="section-2.1.1-2.3">SRV records are not extensible, whereas Alt-Svc can be extended with
+new parameters.  For example, this is what allows the privacy
+improvements related to SNI selection in <span>[<a href="#AltSvcSNI" class="xref">AltSvcSNI</a>]</span>.<a href="#section-2.1.1-2.3" class="pilcrow">¶</a>
+</li>
+<li class="normal" id="section-2.1.1-2.4">Using SRV records would not allow a client to skip processing of the
+Alt-Svc information in a subsequent connection, so it does not confer
+a performance advantage.<a href="#section-2.1.1-2.4" class="pilcrow">¶</a>
+</li>
+</ul>
+</section>
+</div>
+<div id="differences-from-the-txt-rrtype">
+<section id="section-2.1.2">
+          <h4 id="name-differences-from-the-txt-rr">
+<a href="#section-2.1.2" class="section-number selfRef">2.1.2. </a><a href="#name-differences-from-the-txt-rr" class="section-name selfRef">Differences from the TXT RRTYPE</a>
+          </h4>
+<p id="section-2.1.2-1">The ALTSVC record uses an identical format to a TXT record, and could
+be implemented as such.  However, we define a new record type for
+clarity, and to respect the use of TXT for human-readable notes as
+recommended in <span>[<a href="#RFC5507" class="xref">RFC5507</a>]</span>.<a href="#section-2.1.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="differences-from-alt-svc-as-transmitted-over-http">
+<section id="section-3">
+      <h2 id="name-differences-from-alt-svc-as">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-differences-from-alt-svc-as" class="section-name selfRef">Differences from Alt-Svc as transmitted over HTTP</a>
+      </h2>
+<p id="section-3-1">Publishing an ALTSVC record in DNS is intended to be equivalent to
+transmitting this field value over HTTP, and receiving an ALTSVC record
+is intended to be equivalent to receiving this field value over HTTP.
+However, there are some small differences in the intended client and
+server behavior.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<div id="omitting-max-age">
+<section id="section-3.1">
+        <h3 id="name-omitting-max-age">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-omitting-max-age" class="section-name selfRef">Omitting Max Age</a>
+        </h3>
+<p id="section-3.1-1">When publishing an ALTSVC record in DNS, server operators MUST omit the
+"ma" parameter, which encodes the "max age" (i.e. expiration time) of
+an Alt-Svc Field Value.  Instead, server operators SHOULD encode the
+expiration time in the DNS TTL, and MUST NOT set a TTL longer than the
+intended "max age".<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-2">When receiving an ALTSVC record, clients MAY synthesize a new "ma"
+parameter from the DNS TTL, in order to interoperate with Alt-Svc processing
+subsystems.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="multiple-records-and-values">
+<section id="section-3.2">
+        <h3 id="name-multiple-records-and-values">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-multiple-records-and-values" class="section-name selfRef">Multiple records and values</a>
+        </h3>
+<p id="section-3.2-1">Server operators MAY publish multiple ALTSVC records as an RRSET.  When
+publishing an RRSET with multiple ALTSVC
+records, the server operator MUST set the overall TTL to the minimum
+of the "max age" values (following Section 5.2 of <span>[<a href="#RFC2181" class="xref">RFC2181</a>]</span>).
+Each RR can contain multiple alt-values separated by commas, as described
+in Section 3 of <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>.  As specified there, "the order of values
+relects the server's preference".<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.2-2">When receiving an RRSET containing multiple ALTSVC records, clients
+SHOULD apply a random shuffle to the records before using them, to
+ensure randomized load-balancing.  This is consistent with DNS rules for
+interpretation of RRSETs, which are regarded as unordered collections.<a href="#section-3.2-2" class="pilcrow">¶</a></p>
+<p id="section-3.2-3">After shuffling the RRSET, the client SHOULD concatenate all the values
+in the RRSET, separated by commas.  (This is semantically equivalent to
+receiving multiple Alt-Svc HTTP response headers, according to Section 3.2.2
+of <span>[<a href="#HTTP" class="xref">HTTP</a>]</span>).<a href="#section-3.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="interaction-with-other-standards">
+<section id="section-3.3">
+        <h3 id="name-interaction-with-other-stan">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-interaction-with-other-stan" class="section-name selfRef">Interaction with other standards</a>
+        </h3>
+<p id="section-3.3-1">The purpose of this standard is to reduce connection latency and
+improve user privacy.  Server operators implementing this standard
+SHOULD also implement TLS 1.3 <span>[<a href="#I-D.ietf-tls-tls13" class="xref">I-D.ietf-tls-tls13</a>]</span> and OCSP Stapling
+<span>[<a href="#RFC6066" class="xref">RFC6066</a>]</span>, both of which confer substantial performance and privacy
+benefits when used in combination with ALTSVC records.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.3-2">To realize the greatest privacy benefits, this proposal is intended for
+use with a privacy-preserving DNS transport (like DNS over TLS
+<span>[<a href="#RFC7858" class="xref">RFC7858</a>]</span> or DNS over HTTPS <span>[<a href="#DOH" class="xref">DOH</a>]</span>),
+and with the "SNI" Alt-Svc Parameter
+<span>[<a href="#AltSvcSNI" class="xref">AltSvcSNI</a>]</span>.  However, performance
+improvements, and some modest privacy improvements, are possible without
+the use of those standards.<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="granularity-and-lifetime-control">
+<section id="section-3.4">
+        <h3 id="name-granularity-and-lifetime-co">
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-granularity-and-lifetime-co" class="section-name selfRef">Granularity and lifetime control</a>
+        </h3>
+<p id="section-3.4-1">Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc
+Field Value specifically to the client.  When using an ALTSVC DNS
+record, groups of clients will necessarily receive the same Alt-Svc
+Field Value.  Therefore, this standard is not suitable for servers that
+require single-client granularity in Alt-Svc.  Server operators that
+want to serve different Alt-Svc Field Values to different geographic
+or network regions SHOULD configure their authoritative DNS server to
+respect the EDNS0 Client Subnet extension <span>[<a href="#RFC7871" class="xref">RFC7871</a>]</span>.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+<p id="section-3.4-2">Some DNS caching systems incorrectly extend the lifetime of DNS
+records beyond the stated TTL.  Server operators MUST NOT rely on
+ALTSVC records expiring on time, and MAY shorten the TTL to compensate.<a href="#section-3.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="client-behaviors">
+<section id="section-4">
+      <h2 id="name-client-behaviors">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-client-behaviors" class="section-name selfRef">Client behaviors</a>
+      </h2>
+<div id="cache-interaction">
+<section id="section-4.1">
+        <h3 id="name-cache-interaction">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-cache-interaction" class="section-name selfRef">Cache interaction</a>
+        </h3>
+<p id="section-4.1-1">If the client has an Alt-Svc cache, and a usable Alt-Svc value is
+present in that cache, then the client SHOULD NOT issue an ALTSVC DNS
+query.  Instead, the client SHOULD proceed with alternative service
+connection as usual.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">If the client has a cached Alt-Svc entry that is expiring, the
+client MAY perform an ALTSVC query to refresh the entry.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="optimizing-for-performance">
+<section id="section-4.2">
+        <h3 id="name-optimizing-for-performance">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-optimizing-for-performance" class="section-name selfRef">Optimizing for performance</a>
+        </h3>
+<p id="section-4.2-1">Clients that are optimizing for performance (i.e. minimum connection
+setup time) SHOULD implement the following connection sequence:<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4.2-2">
+          <li id="section-4.2-2.1">Issue address (AAAA and/or A) queries, immediately followed by the
+ALTSVC query.<a href="#section-4.2-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-4.2-2.2">If an ALTSVC response is received first, proceed with alternative
+service connection and ignore the address responses if they are no
+longer relevant.<a href="#section-4.2-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-4.2-2.3">Otherwise, initiate connection to the origin server.<a href="#section-4.2-2.3" class="pilcrow">¶</a>
+</li>
+<li id="section-4.2-2.4">As soon as an Alt-Svc field value is received, through the DNS or
+over HTTP, proceed with alternative service connection.  Do not
+abort this connection if an Alt-Svc field value is received from the
+other source later.<a href="#section-4.2-2.4" class="pilcrow">¶</a>
+</li>
+</ol>
+<p id="section-4.2-3">If the ALTSVC and address queries return approximately simultaneously,
+this process typically saves three roundtrips on a fresh connection
+that uses Alt-Svc: one each for TCP, TLS 1.3, and HTTP.  (On subsequent
+connections, the Alt-Svc information is expected to be cached, so this
+procedure does not apply.)<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">If a client can cache Alt-Svc entries that were received over both HTTP
+and DNS, the client MAY prefer entries that were received over HTTP.
+These records may be more narrowly targeted for the specific client.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.2-5">As an additional optimization, when choosing among multiple Alt-Svc
+values, clients MAY prefer those that will not require an address
+query, either because the corresponding address record is
+already in cache or because the host is an IP address.<a href="#section-4.2-5" class="pilcrow">¶</a></p>
+<p id="section-4.2-6">Note that this procedure does not rely on recursive resolvers handling
+the ALTSVC record type correctly.  If ALTSVC queries receive spurious
+NXDOMAIN responses, or even no response at all, connections will proceed
+as usual without any delay.<a href="#section-4.2-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="optimizing-for-privacy">
+<section id="section-4.3">
+        <h3 id="name-optimizing-for-privacy">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-optimizing-for-privacy" class="section-name selfRef">Optimizing for privacy</a>
+        </h3>
+<p id="section-4.3-1">Clients that are optimizing for privacy SHOULD implement <span>[<a href="#AltSvcSNI" class="xref">AltSvcSNI</a>]</span>
+and DNS over a secure transport (e.g. <span>[<a href="#RFC7858" class="xref">RFC7858</a>]</span> or <span>[<a href="#DOH" class="xref">DOH</a>]</span>).
+Use of a secure transport is important not only for privacy protection,
+but also to ensure that queries for the new ALTSVC RRTYPE are handled
+correctly.  Additionally, these clients SHOULD implement the following
+connection sequence:<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4.3-2">
+          <li id="section-4.3-2.1">Issue the ALTSVC DNS query first, immediately followed by the
+address queries.<a href="#section-4.3-2.1" class="pilcrow">¶</a>
+</li>
+<li id="section-4.3-2.2">Wait for the ALTSVC record response.<a href="#section-4.3-2.2" class="pilcrow">¶</a>
+</li>
+<li id="section-4.3-2.3">If the response is nonempty, proceed with alternative service
+connection and ignore the address query responses.<a href="#section-4.3-2.3" class="pilcrow">¶</a>
+</li>
+<li id="section-4.3-2.4">Otherwise, wait for the address queries and connect as usual.<a href="#section-4.3-2.4" class="pilcrow">¶</a>
+</li>
+</ol>
+<p id="section-4.3-3">Note that this process is also expected to be faster than Alt-Svc over
+HTTP in the case of HTTP Opportunistic Upgrade Probing (Section 2 of
+<span>[<a href="#RFC8164" class="xref">RFC8164</a>]</span>).<a href="#section-4.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-5">
+      <h2 id="name-security-considerations">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-5-1">Alt-Svc Field Values are intended for distribution over untrusted
+channels, and clients are REQUIRED to verify that the alternative
+service is authoritative for the origin (Section 2.1 of <span>[<a href="#AltSvc" class="xref">AltSvc</a>]</span>).
+Therefore, DNSSEC signing and validation are OPTIONAL for publishing
+and using ALTSVC records.<a href="#section-5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-6">
+      <h2 id="name-iana-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-6-1">Per <span>[<a href="#RFC6895" class="xref">RFC6895</a>]</span>, please add the following entry to the data type
+range of the Resource Record (RR) TYPEs registry:<a href="#section-6-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+        <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">TYPE</th>
+            <th class="text-left" rowspan="1" colspan="1">Meaning</th>
+            <th class="text-left" rowspan="1" colspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">ALTSVC</td>
+            <td class="text-left" rowspan="1" colspan="1">Alt-Svc Value</td>
+            <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+          </tr>
+        </tbody>
+      </table>
+<p id="section-6-3">Per <span>[<a href="#Attrleaf" class="xref">Attrleaf</a>]</span>, please add the following entries to the DNS Underscore
+Global Scoped Entry Registry:<a href="#section-6-3" class="pilcrow">¶</a></p>
+<table class="center" id="table-2">
+        <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">RR TYPE</th>
+            <th class="text-left" rowspan="1" colspan="1">_NODE NAME</th>
+            <th class="text-left" rowspan="1" colspan="1">Meaning</th>
+            <th class="text-left" rowspan="1" colspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">ALTSVC</td>
+            <td class="text-left" rowspan="1" colspan="1">_https</td>
+            <td class="text-left" rowspan="1" colspan="1">Alt-Svc for HTTPS</td>
+            <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">ALTSVC</td>
+            <td class="text-left" rowspan="1" colspan="1">_http</td>
+            <td class="text-left" rowspan="1" colspan="1">Alt-Svc for HTTP</td>
+            <td class="text-left" rowspan="1" colspan="1">(This document)</td>
+          </tr>
+        </tbody>
+      </table>
+</section>
+</div>
+<section id="section-7">
+      <h2 id="name-references">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<section id="section-7.1">
+        <h3 id="name-normative-references">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="AltSvc">[AltSvc]</dt>
+<dd>
+<span class="refAuthor">Nottingham, M.</span><span class="refAuthor">, McManus, P.</span><span class="refAuthor">, and J. Reschke</span>, <span class="refTitle">"HTTP Alternative Services"</span>, <span class="seriesInfo">RFC 7838</span>, <span class="seriesInfo">DOI 10.17487/RFC7838</span>, <time datetime="2016-04">April 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7838">https://www.rfc-editor.org/info/rfc7838</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="AltSvcSNI">[AltSvcSNI]</dt>
+<dd>
+<span class="refAuthor">Bishop, M.</span>, <span class="refTitle">"The "SNI" Alt-Svc Parameter"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bishop-httpbis-sni-altsvc-02</span>, <time datetime="2018-05-24">24 May 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-bishop-httpbis-sni-altsvc-02.txt">http://www.ietf.org/internet-drafts/draft-bishop-httpbis-sni-altsvc-02.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="Attrleaf">[Attrleaf]</dt>
+<dd>
+<span class="refAuthor">Crocker, D.</span>, <span class="refTitle">"DNS Scoped Data Through "Underscore" Naming of Attribute Leaves"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dnsop-attrleaf-16</span>, <time datetime="2018-11-16">16 November 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-dnsop-attrleaf-16.txt">http://www.ietf.org/internet-drafts/draft-ietf-dnsop-attrleaf-16.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="DOH">[DOH]</dt>
+<dd>
+<span class="refAuthor">Hoffman, P.</span><span class="refAuthor"> and P. McManus</span>, <span class="refTitle">"DNS Queries over HTTPS (DoH)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-doh-dns-over-https-14</span>, <time datetime="2018-08-16">16 August 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-doh-dns-over-https-14.txt">http://www.ietf.org/internet-drafts/draft-ietf-doh-dns-over-https-14.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</dt>
+<dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-tls13-28</span>, <time datetime="2018-03-20">20 March 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-tls-tls13-28.txt">http://www.ietf.org/internet-drafts/draft-ietf-tls-tls13-28.txt</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+<dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-editor.org/info/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2181">[RFC2181]</dt>
+<dd>
+<span class="refAuthor">Elz, R.</span><span class="refAuthor"> and R. Bush</span>, <span class="refTitle">"Clarifications to the DNS Specification"</span>, <span class="seriesInfo">RFC 2181</span>, <span class="seriesInfo">DOI 10.17487/RFC2181</span>, <time datetime="1997-07">July 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2181">https://www.rfc-editor.org/info/rfc2181</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3597">[RFC3597]</dt>
+<dd>
+<span class="refAuthor">Gustafsson, A.</span>, <span class="refTitle">"Handling of Unknown DNS Resource Record (RR) Types"</span>, <span class="seriesInfo">RFC 3597</span>, <span class="seriesInfo">DOI 10.17487/RFC3597</span>, <time datetime="2003-09">September 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3597">https://www.rfc-editor.org/info/rfc3597</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6066">[RFC6066]</dt>
+<dd>
+<span class="refAuthor">Eastlake 3rd, D.</span>, <span class="refTitle">"Transport Layer Security (TLS) Extensions: Extension Definitions"</span>, <span class="seriesInfo">RFC 6066</span>, <span class="seriesInfo">DOI 10.17487/RFC6066</span>, <time datetime="2011-01">January 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6066">https://www.rfc-editor.org/info/rfc6066</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6454">[RFC6454]</dt>
+<dd>
+<span class="refAuthor">Barth, A.</span>, <span class="refTitle">"The Web Origin Concept"</span>, <span class="seriesInfo">RFC 6454</span>, <span class="seriesInfo">DOI 10.17487/RFC6454</span>, <time datetime="2011-12">December 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6454">https://www.rfc-editor.org/info/rfc6454</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7595">[RFC7595]</dt>
+<dd>
+<span class="refAuthor">Thaler, D., Ed.</span><span class="refAuthor">, Hansen, T.</span><span class="refAuthor">, and T. Hardie</span>, <span class="refTitle">"Guidelines and Registration Procedures for URI Schemes"</span>, <span class="seriesInfo">BCP 35</span>, <span class="seriesInfo">RFC 7595</span>, <span class="seriesInfo">DOI 10.17487/RFC7595</span>, <time datetime="2015-06">June 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7595">https://www.rfc-editor.org/info/rfc7595</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7858">[RFC7858]</dt>
+<dd>
+<span class="refAuthor">Hu, Z.</span><span class="refAuthor">, Zhu, L.</span><span class="refAuthor">, Heidemann, J.</span><span class="refAuthor">, Mankin, A.</span><span class="refAuthor">, Wessels, D.</span><span class="refAuthor">, and P. Hoffman</span>, <span class="refTitle">"Specification for DNS over Transport Layer Security (TLS)"</span>, <span class="seriesInfo">RFC 7858</span>, <span class="seriesInfo">DOI 10.17487/RFC7858</span>, <time datetime="2016-05">May 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7858">https://www.rfc-editor.org/info/rfc7858</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+<dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8174">https://www.rfc-editor.org/info/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+<section id="section-7.2">
+        <h3 id="name-informative-references">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="HTTP">[HTTP]</dt>
+<dd>
+<span class="refAuthor">Fielding, R., Ed.</span><span class="refAuthor"> and J. Reschke, Ed.</span>, <span class="refTitle">"Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing"</span>, <span class="seriesInfo">RFC 7230</span>, <span class="seriesInfo">DOI 10.17487/RFC7230</span>, <time datetime="2014-06">June 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7230">https://www.rfc-editor.org/info/rfc7230</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5507">[RFC5507]</dt>
+<dd>
+<span class="refAuthor">IAB</span><span class="refAuthor">, Faltstrom, P., Ed.</span><span class="refAuthor">, Austein, R., Ed.</span><span class="refAuthor">, and P. Koch, Ed.</span>, <span class="refTitle">"Design Choices When Expanding the DNS"</span>, <span class="seriesInfo">RFC 5507</span>, <span class="seriesInfo">DOI 10.17487/RFC5507</span>, <time datetime="2009-04">April 2009</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5507">https://www.rfc-editor.org/info/rfc5507</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6895">[RFC6895]</dt>
+<dd>
+<span class="refAuthor">Eastlake 3rd, D.</span>, <span class="refTitle">"Domain Name System (DNS) IANA Considerations"</span>, <span class="seriesInfo">BCP 42</span>, <span class="seriesInfo">RFC 6895</span>, <span class="seriesInfo">DOI 10.17487/RFC6895</span>, <time datetime="2013-04">April 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6895">https://www.rfc-editor.org/info/rfc6895</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7871">[RFC7871]</dt>
+<dd>
+<span class="refAuthor">Contavalli, C.</span><span class="refAuthor">, van der Gaast, W.</span><span class="refAuthor">, Lawrence, D.</span><span class="refAuthor">, and W. Kumari</span>, <span class="refTitle">"Client Subnet in DNS Queries"</span>, <span class="seriesInfo">RFC 7871</span>, <span class="seriesInfo">DOI 10.17487/RFC7871</span>, <time datetime="2016-05">May 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7871">https://www.rfc-editor.org/info/rfc7871</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8164">[RFC8164]</dt>
+<dd>
+<span class="refAuthor">Nottingham, M.</span><span class="refAuthor"> and M. Thomson</span>, <span class="refTitle">"Opportunistic Security for HTTP/2"</span>, <span class="seriesInfo">RFC 8164</span>, <span class="seriesInfo">DOI 10.17487/RFC8164</span>, <time datetime="2017-05">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8164">https://www.rfc-editor.org/info/rfc8164</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</section>
+<div id="authors-addresses">
+<section id="section-appendix.a">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Ben Schwartz</span></div>
+<div dir="auto" class="left"><span class="org">Google</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:bemasc@google.com" class="email">bemasc@google.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Mike Bishop</span></div>
+<div dir="auto" class="left"><span class="org">Akamai Technologies</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:mbishop@evequefou.be" class="email">mbishop@evequefou.be</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>

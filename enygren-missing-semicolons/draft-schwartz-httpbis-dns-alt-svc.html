@@ -1,0 +1,725 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head profile="http://www.w3.org/2006/03/hcard http://dublincore.org/documents/2008/08/04/dc-html/">
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+
+  <title>Finding HTTP Alternative Services via the Domain Name Service</title>
+
+  
+<style type="text/css">/*<![CDATA[*/
+
+body {
+  font: 16px "Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
+  color: #333;
+  font-size-adjust: 0.5;
+  line-height: 24px;
+  margin: 75px auto;
+  max-width: 624px;
+  padding: 0 5px;
+}
+
+.title, .filename, h1, h2, h3, h4, h5 {
+  font: 16px "Roboto Condensed","Helvetica Neue","Open Sans",Helvetica,Calibri,sans-serif;
+  font-size-adjust: 0.5;
+  font-weight: bold;
+  color: #333;
+  line-height: 100%;
+  margin: 1.2em 0 0.3em;
+}
+.title, #rfc\.title h1 { font-size: 32px; }
+h1, section h1, h2, section h2, section h3, nav h2 { font-size: 20px; }
+h3, section h4, h4, section h5 { font-size: 16px; }
+h1 a[href], h2 a[href], h3 a[href], h4 a[href] {
+  color: #333;
+}
+
+table {
+  margin-left: 0em;
+  border-collapse: collapse;
+}
+th {
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+td {
+  border-top: 1px solid #ddd;
+  vertical-align: top;
+}
+tr:nth-child(2n+1) > td,
+tr:nth-child(2n+1) > th {
+  background-color: #f9f9f9;
+}
+td.reference {
+  max-width: 200px;
+  border-top: none;
+  padding-right: 1em;
+}
+.right {
+  text-align: right;
+}
+
+
+table.header, table#rfc\.headerblock {
+  width: 100%;
+}
+table.header td, table#rfc\.headerblock td {
+  border: none;
+  background-color: transparent;
+  color: black;
+  padding: 0;
+}
+.filename {
+  display: block;
+  color: rgb(119, 119, 119);
+  font-size: 20px;
+  font-weight: normal;
+  line-height: 100%;
+  margin: 10px 0 32px;
+}
+#rfc\.abstract+p, #rfc\.abstract+p code, #rfc\.abstract+p samp, #rfc\.abstract+p tt {
+  font-size: 20px;
+  line-height: 28px;
+}
+
+samp, tt, code, pre, span.tt {
+  font-size: 13.5px;
+  font-family: Consolas, monospace;
+  font-size-adjust: none;
+}
+pre {
+  background-color: #eee;
+  border: 1px solid #ddd;
+  overflow-x: auto;
+  padding: 5px;
+  margin: 5px;
+}
+.figure, caption {
+  font-style: italic;
+  margin: 0 1.5em;
+  text-align: left;
+}
+
+address {
+  margin: 16px 2px;
+  line-height: 20px;
+}
+.vcard {
+  font-style: normal;
+}
+.vcardline {
+  display: block;
+}
+.vcardline .fn, address b {
+  font-weight: normal;
+}
+.vcardline .hidden {
+  display: none;
+}
+
+dl {
+  margin-left: 1em;
+}
+dl.dl-horizontal: {
+  margin-left: 0;
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.nohang > dt {
+  float: none;
+}
+dl > dd {
+  margin-bottom: .5em;
+}
+dl.compact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+ul.empty {
+  list-style-type: none;
+}
+ul.empty li {
+  margin-top: .5em;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+}
+hr.noprint {
+  display: none;
+}
+
+a {
+  text-decoration: none;
+}
+a[href] {
+  color: #2a6496;
+}
+a[href]:hover {
+  background-color: #eee;
+}
+
+p, ol, ul, li {
+  padding: 0;
+}
+p {
+  margin: 0.5em 0;
+}
+ol, ul {
+  margin: 0.2em 0 0.2em 2em;
+}
+li {
+  margin: 0.2em 0;
+}
+address {
+  font-style: normal;
+}
+
+ul.toc ul {
+  margin: 0 0 0 2em;
+}
+ul.toc li {
+  list-style: none;
+  margin: 0;
+}
+
+@media screen and (min-width: 924px) {
+  body {
+    padding-right: 350px;
+  }
+  body>ul.toc, body>#rfc\.toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 500px);
+    width: 300px;
+    z-index: 1;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  body>#rfc\.toc {
+    top: 55px;
+  }
+  body>ul.toc {
+    top: 100px;
+  }
+
+  ul.toc {
+    margin: 0 0 0 4px;
+    font-size: 12px;
+    line-height: 20px;
+  }
+  ul.toc ul {
+    margin-left: 1.2em;
+  }
+}
+
+.github-fork-ribbon-wrapper {
+  display: none;
+}
+@media screen and (min-width: 800px) {
+  /* "Fork me on GitHub" CSS ribbon based on
+   * https://github.com/simonwhitaker/github-fork-ribbon-css
+   */
+  .github-fork-ribbon {
+    position: absolute;
+    padding: 2px 0;
+    background-color: #a00;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+    box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.5);
+    font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+    pointer-events: auto;
+
+    top: 38px;
+    right: -45px;
+
+    transform: rotate(45deg);
+  }
+
+  .github-fork-ribbon a[href],
+  .github-fork-ribbon a[href]:hover {
+    color: #fff;
+    background-color: transparent;
+    text-decoration: none;
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+
+    width: 190px;
+    line-height: 18px;
+
+    display: inline-block;
+    padding: 2px 0;
+
+    border: 1.5px dotted #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  .github-fork-ribbon-wrapper {
+    display: block;
+    width: 130px;
+    height: 130px;
+    position: absolute;
+    overflow: hidden;
+    top: 0; right: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+@media screen and (min-width: 1000px) {
+  .github-fork-ribbon-wrapper {
+    position: fixed;
+  }
+  /*]]>*/</style>
+  <meta name="viewport" content="initial-scale=1.0">
+
+
+  <link href="#rfc.toc" rel="Contents">
+<link href="#rfc.section.1" rel="Chapter" title="1 Introduction">
+<link href="#rfc.section.1.1" rel="Chapter" title="1.1 Terminology">
+<link href="#rfc.section.2" rel="Chapter" title="2 The ALTSVC record type">
+<link href="#rfc.section.2.1" rel="Chapter" title="2.1 Comparison with alternatives">
+<link href="#rfc.section.2.1.1" rel="Chapter" title="2.1.1 Differences from the SRV RRTYPE">
+<link href="#rfc.section.2.1.2" rel="Chapter" title="2.1.2 Differences from the TXT RRTYPE">
+<link href="#rfc.section.3" rel="Chapter" title="3 Differences from Alt-Svc as transmitted over HTTP">
+<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Omitting Max Age">
+<link href="#rfc.section.3.2" rel="Chapter" title="3.2 Multiple records and values">
+<link href="#rfc.section.3.3" rel="Chapter" title="3.3 Interaction with other standards">
+<link href="#rfc.section.3.4" rel="Chapter" title="3.4 Granularity and lifetime control">
+<link href="#rfc.section.4" rel="Chapter" title="4 Client behaviors">
+<link href="#rfc.section.4.1" rel="Chapter" title="4.1 Cache interaction">
+<link href="#rfc.section.4.2" rel="Chapter" title="4.2 Optimizing for performance">
+<link href="#rfc.section.4.3" rel="Chapter" title="4.3 Optimizing for privacy">
+<link href="#rfc.section.5" rel="Chapter" title="5 Security Considerations">
+<link href="#rfc.section.6" rel="Chapter" title="6 IANA Considerations">
+<link href="#rfc.references" rel="Chapter" title="7 References">
+<link href="#rfc.references.1" rel="Chapter" title="7.1 Normative References">
+<link href="#rfc.references.2" rel="Chapter" title="7.2 Informative References">
+<link href="#rfc.authors" rel="Chapter">
+
+
+  <meta name="generator" content="xml2rfc version 2.22.2 - https://tools.ietf.org/tools/xml2rfc" />
+  <link rel="schema.dct" href="http://purl.org/dc/terms/" />
+
+  <meta name="dct.creator" content="Schwartz, B. and M. Bishop" />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-schwartz-httpbis-dns-alt-svc-latest" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-08" />
+  <meta name="dct.abstract" content="The HTTP Alternative Services (Alt-Svc) mechanism allows an HTTP origin to be served from multiple network endpoints, and over multiple protocols.  However, the client must first contact the origin server, in order to learn of the alternative services.  This draft proposes a straightforward mapping of Alt-Svc into DNS, allowing clients to learn of these services before their first contact with the origin.  This arrangement offers potential benefits to both performance and privacy." />
+  <meta name="description" content="The HTTP Alternative Services (Alt-Svc) mechanism allows an HTTP origin to be served from multiple network endpoints, and over multiple protocols.  However, the client must first contact the origin server, in order to learn of the alternative services.  This draft proposes a straightforward mapping of Alt-Svc into DNS, allowing clients to learn of these services before their first contact with the origin.  This arrangement offers potential benefits to both performance and privacy." />
+
+</head>
+
+<body>
+
+  <table class="header">
+    <tbody>
+    
+    	<tr>
+<td class="left">HTTP Working Group</td>
+<td class="right">B. Schwartz</td>
+</tr>
+<tr>
+<td class="left">Internet-Draft</td>
+<td class="right">Google</td>
+</tr>
+<tr>
+<td class="left">Intended status: Standards Track</td>
+<td class="right">M. Bishop</td>
+</tr>
+<tr>
+<td class="left">Expires: January 9, 2020</td>
+<td class="right">Akamai Technologies</td>
+</tr>
+<tr>
+<td class="left"></td>
+<td class="right">July 8, 2019</td>
+</tr>
+
+    	
+    </tbody>
+  </table>
+
+  <p class="title">Finding HTTP Alternative Services via the Domain Name Service<br />
+  <span class="filename">draft-schwartz-httpbis-dns-alt-svc-latest</span></p>
+  
+  <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
+<p>The HTTP Alternative Services (Alt-Svc) mechanism allows an HTTP origin to be served from multiple network endpoints, and over multiple protocols.  However, the client must first contact the origin server, in order to learn of the alternative services.  This draft proposes a straightforward mapping of Alt-Svc into DNS, allowing clients to learn of these services before their first contact with the origin.  This arrangement offers potential benefits to both performance and privacy.</p>
+<h1 id="rfc.status"><a href="#rfc.status">Status of This Memo</a></h1>
+<p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
+<p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
+<p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
+<p>This Internet-Draft will expire on January 9, 2020.</p>
+<h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
+<p>Copyright (c) 2019 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
+<p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
+
+  
+  <hr class="noprint" />
+  <h1 class="np" id="rfc.toc"><a href="#rfc.toc">Table of Contents</a></h1>
+  <ul class="toc">
+
+  	<li>1.   <a href="#rfc.section.1">Introduction</a>
+</li>
+<ul><li>1.1.   <a href="#rfc.section.1.1">Terminology</a>
+</li>
+</ul><li>2.   <a href="#rfc.section.2">The ALTSVC record type</a>
+</li>
+<ul><li>2.1.   <a href="#rfc.section.2.1">Comparison with alternatives</a>
+</li>
+<ul><li>2.1.1.   <a href="#rfc.section.2.1.1">Differences from the SRV RRTYPE</a>
+</li>
+<li>2.1.2.   <a href="#rfc.section.2.1.2">Differences from the TXT RRTYPE</a>
+</li>
+</ul></ul><li>3.   <a href="#rfc.section.3">Differences from Alt-Svc as transmitted over HTTP</a>
+</li>
+<ul><li>3.1.   <a href="#rfc.section.3.1">Omitting Max Age</a>
+</li>
+<li>3.2.   <a href="#rfc.section.3.2">Multiple records and values</a>
+</li>
+<li>3.3.   <a href="#rfc.section.3.3">Interaction with other standards</a>
+</li>
+<li>3.4.   <a href="#rfc.section.3.4">Granularity and lifetime control</a>
+</li>
+</ul><li>4.   <a href="#rfc.section.4">Client behaviors</a>
+</li>
+<ul><li>4.1.   <a href="#rfc.section.4.1">Cache interaction</a>
+</li>
+<li>4.2.   <a href="#rfc.section.4.2">Optimizing for performance</a>
+</li>
+<li>4.3.   <a href="#rfc.section.4.3">Optimizing for privacy</a>
+</li>
+</ul><li>5.   <a href="#rfc.section.5">Security Considerations</a>
+</li>
+<li>6.   <a href="#rfc.section.6">IANA Considerations</a>
+</li>
+<li>7.   <a href="#rfc.references">References</a>
+</li>
+<ul><li>7.1.   <a href="#rfc.references.1">Normative References</a>
+</li>
+<li>7.2.   <a href="#rfc.references.2">Informative References</a>
+</li>
+</ul><li><a href="#rfc.authors">Authors' Addresses</a>
+</li>
+
+
+  </ul>
+
+  <h1 id="rfc.section.1">
+<a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
+</h1>
+<p id="rfc.section.1.p.1">The HTTP Alternative Services standard <a href="#AltSvc" class="xref">[AltSvc]</a> defines</p>
+<p></p>
+
+<ul>
+<li>an extensible data model for describing alternative network endpoints that are authoritative for an origin</li>
+<li>the &#8220;Alt-Svc Field Value&#8221;, a text format for representing this information</li>
+<li>standards for sending information in this format from a server to a client over HTTP/1.1 and HTTP/2.</li>
+</ul>
+<p id="rfc.section.1.p.3">Together, these components provide a toolkit that has proven useful and effective for informing a client of alternative services for an origin.  However, making use of an alternative service requires contacting the origin server first.  This creates an obvious performance cost: users wait for a full HTTP connection initiation (multiple roundtrips) before learning of an alternative service that is preferred by the origin.  The first connection also publicly reveals the user&#8217;s intended destination to all entities along the network path.</p>
+<p id="rfc.section.1.p.4">This draft proposes a straightforward mechanism to distribute the Alt-Svc Field Value, in its standard text format, through the DNS.  If a client receives this information during DNS resolution, it can skip the initial connection and proceed directly to an alternative service.</p>
+<h1 id="rfc.section.1.1">
+<a href="#rfc.section.1.1">1.1.</a> <a href="#terminology" id="terminology">Terminology</a>
+</h1>
+<p id="rfc.section.1.1.p.1">For consistency with <a href="#AltSvc" class="xref">[AltSvc]</a>, we adopt the following definitions</p>
+<p></p>
+
+<ul>
+<li>An &#8220;origin&#8221; is an information source as in <a href="#RFC6454" class="xref">[RFC6454]</a>.</li>
+<li>The &#8220;origin server&#8221; is the server that the client would reach when accessing the origin in the absence of Alt-Svc.</li>
+<li>An &#8220;alternative service&#8221; is a different server that can serve the origin.</li>
+</ul>
+<p id="rfc.section.1.1.p.3">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in BCP 14 <a href="#RFC2119" class="xref">[RFC2119]</a> <a href="#RFC8174" class="xref">[RFC8174]</a> when, and only when, they appear in all capitals, as shown here.</p>
+<h1 id="rfc.section.2">
+<a href="#rfc.section.2">2.</a> <a href="#the-altsvc-record-type" id="the-altsvc-record-type">The ALTSVC record type</a>
+</h1>
+<p id="rfc.section.2.p.1">The ALTSVC DNS resource record (RR) type (RRTYPE ???) is used to associate an Alternative Service Field Value with an origin.  Abstractly, the origin consists of a scheme (typically &#8220;https&#8221;), a host name, and a port (typically &#8220;443&#8221;).</p>
+<p id="rfc.section.2.p.2">In the case of the ALTSVC RR, the origin is represented by prefixing the port and scheme with &#8220;_&#8221;, then concatenating them with the host, resulting in a domain name like &#8220;_443._https.www.example.com.&#8221;.</p>
+<p id="rfc.section.2.p.3">The IANA DNS Underscore Global Scoped Entry Registry <a href="#Attrleaf" class="xref">[Attrleaf]</a> MUST have an entry under the ALTSVC RRType for this scheme.  The scheme SHOULD have an entry in the IANA URI Schemes Registry <a href="#RFC7595" class="xref">[RFC7595]</a>.  The scheme SHOULD be one for which Alt-Svc is defined (currently &#8220;http&#8221; or &#8220;https&#8221;).</p>
+<p id="rfc.section.2.p.4">The RDATA portion of an ALTSVC resource record contains an Alt-Svc Field Value, exactly as defined in Section 4 of <a href="#AltSvc" class="xref">[AltSvc]</a>.</p>
+<p id="rfc.section.2.p.5">For example, if the operator of https://www.example.com intends to include an HTTP response header like</p>
+<p id="rfc.section.2.p.6">Alt-Svc: h2=&#8221;:8000&#8221;; ma=60</p>
+<p id="rfc.section.2.p.7">They would also publish an ALTSVC DNS record like</p>
+<p id="rfc.section.2.p.8">_443._https.www.example.com. 60S IN ALTSVC &#8220;h2=\&#8220;:8000\&#8221;&#8221;</p>
+<p id="rfc.section.2.p.9">This data type can be represented as an Unknown RR as described in <a href="#RFC3597" class="xref">[RFC3597]</a>:</p>
+<p id="rfc.section.2.p.10">_443._https.www.example.com. 60S IN TYPE??? \# 10 68323D223A3830303022</p>
+<p id="rfc.section.2.p.11">This construction is intended to be extensible in two ways.  First, any extensions that are made to the Alt-Svc format for transmission over HTTPS are also applicable here, unless expressly mentioned otherwise.  Second, including the scheme in the DNS name allows for ALTSVC to serve schemes other than HTTPS, such as HTTP with Opportunistic Security <a href="#RFC8164" class="xref">[RFC8164]</a> and any future schemes for which Alt-Svc may be defined.</p>
+<h1 id="rfc.section.2.1">
+<a href="#rfc.section.2.1">2.1.</a> <a href="#comparison-with-alternatives" id="comparison-with-alternatives">Comparison with alternatives</a>
+</h1>
+<p id="rfc.section.2.1.p.1">The ALTSVC record type closely resembles some existing record types.</p>
+<h1 id="rfc.section.2.1.1">
+<a href="#rfc.section.2.1.1">2.1.1.</a> <a href="#differences-from-the-srv-rrtype" id="differences-from-the-srv-rrtype">Differences from the SRV RRTYPE</a>
+</h1>
+<p id="rfc.section.2.1.1.p.1">An SRV record can perform a similar function to the ALTSVC record, informing a client to look in a different location for a service.  However, there are several differences:</p>
+<p></p>
+
+<ul>
+<li>SRV records are typically mandatory, whereas clients will always continue to function correctly without making use of Alt-Svc.</li>
+<li>SRV records cannot instruct the client to switch or upgrade protocols, whereas Alt-Svc can signal such an upgrade (e.g. to HTTP/2).</li>
+<li>SRV records are not extensible, whereas Alt-Svc can be extended with new parameters.  For example, this is what allows the privacy improvements related to SNI selection in <a href="#AltSvcSNI" class="xref">[AltSvcSNI]</a>.</li>
+<li>Using SRV records would not allow a client to skip processing of the Alt-Svc information in a subsequent connection, so it does not confer a performance advantage.</li>
+</ul>
+<h1 id="rfc.section.2.1.2">
+<a href="#rfc.section.2.1.2">2.1.2.</a> <a href="#differences-from-the-txt-rrtype" id="differences-from-the-txt-rrtype">Differences from the TXT RRTYPE</a>
+</h1>
+<p id="rfc.section.2.1.2.p.1">The ALTSVC record uses an identical format to a TXT record, and could be implemented as such.  However, we define a new record type for clarity, and to respect the use of TXT for human-readable notes as recommended in <a href="#RFC5507" class="xref">[RFC5507]</a>.</p>
+<h1 id="rfc.section.3">
+<a href="#rfc.section.3">3.</a> <a href="#differences-from-alt-svc-as-transmitted-over-http" id="differences-from-alt-svc-as-transmitted-over-http">Differences from Alt-Svc as transmitted over HTTP</a>
+</h1>
+<p id="rfc.section.3.p.1">Publishing an ALTSVC record in DNS is intended to be equivalent to transmitting this field value over HTTP, and receiving an ALTSVC record is intended to be equivalent to receiving this field value over HTTP.  However, there are some small differences in the intended client and server behavior.</p>
+<h1 id="rfc.section.3.1">
+<a href="#rfc.section.3.1">3.1.</a> <a href="#omitting-max-age" id="omitting-max-age">Omitting Max Age</a>
+</h1>
+<p id="rfc.section.3.1.p.1">When publishing an ALTSVC record in DNS, server operators MUST omit the &#8220;ma&#8221; parameter, which encodes the &#8220;max age&#8221; (i.e. expiration time) of an Alt-Svc Field Value.  Instead, server operators SHOULD encode the expiration time in the DNS TTL, and MUST NOT set a TTL longer than the intended &#8220;max age&#8221;.</p>
+<p id="rfc.section.3.1.p.2">When receiving an ALTSVC record, clients MAY synthesize a new &#8220;ma&#8221; parameter from the DNS TTL, in order to interoperate with Alt-Svc processing subsystems.</p>
+<h1 id="rfc.section.3.2">
+<a href="#rfc.section.3.2">3.2.</a> <a href="#multiple-records-and-values" id="multiple-records-and-values">Multiple records and values</a>
+</h1>
+<p id="rfc.section.3.2.p.1">Server operators MAY publish multiple ALTSVC records as an RRSET.  When publishing an RRSET with multiple ALTSVC records, the server operator MUST set the overall TTL to the minimum of the &#8220;max age&#8221; values (following Section 5.2 of <a href="#RFC2181" class="xref">[RFC2181]</a>).  Each RR can contain multiple alt-values separated by commas, as described in Section 3 of <a href="#AltSvc" class="xref">[AltSvc]</a>.  As specified there, &#8220;the order of values relects the server&#8217;s preference&#8221;.</p>
+<p id="rfc.section.3.2.p.2">When receiving an RRSET containing multiple ALTSVC records, clients SHOULD apply a random shuffle to the records before using them, to ensure randomized load-balancing.  This is consistent with DNS rules for interpretation of RRSETs, which are regarded as unordered collections.</p>
+<p id="rfc.section.3.2.p.3">After shuffling the RRSET, the client SHOULD concatenate all the values in the RRSET, separated by commas.  (This is semantically equivalent to receiving multiple Alt-Svc HTTP response headers, according to Section 3.2.2 of <a href="#HTTP" class="xref">[HTTP]</a>).</p>
+<h1 id="rfc.section.3.3">
+<a href="#rfc.section.3.3">3.3.</a> <a href="#interaction-with-other-standards" id="interaction-with-other-standards">Interaction with other standards</a>
+</h1>
+<p id="rfc.section.3.3.p.1">The purpose of this standard is to reduce connection latency and improve user privacy.  Server operators implementing this standard SHOULD also implement TLS 1.3 <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a> and OCSP Stapling <a href="#RFC6066" class="xref">[RFC6066]</a>, both of which confer substantial performance and privacy benefits when used in combination with ALTSVC records.</p>
+<p id="rfc.section.3.3.p.2">To realize the greatest privacy benefits, this proposal is intended for use with a privacy-preserving DNS transport (like DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a> or DNS over HTTPS <a href="#DOH" class="xref">[DOH]</a>), and with the &#8220;SNI&#8221; Alt-Svc Parameter <a href="#AltSvcSNI" class="xref">[AltSvcSNI]</a>.  However, performance improvements, and some modest privacy improvements, are possible without the use of those standards.</p>
+<h1 id="rfc.section.3.4">
+<a href="#rfc.section.3.4">3.4.</a> <a href="#granularity-and-lifetime-control" id="granularity-and-lifetime-control">Granularity and lifetime control</a>
+</h1>
+<p id="rfc.section.3.4.p.1">Sending Alt-Svc over HTTP allows the server to tailor the Alt-Svc Field Value specifically to the client.  When using an ALTSVC DNS record, groups of clients will necessarily receive the same Alt-Svc Field Value.  Therefore, this standard is not suitable for servers that require single-client granularity in Alt-Svc.  Server operators that want to serve different Alt-Svc Field Values to different geographic or network regions SHOULD configure their authoritative DNS server to respect the EDNS0 Client Subnet extension <a href="#RFC7871" class="xref">[RFC7871]</a>.</p>
+<p id="rfc.section.3.4.p.2">Some DNS caching systems incorrectly extend the lifetime of DNS records beyond the stated TTL.  Server operators MUST NOT rely on ALTSVC records expiring on time, and MAY shorten the TTL to compensate.</p>
+<h1 id="rfc.section.4">
+<a href="#rfc.section.4">4.</a> <a href="#client-behaviors" id="client-behaviors">Client behaviors</a>
+</h1>
+<h1 id="rfc.section.4.1">
+<a href="#rfc.section.4.1">4.1.</a> <a href="#cache-interaction" id="cache-interaction">Cache interaction</a>
+</h1>
+<p id="rfc.section.4.1.p.1">If the client has an Alt-Svc cache, and a usable Alt-Svc value is present in that cache, then the client SHOULD NOT issue an ALTSVC DNS query.  Instead, the client SHOULD proceed with alternative service connection as usual.</p>
+<p id="rfc.section.4.1.p.2">If the client has a cached Alt-Svc entry that is expiring, the client MAY perform an ALTSVC query to refresh the entry.</p>
+<h1 id="rfc.section.4.2">
+<a href="#rfc.section.4.2">4.2.</a> <a href="#optimizing-for-performance" id="optimizing-for-performance">Optimizing for performance</a>
+</h1>
+<p id="rfc.section.4.2.p.1">Clients that are optimizing for performance (i.e. minimum connection setup time) SHOULD implement the following connection sequence:</p>
+<p></p>
+
+<ol>
+<li>Issue address (AAAA and/or A) queries, immediately followed by the ALTSVC query.</li>
+<li>If an ALTSVC response is received first, proceed with alternative service connection and ignore the address responses if they are no longer relevant.</li>
+<li>Otherwise, initiate connection to the origin server.</li>
+<li>As soon as an Alt-Svc field value is received, through the DNS or over HTTP, proceed with alternative service connection.  Do not abort this connection if an Alt-Svc field value is received from the other source later.</li>
+</ol>
+<p id="rfc.section.4.2.p.3">If the ALTSVC and address queries return approximately simultaneously, this process typically saves three roundtrips on a fresh connection that uses Alt-Svc: one each for TCP, TLS 1.3, and HTTP.  (On subsequent connections, the Alt-Svc information is expected to be cached, so this procedure does not apply.)</p>
+<p id="rfc.section.4.2.p.4">If a client can cache Alt-Svc entries that were received over both HTTP and DNS, the client MAY prefer entries that were received over HTTP.  These records may be more narrowly targeted for the specific client.</p>
+<p id="rfc.section.4.2.p.5">As an additional optimization, when choosing among multiple Alt-Svc values, clients MAY prefer those that will not require an address query, either because the corresponding address record is already in cache or because the host is an IP address.</p>
+<p id="rfc.section.4.2.p.6">Note that this procedure does not rely on recursive resolvers handling the ALTSVC record type correctly.  If ALTSVC queries receive spurious NXDOMAIN responses, or even no response at all, connections will proceed as usual without any delay.</p>
+<h1 id="rfc.section.4.3">
+<a href="#rfc.section.4.3">4.3.</a> <a href="#optimizing-for-privacy" id="optimizing-for-privacy">Optimizing for privacy</a>
+</h1>
+<p id="rfc.section.4.3.p.1">Clients that are optimizing for privacy SHOULD implement <a href="#AltSvcSNI" class="xref">[AltSvcSNI]</a> and DNS over a secure transport (e.g. <a href="#RFC7858" class="xref">[RFC7858]</a> or <a href="#DOH" class="xref">[DOH]</a>).  Use of a secure transport is important not only for privacy protection, but also to ensure that queries for the new ALTSVC RRTYPE are handled correctly.  Additionally, these clients SHOULD implement the following connection sequence:</p>
+<p></p>
+
+<ol>
+<li>Issue the ALTSVC DNS query first, immediately followed by the address queries.</li>
+<li>Wait for the ALTSVC record response.</li>
+<li>If the response is nonempty, proceed with alternative service connection and ignore the address query responses.</li>
+<li>Otherwise, wait for the address queries and connect as usual.</li>
+</ol>
+<p id="rfc.section.4.3.p.3">Note that this process is also expected to be faster than Alt-Svc over HTTP in the case of HTTP Opportunistic Upgrade Probing (Section 2 of <a href="#RFC8164" class="xref">[RFC8164]</a>).</p>
+<h1 id="rfc.section.5">
+<a href="#rfc.section.5">5.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
+</h1>
+<p id="rfc.section.5.p.1">Alt-Svc Field Values are intended for distribution over untrusted channels, and clients are REQUIRED to verify that the alternative service is authoritative for the origin (Section 2.1 of <a href="#AltSvc" class="xref">[AltSvc]</a>).  Therefore, DNSSEC signing and validation are OPTIONAL for publishing and using ALTSVC records.</p>
+<h1 id="rfc.section.6">
+<a href="#rfc.section.6">6.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
+</h1>
+<p id="rfc.section.6.p.1">Per <a href="#RFC6895" class="xref">[RFC6895]</a>, please add the following entry to the data type range of the Resource Record (RR) TYPEs registry:</p>
+<table cellpadding="3" cellspacing="0" class="tt full center">
+<thead><tr>
+<th class="left">TYPE</th>
+<th class="left">Meaning</th>
+<th class="left">Reference</th>
+</tr></thead>
+<tbody><tr>
+<td class="left">ALTSVC</td>
+<td class="left">Alt-Svc Value</td>
+<td class="left">(This document)</td>
+</tr></tbody>
+</table>
+<p id="rfc.section.6.p.2">Per <a href="#Attrleaf" class="xref">[Attrleaf]</a>, please add the following entries to the DNS Underscore Global Scoped Entry Registry:</p>
+<table cellpadding="3" cellspacing="0" class="tt full center">
+<thead><tr>
+<th class="left">RR TYPE</th>
+<th class="left">_NODE NAME</th>
+<th class="left">Meaning</th>
+<th class="left">Reference</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="left">ALTSVC</td>
+<td class="left">_https</td>
+<td class="left">Alt-Svc for HTTPS</td>
+<td class="left">(This document)</td>
+</tr>
+<tr>
+<td class="left">ALTSVC</td>
+<td class="left">_http</td>
+<td class="left">Alt-Svc for HTTP</td>
+<td class="left">(This document)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="rfc.references">
+<a href="#rfc.references">7.</a> References</h1>
+<h1 id="rfc.references.1">
+<a href="#rfc.references.1">7.1.</a> Normative References</h1>
+<table><tbody>
+<tr>
+<td class="reference"><b id="AltSvc">[AltSvc]</b></td>
+<td class="top">
+<a>Nottingham, M.</a>, <a>McManus, P.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7838">HTTP Alternative Services</a>", RFC 7838, DOI 10.17487/RFC7838, April 2016.</td>
+</tr>
+<tr>
+<td class="reference"><b id="AltSvcSNI">[AltSvcSNI]</b></td>
+<td class="top">
+<a>Bishop, M.</a>, "<a href="https://tools.ietf.org/html/draft-bishop-httpbis-sni-altsvc-02">The "SNI" Alt-Svc Parameter</a>", Internet-Draft draft-bishop-httpbis-sni-altsvc-02, May 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="Attrleaf">[Attrleaf]</b></td>
+<td class="top">
+<a>Crocker, D.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dnsop-attrleaf-16">DNS Scoped Data Through "Underscore" Naming of Attribute Leaves</a>", Internet-Draft draft-ietf-dnsop-attrleaf-16, November 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="DOH">[DOH]</b></td>
+<td class="top">
+<a>Hoffman, P.</a> and <a>P. McManus</a>, "<a href="https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-14">DNS Queries over HTTPS (DoH)</a>", Internet-Draft draft-ietf-doh-dns-over-https-14, August 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</b></td>
+<td class="top">
+<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-tls13-28">The Transport Layer Security (TLS) Protocol Version 1.3</a>", Internet-Draft draft-ietf-tls-tls13-28, March 2018.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC2119">[RFC2119]</b></td>
+<td class="top">
+<a>Bradner, S.</a>, "<a href="https://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>", BCP 14, RFC 2119, DOI 10.17487/RFC2119, March 1997.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC2181">[RFC2181]</b></td>
+<td class="top">
+<a>Elz, R.</a> and <a>R. Bush</a>, "<a href="https://tools.ietf.org/html/rfc2181">Clarifications to the DNS Specification</a>", RFC 2181, DOI 10.17487/RFC2181, July 1997.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC3597">[RFC3597]</b></td>
+<td class="top">
+<a>Gustafsson, A.</a>, "<a href="https://tools.ietf.org/html/rfc3597">Handling of Unknown DNS Resource Record (RR) Types</a>", RFC 3597, DOI 10.17487/RFC3597, September 2003.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6066">[RFC6066]</b></td>
+<td class="top">
+<a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6066">Transport Layer Security (TLS) Extensions: Extension Definitions</a>", RFC 6066, DOI 10.17487/RFC6066, January 2011.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6454">[RFC6454]</b></td>
+<td class="top">
+<a>Barth, A.</a>, "<a href="https://tools.ietf.org/html/rfc6454">The Web Origin Concept</a>", RFC 6454, DOI 10.17487/RFC6454, December 2011.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7595">[RFC7595]</b></td>
+<td class="top">
+<a>Thaler, D.</a>, <a>Hansen, T.</a> and <a>T. Hardie</a>, "<a href="https://tools.ietf.org/html/rfc7595">Guidelines and Registration Procedures for URI Schemes</a>", BCP 35, RFC 7595, DOI 10.17487/RFC7595, June 2015.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7858">[RFC7858]</b></td>
+<td class="top">
+<a>Hu, Z.</a>, <a>Zhu, L.</a>, <a>Heidemann, J.</a>, <a>Mankin, A.</a>, <a>Wessels, D.</a> and <a>P. Hoffman</a>, "<a href="https://tools.ietf.org/html/rfc7858">Specification for DNS over Transport Layer Security (TLS)</a>", RFC 7858, DOI 10.17487/RFC7858, May 2016.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8174">[RFC8174]</b></td>
+<td class="top">
+<a>Leiba, B.</a>, "<a href="https://tools.ietf.org/html/rfc8174">Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</a>", BCP 14, RFC 8174, DOI 10.17487/RFC8174, May 2017.</td>
+</tr>
+</tbody></table>
+<h1 id="rfc.references.2">
+<a href="#rfc.references.2">7.2.</a> Informative References</h1>
+<table><tbody>
+<tr>
+<td class="reference"><b id="HTTP">[HTTP]</b></td>
+<td class="top">
+<a>Fielding, R.</a> and <a>J. Reschke</a>, "<a href="https://tools.ietf.org/html/rfc7230">Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing</a>", RFC 7230, DOI 10.17487/RFC7230, June 2014.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC5507">[RFC5507]</b></td>
+<td class="top">
+<a>IAB</a>, <a>Faltstrom, P.</a>, <a>Austein, R.</a> and <a>P. Koch</a>, "<a href="https://tools.ietf.org/html/rfc5507">Design Choices When Expanding the DNS</a>", RFC 5507, DOI 10.17487/RFC5507, April 2009.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6895">[RFC6895]</b></td>
+<td class="top">
+<a>Eastlake 3rd, D.</a>, "<a href="https://tools.ietf.org/html/rfc6895">Domain Name System (DNS) IANA Considerations</a>", BCP 42, RFC 6895, DOI 10.17487/RFC6895, April 2013.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7871">[RFC7871]</b></td>
+<td class="top">
+<a>Contavalli, C.</a>, <a>van der Gaast, W.</a>, <a>Lawrence, D.</a> and <a>W. Kumari</a>, "<a href="https://tools.ietf.org/html/rfc7871">Client Subnet in DNS Queries</a>", RFC 7871, DOI 10.17487/RFC7871, May 2016.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC8164">[RFC8164]</b></td>
+<td class="top">
+<a>Nottingham, M.</a> and <a>M. Thomson</a>, "<a href="https://tools.ietf.org/html/rfc8164">Opportunistic Security for HTTP/2</a>", RFC 8164, DOI 10.17487/RFC8164, May 2017.</td>
+</tr>
+</tbody></table>
+<h1 id="rfc.authors"><a href="#rfc.authors">Authors' Addresses</a></h1>
+<div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Ben Schwartz</span> 
+	  <span class="n hidden">
+		<span class="family-name">Schwartz</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Google</span>
+	<span class="adr">
+	  
+	  <span class="vcardline">
+		<span class="locality"></span> 
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline"></span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:bemasc@google.com">bemasc@google.com</a></span>
+
+  </address>
+</div><div class="avoidbreak">
+  <address class="vcard">
+	<span class="vcardline">
+	  <span class="fn">Mike Bishop</span> 
+	  <span class="n hidden">
+		<span class="family-name">Bishop</span>
+	  </span>
+	</span>
+	<span class="org vcardline">Akamai Technologies</span>
+	<span class="adr">
+	  
+	  <span class="vcardline">
+		<span class="locality"></span> 
+		<span class="region"></span>
+		<span class="code"></span>
+	  </span>
+	  <span class="country-name vcardline"></span>
+	</span>
+	<span class="vcardline">EMail: <a href="mailto:mbishop@evequefou.be">mbishop@evequefou.be</a></span>
+
+  </address>
+</div>
+
+</body>
+</html>
+
