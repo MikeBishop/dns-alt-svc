@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 9 July 2021                                           E. Nygren
+Expires: 10 July 2021                                          E. Nygren
                                                      Akamai Technologies
-                                                          5 January 2021
+                                                          6 January 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 July 2021.
+   This Internet-Draft will expire on 10 July 2021.
 
 Copyright Notice
 
@@ -138,13 +138,14 @@ Table of Contents
      16.2.  Informative References
    Appendix A.  Decoding text in zone files
      A.1.  Decoding a comma-separated list
-   Appendix B.  Comparison with alternatives
-     B.1.  Differences from the SRV RR type
-     B.2.  Differences from the proposed HTTP record
-     B.3.  Differences from the proposed ANAME record
-     B.4.  Comparison with separate RR types for AliasMode and
+   Appendix B.  HTTP Mapping Summary
+   Appendix C.  Comparison with alternatives
+     C.1.  Differences from the SRV RR type
+     C.2.  Differences from the proposed HTTP record
+     C.3.  Differences from the proposed ANAME record
+     C.4.  Comparison with separate RR types for AliasMode and
            ServiceMode
-   Appendix C.  Change history
+   Appendix D.  Change history
    Authors' Addresses
 
 1.  Introduction
@@ -1056,9 +1057,11 @@ Table of Contents
    All the SvcParamKeys defined in Section 6 are permitted for use in
    HTTPS RRs.  The default set of ALPN IDs is the single value
    "http/1.1".  The "automatically mandatory" keys (Section 7) are
-   "port", "alpn", and "no-default-alpn".  Clients that restrict the
-   HTTPS destination port (e.g. using the "bad ports" list from [FETCH])
-   SHOULD apply the same restriction to the "port" SvcParam.
+   "port" and "no-default-alpn".  (As described in Section 7, clients
+   must either implement these keys or ignore any RR in which they
+   appear.)  Clients that restrict the HTTPS destination port (e.g.
+   using the "bad ports" list from [FETCH]) SHOULD apply the same
+   restriction to the "port" SvcParam.
 
    The presence of an HTTPS RR for an origin also indicates that all
    HTTP resources are available over HTTPS, as discussed in Section 8.5.
@@ -1938,7 +1941,40 @@ A.1.  Decoding a comma-separated list
    part2
    part3,part4\
 
-Appendix B.  Comparison with alternatives
+Appendix B.  HTTP Mapping Summary
+
+   This table serves as a non-normative summary of the HTTP mapping for
+   SVCB (Section 8).  Future protocol mappings may provide a similar
+   summary table.
+
+            +==========================+======================+
+            +==========================+======================+
+            | *Mapped scheme*          | "https"              |
+            +--------------------------+----------------------+
+            | *Other affected schemes* | "http", "wss", "ws", |
+            |                          | (other HTTP-based)   |
+            +--------------------------+----------------------+
+            | *RR type*                | HTTPS (65)           |
+            +--------------------------+----------------------+
+            | *Name prefix*            | None for port 443,   |
+            |                          | else "_$PORT._https" |
+            +--------------------------+----------------------+
+            | *Automatically Mandatory | "port", "no-default- |
+            | Keys*                    | alpn"                |
+            +--------------------------+----------------------+
+            | *SvcParam defaults*      | "alpn": ["http/1.1"] |
+            +--------------------------+----------------------+
+            | *Special behaviors*      | HTTP to HTTPS        |
+            |                          | upgrade              |
+            +--------------------------+----------------------+
+
+                                  Table 5
+
+   This table does not indicate any SvcParamKeys that servers are
+   required to publish, or that clients are required to implement,
+   because there are none in this mapping.
+
+Appendix C.  Comparison with alternatives
 
    The SVCB and HTTPS RR types closely resemble, and are inspired by,
    some existing record types and proposals.  A complaint with all of
@@ -1947,7 +1983,7 @@ Appendix B.  Comparison with alternatives
    solution that solves multiple problems we will overcome the inertia
    and have a path to achieve client implementation.
 
-B.1.  Differences from the SRV RR type
+C.1.  Differences from the SRV RR type
 
    An SRV record [SRV] can perform a similar function to the SVCB
    record, informing a client to look in a different location for a
@@ -1966,7 +2002,7 @@ B.1.  Differences from the SRV RR type
    *  SVCB records use 16 bit for SvcPriority for consistency with SRV
       and other RR types that also use 16 bit priorities.
 
-B.2.  Differences from the proposed HTTP record
+C.2.  Differences from the proposed HTTP record
 
    Unlike [I-D.bellis-dnsop-http-record], this approach is extensible to
    cover Alt-Svc and Encrypted ClientHello use-cases.  Like that
@@ -1975,7 +2011,7 @@ B.2.  Differences from the proposed HTTP record
    Like that proposal, it remains necessary to continue to include
    address records at the zone apex for legacy clients.
 
-B.3.  Differences from the proposed ANAME record
+C.3.  Differences from the proposed ANAME record
 
    Unlike [I-D.ietf-dnsop-aname], this approach is extensible to cover
    Alt-Svc and ECH use-cases.  This approach also does not require any
@@ -1995,7 +2031,7 @@ B.3.  Differences from the proposed ANAME record
    endpoint, and may remove the apex's address records if the observed
    legacy traffic has fallen to negligible levels.
 
-B.4.  Comparison with separate RR types for AliasMode and ServiceMode
+C.4.  Comparison with separate RR types for AliasMode and ServiceMode
 
    Abstractly, functions of AliasMode and ServiceMode are independent,
    so it might be tempting to specify them as separate RR types.
@@ -2010,7 +2046,7 @@ B.4.  Comparison with separate RR types for AliasMode and ServiceMode
    on clients and servers, and would not reduce implementation
    complexity.
 
-Appendix C.  Change history
+Appendix D.  Change history
 
    *  draft-ietf-dnsop-svcb-https-02
 
