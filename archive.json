@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-01-06T16:19:37.638073+00:00",
+  "timestamp": "2021-01-11T16:58:25.260955+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -20706,25 +20706,42 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTM5NzgzODg0",
       "title": "Add a mapping summary table for the HTTPS mapping",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/281",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "bemasc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2020-12-14T20:36:50Z",
-      "updatedAt": "2021-01-06T16:19:09Z",
+      "updatedAt": "2021-01-06T17:38:14Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "e318510b60c6a4f21eb0f541aa3f316e8e502938",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-table",
       "headRefOid": "462aeb4811ce9d4ace8972e70dc49cf350020f09",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "closedAt": "2021-01-06T17:38:08Z",
+      "mergedAt": "2021-01-06T17:38:08Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "ea499189c4e492a1b623544d3a974ba366ec2c13"
+      },
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@brian-peter-dickson Does this match your expectations for a summary table?",
+          "createdAt": "2021-01-06T16:28:41Z",
+          "updatedAt": "2021-01-06T16:28:41Z"
+        },
+        {
+          "author": "brian-peter-dickson",
+          "authorAssociation": "NONE",
+          "body": "Yes, that is great, thank you.\n\nOn Wed, Jan 6, 2021 at 8:28 AM Benjamin M. Schwartz <\nnotifications@github.com> wrote:\n\n> @brian-peter-dickson <https://github.com/brian-peter-dickson> Does this\n> match your expectations for a summary table?\n>\n> \u2014\n> You are receiving this because you were mentioned.\n> Reply to this email directly, view it on GitHub\n> <https://github.com/MikeBishop/dns-alt-svc/pull/281#issuecomment-755407719>,\n> or unsubscribe\n> <https://github.com/notifications/unsubscribe-auth/ABPFI3MIFBEPBROPUQJD733SYSFURANCNFSM4U3JROIQ>\n> .\n>\n",
+          "createdAt": "2021-01-06T17:23:51Z",
+          "updatedAt": "2021-01-06T17:23:51Z"
+        }
+      ],
       "reviews": [
         {
           "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYxNDkyODk3",
