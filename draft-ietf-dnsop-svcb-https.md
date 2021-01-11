@@ -459,6 +459,12 @@ Unless specified otherwise by the
 protocol mapping, clients MUST ignore any SvcParam that they do
 not recognize.
 
+Some SvcParams impose requirements on other SvcParams in the RR.  A
+ServiceMode RR is called "self-consistent" if its SvcParams all comply with
+each others' requirements.  Zone-file implementations SHOULD enforce
+self-consistency.  Clients MUST reject any RR that they identify is not
+self-consistent, and MAY reject the entire RRSet.
+
 ## Special handling of "." in TargetName {#dot}
 
 If TargetName has the value "." (represented in the wire format as a
@@ -897,7 +903,8 @@ The presentation `value` SHALL be a comma-separated list
 ({{value-list}}) of one or more valid
 SvcParamKeys, either by their registered name or in the unknown-key format
 ({{presentation}}).  Keys MAY appear in any order, but MUST NOT appear more
-than once.  Any listed keys MUST also appear in the SvcParams.
+than once.  For self-consistency ({{service-mode}}), listed keys MUST also
+appear in the SvcParams.
 
 To enable simpler parsing, this
 SvcParamValue MUST NOT contain escape sequences.
