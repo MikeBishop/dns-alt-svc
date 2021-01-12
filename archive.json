@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-01-11T16:58:25.260955+00:00",
+  "timestamp": "2021-01-12T15:55:24.450193+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -4988,7 +4988,7 @@
       ],
       "body": "The stuff in Appendix A.1 is both moot and confusing.\r\n\r\nIf I understand correctly (after having to read and cross-reference many parts of this document, the ALPN RFC(s), and the IANA table for ALPN), the following is the case:\r\nNO ALPN IDs HAVE EMBEDDED COMMAS.\r\nThus, there is NO need for quoted commas in any ALPN.\r\nAnd, no other values (single or multi) have (or allow) embedded commas.\r\n\r\nCan we please dispense with all of the fancy things showing how to quote commas and how to interpret quoted commas?\r\nIf necessary, place a caveat into the IANA table that ALPN values MUST NOT contain commas in their ID.\r\n\r\nThis reduces ALPN to wire format of one or more <length>string (where length is a single octet), and the presentation format is simply a comma-separated list of strings, possibly enclosed in quotes, with no other quoting necessary.\r\n\r\nThe SvcParameters object itself is, in presentation format, a list separated with whitespace, so there is no ambiguity between the list within an ALPN, and the list of SvcParameters. \r\n\r\nPlease?\r\n\r\nIt would be nice to have a much simpler document, and much easier task for implementing things.",
       "createdAt": "2020-10-03T00:46:21Z",
-      "updatedAt": "2021-01-05T20:15:42Z",
+      "updatedAt": "2021-01-12T06:06:44Z",
       "closedAt": "2021-01-05T20:15:42Z",
       "comments": [
         {
@@ -5046,6 +5046,13 @@
           "body": "I've merged #282.  This should substantially simplify the implementation of the ALPN zone file syntax, while still enabling representation of arbitrary ALPNs if necessary.  It should make life easier for everyone except @marka63, who has already implemented the previous behavior.  Sorry, Mark.\r\n\r\nThis is not set in stone, but we are approaching WGLC, so please speak now if you can't live with this version.",
           "createdAt": "2021-01-05T20:15:42Z",
           "updatedAt": "2021-01-05T20:15:42Z"
+        },
+        {
+          "author": "marka63",
+          "authorAssociation": "NONE",
+          "body": "Part of the problem here is the assumption that all valid inputs to alpn can be parsed by the existing parser.  I would argue that they can't be.  The behaviour when parsing `alpn=\"a b,c\"` is not defined by the existing specification.  character-string defines double-quote, content, double-quote.  It doesn't define keyname, equals, double-quote, content including space, double-quote.  I can't tell you if `alpn=\"a b,c\"` would be come one or two tokens (`alpn=\"a` and `b,c\"`) because the behaviour of double quote in that position is ill defined.  Is it a literal double quote or does it open up a double quoted string that continues the token?  We had to change our parser just to accept it.\r\n\r\nBTW #282 has `\\2\\` which is illegal.  It is \\DDD not '\\D'.  `\\050\\`",
+          "createdAt": "2021-01-12T06:04:48Z",
+          "updatedAt": "2021-01-12T06:06:44Z"
         }
       ]
     },
@@ -21309,7 +21316,7 @@
       "labels": [],
       "body": "Fixes #283",
       "createdAt": "2021-01-05T19:15:06Z",
-      "updatedAt": "2021-01-05T21:22:20Z",
+      "updatedAt": "2021-01-12T15:47:33Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "e318510b60c6a4f21eb0f541aa3f316e8e502938",
@@ -21320,7 +21327,15 @@
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@enygren WDYT about harmonizing this language with #285?",
+          "createdAt": "2021-01-12T15:47:33Z",
+          "updatedAt": "2021-01-12T15:47:33Z"
+        }
+      ],
       "reviews": [
         {
           "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTYyMDgwNDM0",
@@ -21543,6 +21558,80 @@
           ]
         }
       ]
+    },
+    {
+      "number": 285,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTUyODgyNzUy",
+      "title": "Clarify self-consistency rules",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/285",
+      "state": "OPEN",
+      "author": "bemasc",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Requested in https://github.com/MikeBishop/dns-alt-svc/pull/284/files#r552202056",
+      "createdAt": "2021-01-11T16:58:52Z",
+      "updatedAt": "2021-01-11T21:05:22Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "ea499189c4e492a1b623544d3a974ba366ec2c13",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "bemasc-invalid",
+      "headRefOid": "98125032e2f114173162eef3a7dccdb29dddb7e9",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@ericorth Does this address your concern?",
+          "createdAt": "2021-01-11T17:56:40Z",
+          "updatedAt": "2021-01-11T17:56:40Z"
+        },
+        {
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "body": "> @ericorth Does this address your concern?\r\n\r\nYes.  It does so nicely.  Thanks.\r\n\r\nFurther suggestion: We should call out \"would make the record not self-consistent\" or something like that for the alpn/no-default-alpn case we were calling out as \"invalid\" before (and any other cases we know of).  Good to keep the language in the draft consistent and precise (\"malformed\" vs \"invalid\" vs \"not self-consistent\").",
+          "createdAt": "2021-01-11T21:00:19Z",
+          "updatedAt": "2021-01-11T21:00:19Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> Further suggestion: We should call out \"would make the record not self-consistent\" or something like that for the alpn/no-default-alpn case we were calling out as \"invalid\" before (and any other cases we know of). Good to keep the language in the draft consistent and precise (\"malformed\" vs \"invalid\" vs \"not self-consistent\").\r\n\r\nAgreed; I was just trying to avoid a collision with #284.",
+          "createdAt": "2021-01-11T21:05:22Z",
+          "updatedAt": "2021-01-11T21:05:22Z"
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "number": 286,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTUzNTY2NTkz",
+      "title": "Remove extra backslash in example",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/286",
+      "state": "OPEN",
+      "author": "bemasc",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2021-01-12T15:54:41Z",
+      "updatedAt": "2021-01-12T15:54:41Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "ea499189c4e492a1b623544d3a974ba366ec2c13",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "bemasc-comma",
+      "headRefOid": "72c3617e2dcf5406098dd9b22f46f4b5e5a5ad5b",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
