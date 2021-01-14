@@ -535,6 +535,10 @@ such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
+Although SVCB can only provide alternative endpoints for any pre-existing
+protocol, new protocols could be defined that require a ServiceMode record.
+Such "SVCB-reliant" protocols SHALL terminate upon reaching step 5.
+
 ## Handling resolution failures {#client-failures}
 
 If a SVCB query results in a SERVFAIL error, transport error, or timeout,
