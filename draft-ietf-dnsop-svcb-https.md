@@ -462,8 +462,8 @@ not recognize.
 Some SvcParams impose requirements on other SvcParams in the RR.  A
 ServiceMode RR is called "self-consistent" if its SvcParams all comply with
 each others' requirements.  Zone-file implementations SHOULD enforce
-self-consistency.  Clients MUST reject any RR that they identify is not
-self-consistent, and MAY reject the entire RRSet.
+self-consistency.  Clients MUST reject any RR whose recognized SvcParams
+are not self-consistent, and MAY reject the entire RRSet.
 
 ## Special handling of "." in TargetName {#dot}
 
