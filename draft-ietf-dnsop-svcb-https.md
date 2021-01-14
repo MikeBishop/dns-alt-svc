@@ -1589,7 +1589,7 @@ Decoding of value-lists happens after character-string decoding.
 For example, consider these `char-string` SvcParamValues:
 
     "part1,part2,part3\\,part4\\\\"
-    part1\,\p\a\r\t\2\044part3\092,part4\092\\
+    part1\,\p\a\r\t2\044part3\092,part4\092\\
 
 These inputs are equivalent: character-string decoding either of them would
 produce the same `value`:
