@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 15 July 2021                                          E. Nygren
+Expires: 18 July 2021                                          E. Nygren
                                                      Akamai Technologies
-                                                         11 January 2021
+                                                         14 January 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 15 July 2021.
+   This Internet-Draft will expire on 18 July 2021.
 
 Copyright Notice
 
@@ -566,9 +566,9 @@ Table of Contents
    Some SvcParams impose requirements on other SvcParams in the RR.  A
    ServiceMode RR is called "self-consistent" if its SvcParams all
    comply with each others' requirements.  Zone-file implementations
-   SHOULD enforce self-consistency.  Clients MUST reject any RR that
-   they identify is not self-consistent, and MAY reject the entire
-   RRSet.
+   SHOULD enforce self-consistency.  Clients MUST reject any RR whose
+   recognized SvcParams are not self-consistent, and MAY reject the
+   entire RRSet.
 
 2.5.  Special handling of "." in TargetName
 
