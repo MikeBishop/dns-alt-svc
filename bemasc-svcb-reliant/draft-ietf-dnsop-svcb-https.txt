@@ -645,8 +645,8 @@ Table of Contents
 
    Although SVCB can only provide alternative endpoints for any pre-
    existing protocol, new protocols could be defined that require a
-   ServiceMode record.  Such "SVCB-reliant" protocols SHALL terminate
-   upon reaching step 5.
+   ServiceMode record with no fallback to AAAA/A address records.  Such
+   "SVCB-reliant" protocols SHALL terminate upon reaching step 5.
 
 3.1.  Handling resolution failures
 
