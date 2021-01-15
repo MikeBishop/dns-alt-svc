@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-01-14T15:25:27.302582+00:00",
+  "timestamp": "2021-01-15T18:37:43.134119+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -5246,7 +5246,7 @@
       "labels": [],
       "body": "It does not look like the draft considers the possibility that a protocol might depend on SVCB exclusively.\r\n\r\nI think that it should be possible to deploy a protocol that only uses SVCB and not A/AAAA to find services.\r\n\r\nThe changes are fairly simple, you go from this text in Section 3:\r\n\r\n>   2.  In parallel, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\r\n\r\nTo something like:\r\n\r\n>   2.  If the service allows the use of address records, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME in parallel.  Otherwise, issue a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\r\n\r\n... and\r\n\r\n> Accordingly, clients SHALL connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\r\n\r\n... becomes:\r\n\r\n> Accordingly, if the service allows the use of address records, clients connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\r\n\r\nEdit to note: The reason you might want to do this is that you have a service name (like \"example.com\"), but you don't want the A/AAAA records you use for another protocol (like HTTPS) being used for your fancy new protocol.",
       "createdAt": "2021-01-14T04:34:14Z",
-      "updatedAt": "2021-01-14T15:22:34Z",
+      "updatedAt": "2021-01-14T20:56:17Z",
       "closedAt": null,
       "comments": [
         {
@@ -5255,6 +5255,20 @@
           "body": "I've proposed a paragraph on this in #288; please review.\r\n\r\nI don't think the change proposed here is quite right.  Even if some new protocol relies on SVCB, I think it still makes sense for clients to issue address queries in parallel to the most likely TargetName, for latency hiding.  Issuing those queries doesn't mean they'll be used, even if they resolve, because the TargetName has precedence (if the prediction was wrong).\r\n\r\nUltimately, almost everything about SVCB can be modified by the protocol mapping specification for any protocol, so we don't need to enumerate every plausible behavior here, but I do think it's useful to mention the \"SVCB-reliant\" case.",
           "createdAt": "2021-01-14T15:22:34Z",
           "updatedAt": "2021-01-14T15:22:34Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "To clarify, is the scenario that:\r\n\r\n1) the A/AAAA on the same name as the record would never get used (unless the SvcDomainName was \".\" or otherwise pointed to the record)\r\nor\r\n2) The scenario that this is a protocol for which no address records are involved at all (eg, saying \"use non-IP ansible protocol via a subspace network for a service located by some identifier specified as a SvcParam\", or \"connect via a non-IP unix-domain-socket via some namespace identified in a SvcParam\") ",
+          "createdAt": "2021-01-14T17:31:08Z",
+          "updatedAt": "2021-01-14T17:31:08Z"
+        },
+        {
+          "author": "sftcd",
+          "authorAssociation": "NONE",
+          "body": "\nFWIW, to me, this really really looks like a discussion\nthat ought not be held only as a github issue.\n\nS.\n\nOn 14/01/2021 04:34, Martin Thomson wrote:\n> It does not look like the draft considers the possibility that a protocol might depend on SVCB exclusively.\n> \n> I think that it should be possible to deploy a protocol that only uses SVCB and not A/AAAA to find services.\n> \n> The changes are fairly simple, you go from this text in Section 3:\n> \n>>    2.  In parallel, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\n> \n> To something like:\n> \n>>    2.  If the service allows the use of address records, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME in parallel.  Otherwise, issue a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\n> \n> ... and\n> \n>>         Accordingly, clients SHALL connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\n> \n> ... becomes:\n> \n>>       Accordingly, if the service allows the use of address records, clients connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\n> \n",
+          "createdAt": "2021-01-14T20:56:17Z",
+          "updatedAt": "2021-01-14T20:56:17Z"
         }
       ]
     }
@@ -21349,13 +21363,13 @@
       "labels": [],
       "body": "Fixes #283",
       "createdAt": "2021-01-05T19:15:06Z",
-      "updatedAt": "2021-01-12T15:47:33Z",
+      "updatedAt": "2021-01-14T20:20:13Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "e318510b60c6a4f21eb0f541aa3f316e8e502938",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "enygren-no-default-alpn-must-have-alpn",
-      "headRefOid": "4ef037fa068a4226a5e659f8948f5785a4ce8512",
+      "headRefOid": "3834df91b7ab8d92ce2b648cc25fe8f38f08eff9",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -21386,7 +21400,7 @@
               "originalPosition": 6,
               "body": "I would prefer to distinguish here between what we want the zone file parser to do vs. what we want the client to do.\r\n\r\nI'm fine with telling the zone file parser that this is invalid, but \"discarded\" sounds silent.  \"flagged as invalid\" might be clearer.\r\n\r\nFor the client, I'd prefer to avoid imposing new requirements or repeating normative language.  If it's necessary, we could say something like \"Compliant clients will ignore ...\".",
               "createdAt": "2021-01-05T19:44:41Z",
-              "updatedAt": "2021-01-05T19:44:42Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21406,7 +21420,7 @@
               "originalPosition": 6,
               "body": "```suggestion\r\n(else compliant clients should ignore the record as invalid).\r\n```",
               "createdAt": "2021-01-05T20:07:43Z",
-              "updatedAt": "2021-01-05T20:07:44Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21426,7 +21440,7 @@
               "originalPosition": 6,
               "body": "Better?",
               "createdAt": "2021-01-05T20:07:56Z",
-              "updatedAt": "2021-01-05T20:07:56Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21446,7 +21460,7 @@
               "originalPosition": 6,
               "body": "There's already the rule that clients must reject the entire rrset if any RR is malformed. As written in this change, I think it is ambiguous whether or not the missing \"alpn\" counts as a malformed key, so I wouldn't be sure whether to ignore the RR (just for not having a supported alpn value) or the RRSet (as malformed).\r\n\r\nHence, I think we need the client expectation clarified here and avoid saying something like \"invalid\" unless we mean the malformed case. My preference would be to treat is as malformed to stop bad configurations, but I won't fight for that as long as it's unambiguous.",
               "createdAt": "2021-01-05T20:40:15Z",
-              "updatedAt": "2021-01-05T20:40:15Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21466,7 +21480,7 @@
               "originalPosition": 6,
               "body": "After thinking about this some more, I've changed my mind.  We can just say \"this is not allowed\" and leave the details to the implementors.\r\n```suggestion\r\nempty.  When \"no-default-alpn\" is specified, \"alpn\" MUST also be specified.\r\n```",
               "createdAt": "2021-01-05T20:40:43Z",
-              "updatedAt": "2021-01-05T20:40:43Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21486,7 +21500,7 @@
               "originalPosition": 6,
               "body": "\"malformed\" has a precise definition in Section 2.2.  This would not qualify as \"malformed\".",
               "createdAt": "2021-01-05T20:43:21Z",
-              "updatedAt": "2021-01-05T20:43:21Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21506,7 +21520,7 @@
               "originalPosition": 6,
               "body": "Making this more complicated is having no-default-alpn be mandatory but not alpn.  (See discussion in #281.)  This should cover and we should be crystal clear on what happens if no-default-alpn and alpn are present on some records but some other records have no no-default-alpn, and the client doesn't implement alpn support.  The net result should probably be that clients discard the no-default-alpn records but then use the other records.  ",
               "createdAt": "2021-01-05T20:45:32Z",
-              "updatedAt": "2021-01-05T20:45:33Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21526,7 +21540,7 @@
               "originalPosition": 6,
               "body": "The potentially relevant part of that definition:\r\n\"the SvcParamValue for an SvcParamKey does not have the expected format\"\r\n\r\nDoes an expected key/value not being present and declared \"invalid\" count as an unexpected format? Probably not, but I would still argue it's ambiguous enough to require clarification.\r\n\r\n(And even if it's decided this doesn't meet the current definition, I think it would be better to modify the definition to cover this case, but that's getting into the area I said I wouldn't fight for.)",
               "createdAt": "2021-01-05T20:49:12Z",
-              "updatedAt": "2021-01-05T20:49:12Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21546,7 +21560,7 @@
               "originalPosition": 6,
               "body": "@ericorth I think there's a logical distinction between \"syntactic validity\" (malformed/unparseable) and \"semantic validity\" (inter-key logical agreement).  If a record is malformed, something Really Bad happened (memory corruption?).  If there's a configuration error, that's different.  I don't have strong feelings about what clients ought to do in each case, but I can certainly imagine that we might recommend or allow different behaviors.\r\n\r\nBTW, this isn't the only case of inter-key logical agreement.  We already have the case of \"mandatory\" indicating a key that is not actually present.",
               "createdAt": "2021-01-05T20:56:27Z",
-              "updatedAt": "2021-01-05T20:56:28Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21566,7 +21580,7 @@
               "originalPosition": 6,
               "body": "Agreed that they're reasonably distinct cases and it would be very reasonable to treat the cases differently.\r\n\r\nBut I think my specific points still stand:\r\n- My soft preference would be to add semantic validity (at least this case and maybe also the \"mandatory\" case) to the cases where the RRSet is rejected.  If somebody creates a stupidly bad config, it should be obvious so they know to fix it.  But it wouldn't be the end of the world either if we just make it discarded-RR or just let the stupid results of the stupid config happen.\r\n- Logically distinct or not, there's still room for confusion.  Maybe we just need a sentence in 2.2 clarifying that it only covers syntactic validity of the individual values themselves?",
               "createdAt": "2021-01-05T21:08:47Z",
-              "updatedAt": "2021-01-05T21:08:47Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         },
@@ -21586,7 +21600,47 @@
               "originalPosition": 6,
               "body": "And also, absent a clearly specified rule for how the client should behave given a violation of a semantic rule like this one, we should avoid the word \"invalid\".  As a client implementor, I want to know the proper way to enforce validity.  If the answer is that it's not enforced in any way and just continue to handle it logically (eg by treating a record as one without a matching ALPN and thus discarded RR), then that is not \"invalid\".",
               "createdAt": "2021-01-05T21:22:20Z",
-              "updatedAt": "2021-01-05T21:22:20Z"
+              "updatedAt": "2021-01-14T20:20:13Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY4NTc1MjQz",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-14T19:52:57Z",
+          "updatedAt": "2021-01-14T19:52:57Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "With #285 this does cover things.  Although does that mean that \"alpn\" should be default mandatory but with a clarification that this doesn't mean clients need to understand all possible values?  As if \"no-default-alpn\" is mandatory and requires \"alpn\" for consistency then it would seem like \"alpn\" needs to be mandatory transitively?",
+              "createdAt": "2021-01-14T19:52:57Z",
+              "updatedAt": "2021-01-14T20:20:13Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY4NTgwMDg4",
+          "commit": {
+            "abbreviatedOid": "4ef037f"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-14T19:58:56Z",
+          "updatedAt": "2021-01-14T19:58:57Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "No, I don't think this means \"alpn\" needs to be \"automatically mandatory\".  Fundamentally, \"automatically mandatory\" mean \"subtractive\", i.e. \"this key can subtract functionality from the endpoint\".  \"alpn\" is purely additive, so it is always safe to ignore.",
+              "createdAt": "2021-01-14T19:58:57Z",
+              "updatedAt": "2021-01-14T20:20:13Z"
             }
           ]
         }
@@ -21597,24 +21651,26 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTUyODgyNzUy",
       "title": "Clarify self-consistency rules",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/285",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "bemasc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Requested in https://github.com/MikeBishop/dns-alt-svc/pull/284/files#r552202056",
       "createdAt": "2021-01-11T16:58:52Z",
-      "updatedAt": "2021-01-11T21:05:22Z",
+      "updatedAt": "2021-01-14T21:17:49Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "ea499189c4e492a1b623544d3a974ba366ec2c13",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-invalid",
-      "headRefOid": "98125032e2f114173162eef3a7dccdb29dddb7e9",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "c145488ee078228a0ca90fc8ccb0f2af55bae29a",
+      "closedAt": "2021-01-14T21:17:44Z",
+      "mergedAt": "2021-01-14T21:17:44Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "c55491fc96cdcf131378d0dabf983fa2c16866e7"
+      },
       "comments": [
         {
           "author": "bemasc",
@@ -21636,35 +21692,79 @@
           "body": "> Further suggestion: We should call out \"would make the record not self-consistent\" or something like that for the alpn/no-default-alpn case we were calling out as \"invalid\" before (and any other cases we know of). Good to keep the language in the draft consistent and precise (\"malformed\" vs \"invalid\" vs \"not self-consistent\").\r\n\r\nAgreed; I was just trying to avoid a collision with #284.",
           "createdAt": "2021-01-11T21:05:22Z",
           "updatedAt": "2021-01-11T21:05:22Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "One thing that does get messy here is how to handle new types of keys.  A zone file parser clearly can't handle keyNNNN form SvcParams, but for clients it seems like there could be cases where a new non-mandatory SvcParm shows up that is declared in its spec to conflicts with some other SvcParam.  There is no way for clients which are aware of these to reject the RR.  We also want to avoid cases where clients confused by some new SvcParams throw out the entire RRset and cause compatibility issues.  I'm not sure what we might want to add to help here?",
+          "createdAt": "2021-01-14T19:44:04Z",
+          "updatedAt": "2021-01-14T19:44:04Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> There is no way for clients which are aware of these to reject the RR.\r\n\r\nDo you mean \"not aware\"?\r\n\r\n> I'm not sure what we might want to add to help here?\r\n\r\nI adjusted the text.  Is it clearer now?",
+          "createdAt": "2021-01-14T19:55:24Z",
+          "updatedAt": "2021-01-14T19:55:24Z"
         }
       ],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY4NTk0NzEx",
+          "commit": {
+            "abbreviatedOid": "c145488"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-14T20:19:25Z",
+          "updatedAt": "2021-01-14T20:19:25Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 286,
       "id": "MDExOlB1bGxSZXF1ZXN0NTUzNTY2NTkz",
       "title": "Remove extra backslash in example",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/286",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "bemasc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2021-01-12T15:54:41Z",
-      "updatedAt": "2021-01-12T15:54:41Z",
+      "updatedAt": "2021-01-14T19:45:12Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "ea499189c4e492a1b623544d3a974ba366ec2c13",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-comma",
       "headRefOid": "72c3617e2dcf5406098dd9b22f46f4b5e5a5ad5b",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2021-01-14T19:45:12Z",
+      "mergedAt": "2021-01-14T19:45:12Z",
+      "mergedBy": "enygren",
+      "mergeCommit": {
+        "oid": "59339dd5d8d2355366e6781ffd05bbf5887c5ed9"
+      },
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY4NTY4NDU5",
+          "commit": {
+            "abbreviatedOid": "72c3617"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-14T19:45:01Z",
+          "updatedAt": "2021-01-14T19:45:01Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 288,
@@ -21678,13 +21778,109 @@
       "labels": [],
       "body": "Addresses #287",
       "createdAt": "2021-01-14T15:17:17Z",
-      "updatedAt": "2021-01-14T15:17:17Z",
+      "updatedAt": "2021-01-15T03:14:28Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "ea499189c4e492a1b623544d3a974ba366ec2c13",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-svcb-reliant",
-      "headRefOid": "0159c955ad34e6f5cbe80cf659551476b79a4ae8",
+      "headRefOid": "87303bd0b9e206e60a860589842a53b1724b847a",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Waiting on clarification of https://github.com/MikeBishop/dns-alt-svc/issues/287#issuecomment-760346439  if (1) is what is meant, this seems fine.  If (2) is meant, more is needed.",
+          "createdAt": "2021-01-14T19:48:46Z",
+          "updatedAt": "2021-01-14T19:48:46Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@martinthomson I don't understand.  This change* has precisely that effect.  Connections will only ever go to the ServiceMode TargetName.  As stated in the new text, if no ServiceMode records are present, the connection attempt terminates (i.e. fails) rather than fall back to bare-AAAA connection.\r\n\r\n*I don't think this is actually a \"change\"; it's more of a hint to future standards authors.",
+          "createdAt": "2021-01-15T00:57:38Z",
+          "updatedAt": "2021-01-15T00:57:38Z"
+        },
+        {
+          "author": "martinthomson",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Given how definitively the process in Section 3 is about making A/AAAA queries, I don't agree that this is sufficient.",
+          "createdAt": "2021-01-15T01:40:26Z",
+          "updatedAt": "2021-01-15T01:40:26Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Yes, I am not proposing to remove those queries.  Those queries are a useful latency optimization even when the connection is required to use ServiceMode records, so long as the TargetName is reasonably likely to coincide with the origin name.  Removing step 5 means that those queries will never be used for a \"legacy\" connection; they will only be used if they happen to coincide with (and pre-empt) a followup query for a ServiceMode TargetName.\r\n\r\nI recognize that you are considering a particular deployment in which the TargetName does not coincide with the origin name, in which case those queries will be wasted, but will otherwise have no effect.",
+          "createdAt": "2021-01-15T02:14:06Z",
+          "updatedAt": "2021-01-15T02:14:06Z"
+        },
+        {
+          "author": "martinthomson",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I'm contemplating a model where those queries could produce answers that should not be used.  That's different from waste.  That's a problem.  Maybe I just don't understand why making them conditional on them being useful is a problem.",
+          "createdAt": "2021-01-15T03:14:28Z",
+          "updatedAt": "2021-01-15T03:14:28Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY4NDU0MDY1",
+          "commit": {
+            "abbreviatedOid": "0159c95"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-14T17:19:06Z",
+          "updatedAt": "2021-01-14T17:19:07Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "```suggestion\r\nprotocol, new protocols could be defined that require a ServiceMode record with no fallback to AAAA/A address records.\r\n```",
+              "createdAt": "2021-01-14T17:19:06Z",
+              "updatedAt": "2021-01-14T17:21:34Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY4NzE0MDM5",
+          "commit": {
+            "abbreviatedOid": "87303bd"
+          },
+          "author": "martinthomson",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "This is not responsive to the changes.\r\n\r\nTo Erik's question, this is because I want to be able to deploy a protocol that uses SVCB for discovery on a name that has A/AAAA.  I don't want the servers that the A/AAAA records point at getting requests for that protocol.  (Honestly, I don't know which of the options Erik presents that is, so I'm restating it instead.)",
+          "createdAt": "2021-01-14T23:39:23Z",
+          "updatedAt": "2021-01-14T23:39:23Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 289,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTU1ODc4NDIy",
+      "title": "Clarify that the client behavior can be modified",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/289",
+      "state": "OPEN",
+      "author": "bemasc",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This is an alternative to #288\r\n\r\nAddresses #287",
+      "createdAt": "2021-01-15T18:36:34Z",
+      "updatedAt": "2021-01-15T18:36:34Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "c55491fc96cdcf131378d0dabf983fa2c16866e7",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "bemasc-client-behavior",
+      "headRefOid": "3b0c3bec4bb4ee01b173608405fa697014c984c1",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
