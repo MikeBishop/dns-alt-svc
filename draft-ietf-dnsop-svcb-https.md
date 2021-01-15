@@ -754,7 +754,9 @@ pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
 fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
 
 For "no-default-alpn", the presentation and wire format values MUST be
-empty.
+empty.  When "no-default-alpn" is specified in an RR, 
+"alpn" MUST also be specified in-order for the RR 
+to be "self-consistent" ({{service-mode}}).
 
 Each scheme that uses this SvcParamKey defines a
 "default set" of supported ALPNs, which SHOULD NOT
