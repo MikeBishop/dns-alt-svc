@@ -495,8 +495,8 @@ is the effective TargetName:
 
 # Client behavior {#client-behavior}
 
-A SVCB-aware client selects an endpoint for a service using the following
-procedure:
+Unless specified otherwise by the protocol mapping, a SVCB-aware client
+selects an endpoint for a service using the following procedure:
 
 1. Let $ADDR_QNAME be the service name.  Let $SVCB_QNAME be the service name
    plus appropriate prefixes for the scheme (see {{svcb-names}}).
