@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 19 July 2021                                          E. Nygren
+Expires: 5 August 2021                                         E. Nygren
                                                      Akamai Technologies
-                                                         15 January 2021
+                                                         1 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 19 July 2021.
+   This Internet-Draft will expire on 5 August 2021.
 
 Copyright Notice
 
@@ -869,8 +869,8 @@ Table of Contents
    malformed.
 
    For "no-default-alpn", the presentation and wire format values MUST
-   be empty.  When "no-default-alpn" is specified in an RR, "alpn" MUST
-   also be specified in-order for the RR to be "self-consistent"
+   be empty.  When "no-default-alpn" is specified in an RR, "alpn" must
+   also be specified in order for the RR to be "self-consistent"
    (Section 2.4.3).
 
    Each scheme that uses this SvcParamKey defines a "default set" of
