@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-01-15T18:37:43.134119+00:00",
+  "timestamp": "2021-02-01T18:13:43.638367+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -1174,7 +1174,7 @@
       "id": "MDU6SXNzdWU1MjQxNzY2NTU=",
       "title": "Clarify fallback behaviour",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/81",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "c-taylor",
       "authorAssociation": "NONE",
       "assignees": [],
@@ -1184,8 +1184,8 @@
       ],
       "body": "I believe that either this draft or a revision of rfc7838 should clarify the client behaviour or provide stronger guidance for the scenarios:\r\n- Fallback to origin from alternates\r\n-- Both with and without downgrade considerations\r\n- Multiple same priority alternates\r\n-- After random shuffle do I use one? all?\r\n-- Should client fail to origin or same priority?\r\n- Multiple differing priority alternates\r\n-- Fail down the tree or straight to origin?\r\n\r\n \r\n\r\nrfc7838 was not explicit here either, which has (probably) led to the fail-back having low implementation. Defined/predictable client failover behaviour is a big win.\r\n\r\nHappy to help with words if you think there's a place for this...",
       "createdAt": "2019-11-18T07:08:47Z",
-      "updatedAt": "2020-06-11T15:00:16Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:22:18Z",
+      "closedAt": "2021-01-15T21:22:18Z",
       "comments": [
         {
           "author": "bemasc",
@@ -3564,7 +3564,7 @@
       "id": "MDU6SXNzdWU2NDM1ODUwMTY=",
       "title": "64k priorities!",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/184",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "martinthomson",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
@@ -3573,8 +3573,8 @@
       ],
       "body": "I realize that this might be going against an established trend, but the notion that 65535 different values for priority might be useful is a little fanciful.  HTTP are proposing just 8, DSCP had 64, and neither has any real expectation that there will be any value in having all of those options.  Why not 255?",
       "createdAt": "2020-06-23T06:59:44Z",
-      "updatedAt": "2020-07-01T17:36:46Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:22:01Z",
+      "closedAt": "2021-01-15T21:22:01Z",
       "comments": [
         {
           "author": "bemasc",
@@ -3735,7 +3735,7 @@
       "id": "MDU6SXNzdWU2NDM1OTY1NTk=",
       "title": "Aliases to A/AAAA records",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/188",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "martinthomson",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [
@@ -3746,8 +3746,8 @@
       ],
       "body": "It's not clear why this is useful as opposed to having a ServiceForm SVCB at the target of an alias.  Some words on the subject would be greatly appreciated.",
       "createdAt": "2020-06-23T07:21:03Z",
-      "updatedAt": "2020-07-13T20:17:37Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:21:38Z",
+      "closedAt": "2021-01-15T21:21:38Z",
       "comments": [
         {
           "author": "davidben",
@@ -3875,7 +3875,7 @@
       "id": "MDU6SXNzdWU2NDM2NDI2OTM=",
       "title": "Presentation of ALPN",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/192",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "martinthomson",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
@@ -3884,8 +3884,8 @@
       ],
       "body": "The presentation format for ALPN is not consistent with the generic presentation format.  It also includes unprintable characters.",
       "createdAt": "2020-06-23T08:35:08Z",
-      "updatedAt": "2020-07-13T20:12:51Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:21:32Z",
+      "closedAt": "2021-01-15T21:21:32Z",
       "comments": [
         {
           "author": "marka63",
@@ -3929,7 +3929,7 @@
       "id": "MDU6SXNzdWU2NDM2NDUzMjQ=",
       "title": "Remove no-default-alpn",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/193",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "martinthomson",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
@@ -3938,8 +3938,8 @@
       ],
       "body": "This is of no lasting value and it only represents a marginal gain in space for a non-trivial gain in complexity.  Having an ALPN field in every HTTPS record just isn't that many bytes (2+2+3=7 for just \"h2\", 2+2+3+9=16 for \"h2,http/1.1\").\r\n\r\nI've raised this a couple of times in the past, but I never received a satisfactory response.",
       "createdAt": "2020-06-23T08:39:10Z",
-      "updatedAt": "2020-07-14T03:01:36Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:21:26Z",
+      "closedAt": "2021-01-15T21:21:26Z",
       "comments": [
         {
           "author": "bemasc",
@@ -4025,7 +4025,7 @@
       "id": "MDU6SXNzdWU2NDM2NDg2ODk=",
       "title": "Advice regarding construction of ALPN extension in TLS",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/194",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "martinthomson",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [
@@ -4036,8 +4036,8 @@
       ],
       "body": ">    Clients MUST include an \"application_layer_protocol_negotiation\" extension in their ClientHello with a ProtocolNameList that includes at least one ID from the ALPN set.  Clients SHOULD also include any other values that they support and could negotiate on that connection with equivalent or better security properties.  For example, if the ALPN set only contains \"http/1.1\", the client could include \"http/1.1\" and \"h2\" in the ProtocolNameList.\r\n\r\nThis could be read to imply that a client conditions its choice of ALPN parameter in a TLS ClientHello based on what it learns from SVCB.  This is dangerous as it exposes the connection to potential downgrade attacks.  Though it tries to recommend that \"better\" options be chosen, this is a determination that the server makes in ALPN, not the client.  This document should instead mandate that clients construct an ALPN extension containing all protocols that they are willing to use.",
       "createdAt": "2020-06-23T08:44:13Z",
-      "updatedAt": "2020-07-13T20:14:32Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:21:18Z",
+      "closedAt": "2021-01-15T21:21:18Z",
       "comments": [
         {
           "author": "MikeBishop",
@@ -4093,7 +4093,7 @@
       "id": "MDU6SXNzdWU2NDM2NjE0OTI=",
       "title": "Unclear precedence rules",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/196",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "martinthomson",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
@@ -4102,8 +4102,8 @@
       ],
       "body": "At one level, the precedence rules for this specification could be simple: take the RRs with the lowest priority and select at random between them.  This is clearly the case for the 0/other split.\r\n\r\nBut it isn't that simple, because RRs with lower priority might not have options that the client supports.  So some configurations are eliminated.\r\n\r\nMoreover, there are cases where server/operator preference and client preference might be in tension.  Let's say that the client greatly prefers HTTP/3 over HTTP/1.1.  Is it required to use an HTTPS RR with HTTP/1.1 and a lower priority if a higher priority supports HTTP/3?\r\n\r\nMore difficult, what if the higher priority has echconfig and the lower priority one does not?  Section 8.1 might be read to imply that echconfig overrides other considerations, but it isn't very clear on that point.  Also, we have to consider an echconfig that the client does not support specially, as that does not imply that the RR lacks echconfig.",
       "createdAt": "2020-06-23T09:01:22Z",
-      "updatedAt": "2020-07-13T20:22:28Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:21:11Z",
+      "closedAt": "2021-01-15T21:21:11Z",
       "comments": [
         {
           "author": "bemasc",
@@ -4493,10 +4493,12 @@
       "author": "MikeBishop",
       "authorAssociation": "OWNER",
       "assignees": [],
-      "labels": [],
+      "labels": [
+        "proposed to close"
+      ],
       "body": "This seems better suited to a Wiki page.",
       "createdAt": "2020-08-11T20:28:07Z",
-      "updatedAt": "2020-08-11T21:15:00Z",
+      "updatedAt": "2021-01-15T21:20:14Z",
       "closedAt": null,
       "comments": [
         {
@@ -4723,7 +4725,7 @@
       "id": "MDU6SXNzdWU3MTE1Mzk4NDM=",
       "title": "Self-target",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/252",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "squarooticus",
       "authorAssociation": "NONE",
       "assignees": [],
@@ -4733,8 +4735,8 @@
       ],
       "body": "\u00a7 2.5.2 says:\r\n\r\n```\r\nFor ServiceMode SVCB RRs, if TargetName has the value \".\", then the\r\nowner name of this record MUST be used as the effective TargetName.\r\n```\r\n\r\nThis makes sense for HTTPS and any future child RRTYPES that eschew Attrleafs, but it doesn't make a lot of sense for owner names with Attrleafs. Wouldn't it make sense for `.` to refer to the bare domain with the Attrleafs stripped?",
       "createdAt": "2020-09-30T00:00:03Z",
-      "updatedAt": "2020-10-26T20:24:04Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:21:00Z",
+      "closedAt": "2021-01-15T21:21:00Z",
       "comments": [
         {
           "author": "bemasc",
@@ -5219,7 +5221,7 @@
       "id": "MDU6SXNzdWU3Nzk0NDI4MTc=",
       "title": "Clarify behavior when no-default-alpn is specified but without alpn specified",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/283",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "enygren",
       "authorAssociation": "COLLABORATOR",
       "assignees": [
@@ -5228,8 +5230,8 @@
       "labels": [],
       "body": "See discussion:  https://github.com/MikeBishop/dns-alt-svc/pull/281/files#r551698492",
       "createdAt": "2021-01-05T19:08:58Z",
-      "updatedAt": "2021-01-05T19:44:59Z",
-      "closedAt": null,
+      "updatedAt": "2021-01-15T21:31:55Z",
+      "closedAt": "2021-01-15T21:31:55Z",
       "comments": []
     },
     {
@@ -21356,24 +21358,26 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTQ5NDE4MjEw",
       "title": "When no-default-alpn is present, alpn must also be present",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/284",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "enygren",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Fixes #283",
       "createdAt": "2021-01-05T19:15:06Z",
-      "updatedAt": "2021-01-14T20:20:13Z",
+      "updatedAt": "2021-01-15T21:48:23Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "e318510b60c6a4f21eb0f541aa3f316e8e502938",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "enygren-no-default-alpn-must-have-alpn",
-      "headRefOid": "3834df91b7ab8d92ce2b648cc25fe8f38f08eff9",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "52c1f2840f153d35711afa2443788fc08e4ba388",
+      "closedAt": "2021-01-15T21:31:56Z",
+      "mergedAt": "2021-01-15T21:31:55Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "e60752ac8167edc8d8eea32f77b0e0167b100027"
+      },
       "comments": [
         {
           "author": "bemasc",
@@ -21400,7 +21404,7 @@
               "originalPosition": 6,
               "body": "I would prefer to distinguish here between what we want the zone file parser to do vs. what we want the client to do.\r\n\r\nI'm fine with telling the zone file parser that this is invalid, but \"discarded\" sounds silent.  \"flagged as invalid\" might be clearer.\r\n\r\nFor the client, I'd prefer to avoid imposing new requirements or repeating normative language.  If it's necessary, we could say something like \"Compliant clients will ignore ...\".",
               "createdAt": "2021-01-05T19:44:41Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21420,7 +21424,7 @@
               "originalPosition": 6,
               "body": "```suggestion\r\n(else compliant clients should ignore the record as invalid).\r\n```",
               "createdAt": "2021-01-05T20:07:43Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21440,7 +21444,7 @@
               "originalPosition": 6,
               "body": "Better?",
               "createdAt": "2021-01-05T20:07:56Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21460,7 +21464,7 @@
               "originalPosition": 6,
               "body": "There's already the rule that clients must reject the entire rrset if any RR is malformed. As written in this change, I think it is ambiguous whether or not the missing \"alpn\" counts as a malformed key, so I wouldn't be sure whether to ignore the RR (just for not having a supported alpn value) or the RRSet (as malformed).\r\n\r\nHence, I think we need the client expectation clarified here and avoid saying something like \"invalid\" unless we mean the malformed case. My preference would be to treat is as malformed to stop bad configurations, but I won't fight for that as long as it's unambiguous.",
               "createdAt": "2021-01-05T20:40:15Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21480,7 +21484,7 @@
               "originalPosition": 6,
               "body": "After thinking about this some more, I've changed my mind.  We can just say \"this is not allowed\" and leave the details to the implementors.\r\n```suggestion\r\nempty.  When \"no-default-alpn\" is specified, \"alpn\" MUST also be specified.\r\n```",
               "createdAt": "2021-01-05T20:40:43Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21500,7 +21504,7 @@
               "originalPosition": 6,
               "body": "\"malformed\" has a precise definition in Section 2.2.  This would not qualify as \"malformed\".",
               "createdAt": "2021-01-05T20:43:21Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21520,7 +21524,7 @@
               "originalPosition": 6,
               "body": "Making this more complicated is having no-default-alpn be mandatory but not alpn.  (See discussion in #281.)  This should cover and we should be crystal clear on what happens if no-default-alpn and alpn are present on some records but some other records have no no-default-alpn, and the client doesn't implement alpn support.  The net result should probably be that clients discard the no-default-alpn records but then use the other records.  ",
               "createdAt": "2021-01-05T20:45:32Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21540,7 +21544,7 @@
               "originalPosition": 6,
               "body": "The potentially relevant part of that definition:\r\n\"the SvcParamValue for an SvcParamKey does not have the expected format\"\r\n\r\nDoes an expected key/value not being present and declared \"invalid\" count as an unexpected format? Probably not, but I would still argue it's ambiguous enough to require clarification.\r\n\r\n(And even if it's decided this doesn't meet the current definition, I think it would be better to modify the definition to cover this case, but that's getting into the area I said I wouldn't fight for.)",
               "createdAt": "2021-01-05T20:49:12Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21560,7 +21564,7 @@
               "originalPosition": 6,
               "body": "@ericorth I think there's a logical distinction between \"syntactic validity\" (malformed/unparseable) and \"semantic validity\" (inter-key logical agreement).  If a record is malformed, something Really Bad happened (memory corruption?).  If there's a configuration error, that's different.  I don't have strong feelings about what clients ought to do in each case, but I can certainly imagine that we might recommend or allow different behaviors.\r\n\r\nBTW, this isn't the only case of inter-key logical agreement.  We already have the case of \"mandatory\" indicating a key that is not actually present.",
               "createdAt": "2021-01-05T20:56:27Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21580,7 +21584,7 @@
               "originalPosition": 6,
               "body": "Agreed that they're reasonably distinct cases and it would be very reasonable to treat the cases differently.\r\n\r\nBut I think my specific points still stand:\r\n- My soft preference would be to add semantic validity (at least this case and maybe also the \"mandatory\" case) to the cases where the RRSet is rejected.  If somebody creates a stupidly bad config, it should be obvious so they know to fix it.  But it wouldn't be the end of the world either if we just make it discarded-RR or just let the stupid results of the stupid config happen.\r\n- Logically distinct or not, there's still room for confusion.  Maybe we just need a sentence in 2.2 clarifying that it only covers syntactic validity of the individual values themselves?",
               "createdAt": "2021-01-05T21:08:47Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21600,7 +21604,7 @@
               "originalPosition": 6,
               "body": "And also, absent a clearly specified rule for how the client should behave given a violation of a semantic rule like this one, we should avoid the word \"invalid\".  As a client implementor, I want to know the proper way to enforce validity.  If the answer is that it's not enforced in any way and just continue to handle it logically (eg by treating a record as one without a matching ALPN and thus discarded RR), then that is not \"invalid\".",
               "createdAt": "2021-01-05T21:22:20Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21620,7 +21624,7 @@
               "originalPosition": 6,
               "body": "With #285 this does cover things.  Although does that mean that \"alpn\" should be default mandatory but with a clarification that this doesn't mean clients need to understand all possible values?  As if \"no-default-alpn\" is mandatory and requires \"alpn\" for consistency then it would seem like \"alpn\" needs to be mandatory transitively?",
               "createdAt": "2021-01-14T19:52:57Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
             }
           ]
         },
@@ -21640,7 +21644,200 @@
               "originalPosition": 6,
               "body": "No, I don't think this means \"alpn\" needs to be \"automatically mandatory\".  Fundamentally, \"automatically mandatory\" mean \"subtractive\", i.e. \"this key can subtract functionality from the endpoint\".  \"alpn\" is purely additive, so it is always safe to ignore.",
               "createdAt": "2021-01-14T19:58:57Z",
-              "updatedAt": "2021-01-14T20:20:13Z"
+              "updatedAt": "2021-01-15T21:27:14Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjI0ODU3",
+          "commit": {
+            "abbreviatedOid": "3834df9"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:19:06Z",
+          "updatedAt": "2021-01-15T21:19:07Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "```suggestion\r\nempty.  When \"no-default-alpn\" is specified in an RR, \r\n\"alpn\" MUST also be specified in-order for the RR \r\nto be \"self-consistent\" ({{service-mode}}).\r\n```",
+              "createdAt": "2021-01-15T21:19:06Z",
+              "updatedAt": "2021-01-15T21:27:14Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjI1MTM0",
+          "commit": {
+            "abbreviatedOid": "3834df9"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:19:39Z",
+          "updatedAt": "2021-01-15T21:19:39Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "(to align with #285)",
+              "createdAt": "2021-01-15T21:19:39Z",
+              "updatedAt": "2021-01-15T21:27:14Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjI1Mzkw",
+          "commit": {
+            "abbreviatedOid": "3834df9"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:20:05Z",
+          "updatedAt": "2021-01-15T21:20:06Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": ":+1: ",
+              "createdAt": "2021-01-15T21:20:06Z",
+              "updatedAt": "2021-01-15T21:27:14Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjMyOTAy",
+          "commit": {
+            "abbreviatedOid": "52c1f28"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-15T21:31:43Z",
+          "updatedAt": "2021-01-15T21:31:43Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjMzNjI0",
+          "commit": {
+            "abbreviatedOid": "52c1f28"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:33:03Z",
+          "updatedAt": "2021-01-15T21:33:03Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "Nit: If I'm remembering the language correctly, being self-consistent is only a SHOULD, so any \"in order for the RR to be 'self-consistent'\" rules should probably also be a SHOULD, rather than a MUST.  You can create records that violate it, but if you do, you have to expect clients will ignore the RR or RRSet.",
+              "createdAt": "2021-01-15T21:33:03Z",
+              "updatedAt": "2021-01-15T21:33:03Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjM0NjI0",
+          "commit": {
+            "abbreviatedOid": "52c1f28"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:34:59Z",
+          "updatedAt": "2021-01-15T21:34:59Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "When not \"self-consistent\", dropping the RR is a MUST for clients, rejecting the entire RRset is a MAY.",
+              "createdAt": "2021-01-15T21:34:59Z",
+              "updatedAt": "2021-01-15T21:34:59Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjM1MDQz",
+          "commit": {
+            "abbreviatedOid": "52c1f28"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:35:44Z",
+          "updatedAt": "2021-01-15T21:35:45Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "I read this as \"The record is not self-consistent if it has no-default-alpn but not alpn.\".  I think it's fine.  It is perhaps slightly unusual use of normative language ... we could make it a lower-case \"must\" :).",
+              "createdAt": "2021-01-15T21:35:44Z",
+              "updatedAt": "2021-01-15T21:35:45Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjM3MDU2",
+          "commit": {
+            "abbreviatedOid": "52c1f28"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:39:48Z",
+          "updatedAt": "2021-01-15T21:39:49Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "But zone implementors enforcing that records are self-consistent was only a SHOULD, right? Making this a MUST would add an additional strong requirement specific to this rule.",
+              "createdAt": "2021-01-15T21:39:48Z",
+              "updatedAt": "2021-01-15T21:39:49Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjM5OTk4",
+          "commit": {
+            "abbreviatedOid": "52c1f28"
+          },
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:45:30Z",
+          "updatedAt": "2021-01-15T21:45:31Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "To further clarify my point, \"\"alpn\" MUST also be specified in-order for the RR to be \"self-consistent\" is a rule for the zone implementors to follow.  They're the ones able to make that happen or not.  That rule is then inconsistent with \"Zone-file implementations SHOULD enforce self-consistency.\"\r\n\r\nI think either \"\"alpn\" SHOULD also be specified in-order for the RR to be \"self-consistent\" or \"\"alpn\" must also be specified in-order for the RR to be \"self-consistent\" would be sufficient to break the inconsistency, but I think the former is slightly clearer.",
+              "createdAt": "2021-01-15T21:45:31Z",
+              "updatedAt": "2021-01-15T21:45:31Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjQxMzY3",
+          "commit": {
+            "abbreviatedOid": "52c1f28"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-15T21:48:22Z",
+          "updatedAt": "2021-01-15T21:48:23Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "Let's argue in #290.",
+              "createdAt": "2021-01-15T21:48:22Z",
+              "updatedAt": "2021-01-15T21:48:23Z"
             }
           ]
         }
@@ -21778,7 +21975,7 @@
       "labels": [],
       "body": "Addresses #287",
       "createdAt": "2021-01-14T15:17:17Z",
-      "updatedAt": "2021-01-15T03:14:28Z",
+      "updatedAt": "2021-01-29T01:05:02Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "ea499189c4e492a1b623544d3a974ba366ec2c13",
@@ -21824,6 +22021,34 @@
           "body": "I'm contemplating a model where those queries could produce answers that should not be used.  That's different from waste.  That's a problem.  Maybe I just don't understand why making them conditional on them being useful is a problem.",
           "createdAt": "2021-01-15T03:14:28Z",
           "updatedAt": "2021-01-15T03:14:28Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> I'm contemplating a model where those queries could produce answers that should not be used.\r\n\r\nYes.  If they should not be used, they will not be used.\r\n\r\n> Maybe I just don't understand why making them conditional on them being useful is a problem.\r\n\r\nI'm focusing on a model where the client doesn't know whether they are useful until it learns the server configuration.  Suppose the client is connecting to `foo://origin.example`, a future SVCB-reliant URI scheme.  Under your proposed behavior, the client would issue only a SVCB query for `_foo.origin.example.`.  Suppose they receive a response of the form \r\n\r\n```dns-zone\r\n_foo.origin.example. IN SVCB 900 1 origin.example. alpn=bar\r\n```\r\n\r\nIf the recursive resolver is not performing Additional Section processing, the client now must issue followup A/AAAA queries for `origin.example.`, and wait for a response before proceeding.  If they had preissued those queries, they would not have to wait.\r\n\r\nPreissuing the A/AAAA queries is inexpensive, so if there's a reasonable likelihood of them being useful, I think they're worth sending.  That likelihood decreases if `foo://` server deployments don't typically set TargetName to the origin ... but `foo://` deployments don't exist yet.  Encouraging such a convention enables this latency-hiding to work (at least sometimes), improving average performance.\r\n\r\nWe could add text describing _both_ a future-protocol that is likely to use origin-located address records, and a future-protocol that is not.  I think this kind of speculation, enumerating behaviors of multiple nonexistent protocols, is more likely to obscure than elucidate.\r\n\r\nWhen it comes to future protocols, this whole section is just a hint to our future selves.  If you think this PR doesn't provide a suitable hint, perhaps you'd prefer the solution in #289.",
+          "createdAt": "2021-01-15T18:53:41Z",
+          "updatedAt": "2021-01-15T18:59:08Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I like the approach in #289 as it defers this to the future without trying to pre-suppose what future protocols will want.  Since this is client behavior (not resolver or authority behavior) there is no reason hypothetical futures need to be defined here.",
+          "createdAt": "2021-01-15T21:15:57Z",
+          "updatedAt": "2021-01-15T21:15:57Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Any objections to abandoning this in-favor of #289?  (It is unclear what value we get from adding this in-addition to #289)",
+          "createdAt": "2021-01-15T21:29:29Z",
+          "updatedAt": "2021-01-15T21:29:29Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> Any objections to abandoning this in-favor of #289? (It is unclear what value we get from adding this in-addition to #289)\r\n\r\nThat's fine with me, but I'd like to get some input from @martinthomson before proceeding with either change.\r\n",
+          "createdAt": "2021-01-15T21:31:09Z",
+          "updatedAt": "2021-01-15T21:31:09Z"
         }
       ],
       "reviews": [
@@ -21859,6 +22084,46 @@
           "createdAt": "2021-01-14T23:39:23Z",
           "updatedAt": "2021-01-14T23:39:23Z",
           "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTc4NzM1MDgz",
+          "commit": {
+            "abbreviatedOid": "87303bd"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "Would this change or one similar address @martinthomson 's concern?  ",
+          "createdAt": "2021-01-28T20:58:58Z",
+          "updatedAt": "2021-01-28T20:59:35Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "```suggestion\r\nSuch \"SVCB-reliant\" protocols SHALL:\r\n* ... start off step 1 with ADDR_QNAME being undefined\r\n* ... not issue A/AAAA queries when ADDR_QNAME is undefined\r\n* ... terminate upon reaching step 5\r\n```",
+              "createdAt": "2021-01-28T20:58:58Z",
+              "updatedAt": "2021-01-28T20:59:35Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTc4ODY2Mzg0",
+          "commit": {
+            "abbreviatedOid": "87303bd"
+          },
+          "author": "martinthomson",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-01-29T01:05:01Z",
+          "updatedAt": "2021-01-29T01:05:02Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "Yes, I think that would do.  Though, as I noted in mail, it would be better if the current optimization were framed as such and the conditions under which the optimization apply more clearly articulated.",
+              "createdAt": "2021-01-29T01:05:01Z",
+              "updatedAt": "2021-01-29T01:05:02Z"
+            }
+          ]
         }
       ]
     },
@@ -21874,7 +22139,7 @@
       "labels": [],
       "body": "This is an alternative to #288\r\n\r\nAddresses #287",
       "createdAt": "2021-01-15T18:36:34Z",
-      "updatedAt": "2021-01-15T18:36:34Z",
+      "updatedAt": "2021-01-28T20:54:28Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "c55491fc96cdcf131378d0dabf983fa2c16866e7",
@@ -21886,7 +22151,86 @@
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTY5NjIzMjMw",
+          "commit": {
+            "abbreviatedOid": "3b0c3be"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-15T21:16:06Z",
+          "updatedAt": "2021-01-15T21:16:06Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTc4NzMxODQ4",
+          "commit": {
+            "abbreviatedOid": "3b0c3be"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-28T20:54:28Z",
+          "updatedAt": "2021-01-28T20:54:28Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 290,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTU1OTcyMjk0",
+      "title": "Use lower-case MUST for self-consistency rule",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/290",
+      "state": "MERGED",
+      "author": "bemasc",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [
+        "enygren"
+      ],
+      "labels": [],
+      "body": "This is probably more correct use of normative language.",
+      "createdAt": "2021-01-15T21:47:56Z",
+      "updatedAt": "2021-02-01T18:13:10Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "e60752ac8167edc8d8eea32f77b0e0167b100027",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "bemasc-no-alpn-must",
+      "headRefOid": "9eea84e8d934139d6e84592b1fe61c7b31157ddf",
+      "closedAt": "2021-02-01T18:13:07Z",
+      "mergedAt": "2021-02-01T18:13:07Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "701240a1d2bd1195afc7381d7f936de5fa784120"
+      },
+      "comments": [
+        {
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "body": "LGTM.  Makes it clear enough that the statement is just \"you need to do this or it won't be self-consistent\".  Whereas \"you MUST do this...\" made it sound like a stand-alone rule which was not correct.",
+          "createdAt": "2021-01-15T21:51:42Z",
+          "updatedAt": "2021-01-15T21:51:42Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTc4NzMxMTgw",
+          "commit": {
+            "abbreviatedOid": "9eea84e"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-01-28T20:53:30Z",
+          "updatedAt": "2021-01-28T20:53:30Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
