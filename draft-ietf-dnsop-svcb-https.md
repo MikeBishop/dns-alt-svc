@@ -522,8 +522,8 @@ fallback to lower-priority alternatives.  Clients issue AAAA and/or A
 queries for the selected TargetName, and MAY choose between them using an
 approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 
-A client is called "SVCB-reliant" if it connects only to the indicated
-ServiceMode endpoints, and "SVCB-optional" otherwise.  Clients for pre-existing
+A client is called "SVCB-optional" if it can connect without the use of
+ServiceMode records, and "SVCB-reliant" otherwise.  Clients for pre-existing
 protocols SHALL implement SVCB-optional behavior (except as noted in
 {{client-failures}} and {{ech-client-behavior}}).
 
