@@ -1054,7 +1054,7 @@ Clients that implement support for ECH MUST perform the HTTPS RR query first,
 and MUST only make use of Alt-Svc when operating in SVCB-optional mode (see
 {{ech-client-behavior}}).
 
-This specification does not alter the DNS queries performed when connecting
+This specification does not alter the DNS records used when connecting
 to an Alt-Svc hostname (typically A and/or AAAA only).
 
 ## Requiring Server Name Indication
