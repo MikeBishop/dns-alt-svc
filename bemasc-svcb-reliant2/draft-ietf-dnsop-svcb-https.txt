@@ -1173,7 +1173,7 @@ Table of Contents
    query first, and MUST only make use of Alt-Svc when operating in
    SVCB-optional mode (see Section 9.1).
 
-   This specification does not alter the DNS queries performed when
+   This specification does not alter the DNS records used when
    connecting to an Alt-Svc hostname (typically A and/or AAAA only).
 
 8.4.  Requiring Server Name Indication
