@@ -628,10 +628,10 @@ Table of Contents
    MAY choose between them using an approach such as Happy Eyeballs
    [HappyEyeballsV2].
 
-   A client is called "SVCB-reliant" if it connects only to the
-   indicated ServiceMode endpoints, and "SVCB-optional" otherwise.
-   Clients for pre-existing protocols SHALL implement SVCB-optional
-   behavior (except as noted in Section 3.1 and Section 9.1).
+   A client is called "SVCB-optional" if it can connect without the use
+   of ServiceMode records, and "SVCB-reliant" otherwise.  Clients for
+   pre-existing protocols SHALL implement SVCB-optional behavior (except
+   as noted in Section 3.1 and Section 9.1).
 
    SVCB-optional clients SHOULD issue in parallel any other DNS queries
    that might be needed for connection establishment.  SVCB-optional
