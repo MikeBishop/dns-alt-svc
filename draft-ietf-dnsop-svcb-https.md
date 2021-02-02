@@ -518,7 +518,7 @@ comply with this specification or have any awareness of SVCB.
 
 Once SVCB resolution is completed, the client proceeds with connection
 establishment.  Clients SHOULD try higher-priority alternatives first, with
-fallback to lower-priority alternatives.  Clients MUST issue AAAA and/or A
+fallback to lower-priority alternatives.  Clients issue AAAA and/or A
 queries for the selected TargetName, and MAY choose between them using an
 approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 
@@ -702,7 +702,7 @@ though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
 with any active or in-progress connection,
-clients must proceed with connection establishment as described in
+clients proceed with connection establishment as described in
 {{client-behavior}}.
 
 ## Generating and using incomplete responses {#incomplete-response}
