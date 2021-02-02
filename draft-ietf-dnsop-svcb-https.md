@@ -530,7 +530,8 @@ protocols SHALL implement SVCB-optional behavior (except as noted in
 SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
 be needed for connection establishment.  SVCB-optional clients SHALL append an
 alternative endpoint consisting of the final value of $QNAME, the authority
-endpoint's port number, and no SvcParams, and MAY append the authority endpoint.
+endpoint's port number, and no SvcParams, to be attempted before falling back
+to non-SVCB connection modes.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
@@ -540,8 +541,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If SVCB resolution fails due to a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
 cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
-{{!DoH=RFC8484}}), a SVCB-optional client SHOULD terminate the connection like
-a SVCB-reliant client would.  Otherwise, an active attacker
+{{!DoH=RFC8484}}), a SVCB-optional client SHOULD abandon the connection
+attempt like a SVCB-reliant client would.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -657,18 +658,15 @@ NSEC3).
 # Performance optimizations {#optimizations}
 
 For optimal performance (i.e. minimum connection setup time), clients
-SHOULD issue address (AAAA and/or A) and SVCB queries
-simultaneously, and SHOULD implement a client-side DNS cache.
+SHOULD implement a client-side DNS cache.
 Responses in the Additional section of a SVCB response SHOULD be placed
 in cache before performing any followup queries.
-With these optimizations in place, and conforming DNS servers,
+With this behavior, and conforming DNS servers,
 using SVCB does not add network latency to connection setup.
 
-To improve performance when using a non-conforming recursive resolver,
-clients SHOULD issue speculative A and AAAA queries based on a predicted value
-of TargetName.  In the absence of better information, clients SHOULD predict
-that TargetName will be the service name for the initial query and "." for
-subsequent queries (see {zone-performance}).
+To improve performance when using a non-conforming recursive resolver, clients
+SHOULD issue speculative A and/or AAAA queries in parallel with each SVCB
+query, based on a predicted value of TargetName (see {{zone-performance}}).
 
 After a ServiceMode RRSet is received, clients MAY try more than one option
 in parallel, and MAY prefetch A and AAAA records for multiple TargetNames.
@@ -1179,9 +1177,12 @@ be added to the configuration.
 ## Structuring zones for performance {#zone-performance}
 
 To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD minimize the use of AliasMode records, and choose
-TargetName to be a domain for which the client will have already issued
-address queries (see {{client-behavior}}, {{optimizations}}).  For
+domain owners SHOULD minimize the use of AliasMode records, and SHOULD
+choose TargetName according to a predictable convention that is known
+to the client, so that clients can issue A and/or AAAA queries for TargetName
+in advance (see {{optimizations}}).  Unless otherwise specified, the
+convention is to set TargetName to the service name for an initial
+ServiceMode record, or to "." if it is reached via an alias.  For
 foo://foo.example.com:8080, this might look like:
 
     $ORIGIN example.com. ; Origin
