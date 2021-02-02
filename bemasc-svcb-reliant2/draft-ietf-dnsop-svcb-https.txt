@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 5 August 2021                                         E. Nygren
+Expires: 6 August 2021                                         E. Nygren
                                                      Akamai Technologies
-                                                         1 February 2021
+                                                         2 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 5 August 2021.
+   This Internet-Draft will expire on 6 August 2021.
 
 Copyright Notice
 
@@ -624,8 +624,8 @@ Table of Contents
    Once SVCB resolution is completed, the client proceeds with
    connection establishment.  Clients SHOULD try higher-priority
    alternatives first, with fallback to lower-priority alternatives.
-   Clients MUST issue AAAA and/or A queries for the selected TargetName,
-   and MAY choose between them using an approach such as Happy Eyeballs
+   Clients issue AAAA and/or A queries for the selected TargetName, and
+   MAY choose between them using an approach such as Happy Eyeballs
    [HappyEyeballsV2].
 
    A client is called "SVCB-reliant" if it connects only to the
@@ -814,8 +814,8 @@ Table of Contents
    has higher priority.
 
    If none of the SVCB records are consistent with any active or in-
-   progress connection, clients must proceed with connection
-   establishment as described in Section 3.
+   progress connection, clients proceed with connection establishment as
+   described in Section 3.
 
 5.2.  Generating and using incomplete responses
 
