@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 6 August 2021                                         E. Nygren
+Expires: 7 August 2021                                         E. Nygren
                                                      Akamai Technologies
-                                                         2 February 2021
+                                                         3 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 6 August 2021.
+   This Internet-Draft will expire on 7 August 2021.
 
 Copyright Notice
 
@@ -637,8 +637,8 @@ Table of Contents
    that might be needed for connection establishment.  SVCB-optional
    clients SHALL append an alternative endpoint consisting of the final
    value of $QNAME, the authority endpoint's port number, and no
-   SvcParams, to be attempted before falling back to non-SVCB connection
-   modes.
+   SvcParams, to the list of alternative endpoints, which is attempted
+   before falling back to non-SVCB connection modes.
 
    Some important optimizations are discussed in Section 5 to avoid
    additional latency in comparison to ordinary AAAA/A lookups.
