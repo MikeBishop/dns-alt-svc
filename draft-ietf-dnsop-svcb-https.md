@@ -531,8 +531,8 @@ protocols SHALL implement SVCB-optional behavior (except as noted in
 SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
 be needed for connection establishment.  SVCB-optional clients SHALL append an
 alternative endpoint consisting of the final value of $QNAME, the authority
-endpoint's port number, and no SvcParams, to be attempted before falling back
-to non-SVCB connection modes.
+endpoint's port number, and no SvcParams, to the list of alternative endpoints, which is 
+attempted before falling back to non-SVCB connection modes.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
