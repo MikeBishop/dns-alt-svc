@@ -511,12 +511,13 @@ for a service, as performed by the client.  It MUST be implemented as follows:
 4. If one or more "compatible" ({{mandatory}}) ServiceMode records are returned,
    these represent the alternative endpoints.
 
-5. Otherwise, SVCB resolution has failed.
+5. Otherwise, SVCB resolution has failed, and the list of known endpoints is
+   empty.
 
 This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
 
-Once SVCB resolution is completed, the client proceeds with connection
+Once SVCB resolution has concluded, the client proceeds with connection
 establishment.  Clients SHOULD try higher-priority alternatives first, with
 fallback to lower-priority alternatives.  Clients issue AAAA and/or A
 queries for the selected TargetName, and MAY choose between them using an
