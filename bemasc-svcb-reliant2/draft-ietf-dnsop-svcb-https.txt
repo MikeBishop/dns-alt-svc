@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 7 August 2021                                         E. Nygren
+Expires: 9 August 2021                                         E. Nygren
                                                      Akamai Technologies
-                                                         3 February 2021
+                                                         5 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 7 August 2021.
+   This Internet-Draft will expire on 9 August 2021.
 
 Copyright Notice
 
@@ -615,13 +615,14 @@ Table of Contents
    4.  If one or more "compatible" (Section 7) ServiceMode records are
        returned, these represent the alternative endpoints.
 
-   5.  Otherwise, SVCB resolution has failed.
+   5.  Otherwise, SVCB resolution has failed, and the list of known
+       endpoints is empty.
 
    This procedure does not rely on any recursive or authoritative DNS
    server to comply with this specification or have any awareness of
    SVCB.
 
-   Once SVCB resolution is completed, the client proceeds with
+   Once SVCB resolution has concluded, the client proceeds with
    connection establishment.  Clients SHOULD try higher-priority
    alternatives first, with fallback to lower-priority alternatives.
    Clients issue AAAA and/or A queries for the selected TargetName, and
