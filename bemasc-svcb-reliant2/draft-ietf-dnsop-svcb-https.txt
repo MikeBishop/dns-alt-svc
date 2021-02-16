@@ -1265,13 +1265,9 @@ Table of Contents
    clients to fall back to a direct connection if all SVCB options fail.
    This behavior is not suitable for ECH, because fallback would negate
    the privacy benefits of ECH.  Accordingly, ECH-capable SVCB-optional
-   clients MUST implement the following behavior for connection
-   establishment:
-
-   1.  Perform SVCB resolution as described in Section 3.
-
-   2.  If SVCB resolution succeeded, and all alternative endpoints have
-       an "echconfig" key, use SVCB-reliant connection establishment.
+   clients MUST switch to SVCB-reliant connection establishment if SVCB
+   resolution succeeded (following Section 3) and all alternative
+   endpoints have an "echconfig" key.
 
    As a latency optimization, clients MAY prefetch DNS records that will
    only be used in SVCB-optional mode.
