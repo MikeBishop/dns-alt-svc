@@ -5,8 +5,8 @@
 HTTP Working Group                                           B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 9 August 2021                               Akamai Technologies
-                                                         5 February 2021
+Expires: 20 August 2021                              Akamai Technologies
+                                                        16 February 2021
 
 
      Finding HTTP Alternative Services via the Domain Name Service
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 August 2021.
+   This Internet-Draft will expire on 20 August 2021.
 
 Copyright Notice
 
@@ -392,25 +392,28 @@ Table of Contents
    [AltSvcSNI]
               Bishop, M., "The "SNI" Alt-Svc Parameter", Work in
               Progress, Internet-Draft, draft-bishop-httpbis-sni-altsvc-
-              02, 24 May 2018, <http://www.ietf.org/internet-drafts/
-              draft-bishop-httpbis-sni-altsvc-02.txt>.
+              02, 24 May 2018, <https://www.ietf.org/archive/id/draft-
+              bishop-httpbis-sni-altsvc-02.txt>.
 
-   [Attrleaf] Crocker, D., "DNS Scoped Data Through "Underscore" Naming
-              of Attribute Leaves", Work in Progress, Internet-Draft,
-              draft-ietf-dnsop-attrleaf-16, 16 November 2018,
-              <http://www.ietf.org/internet-drafts/draft-ietf-dnsop-
+   [Attrleaf] Crocker, D., "Scoped Interpretation of DNS Resource
+              Records through "Underscored" Naming of Attribute Leaves",
+              Work in Progress, Internet-Draft, draft-ietf-dnsop-
+              attrleaf-16, 16 November 2018,
+              <https://www.ietf.org/archive/id/draft-ietf-dnsop-
               attrleaf-16.txt>.
 
    [DOH]      Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", Work in Progress, Internet-Draft, draft-ietf-doh-
-              dns-over-https-14, 16 August 2018, <http://www.ietf.org/
-              internet-drafts/draft-ietf-doh-dns-over-https-14.txt>.
+              dns-over-https-14, 16 August 2018,
+              <https://www.ietf.org/archive/id/draft-ietf-doh-dns-over-
+              https-14.txt>.
 
    [I-D.ietf-tls-tls13]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", Work in Progress, Internet-Draft, draft-
-              ietf-tls-tls13-28, 20 March 2018, <http://www.ietf.org/
-              internet-drafts/draft-ietf-tls-tls13-28.txt>.
+              ietf-tls-tls13-28, 20 March 2018,
+              <https://www.ietf.org/archive/id/draft-ietf-tls-
+              tls13-28.txt>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,

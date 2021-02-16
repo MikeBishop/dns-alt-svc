@@ -30,21 +30,21 @@ available there.  The authors (gratefully) accept pull requests.
 <meta content="draft-ietf-dnsop-svcb-https" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.5.0
-    Python 3.8.5
+    Python 3.8.7
     appdirs 1.4.4
     ConfigArgParse 1.2.3
     google-i18n-address 2.4.0
     html5lib 1.1
-    intervaltree 3.0.2
+    intervaltree 3.1.0
     Jinja2 2.11.2
     kitchen 1.2.6
-    lxml 4.5.0
-    pycountry 19.8.18
-    pyflakes 2.1.1
+    lxml 4.6.2
+    pycountry 20.7.3
+    pyflakes 2.2.0
     PyYAML 5.4.1
-    requests 2.22.0
-    setuptools 45.2.0
-    six 1.14.0
+    requests 2.25.1
+    setuptools 51.3.3
+    six 1.15.0
 -->
 <link href="draft-ietf-dnsop-svcb-https.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -857,7 +857,7 @@ address div.right {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Schwartz, et al.</td>
-<td class="center">Expires 9 August 2021</td>
+<td class="center">Expires 20 August 2021</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -870,12 +870,12 @@ address div.right {
 <dd class="internet-draft">draft-ietf-dnsop-svcb-https</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2021-02-05" class="published">5 February 2021</time>
+<time datetime="2021-02-16" class="published">16 February 2021</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2021-08-09">9 August 2021</time></dd>
+<dd class="expires"><time datetime="2021-08-20">20 August 2021</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -931,7 +931,7 @@ available there.  The authors (gratefully) accept pull requests.<a href="#sectio
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 9 August 2021.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 20 August 2021.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1740,7 +1740,8 @@ scheme (see <a href="#svcb-names" class="xref">Section 2.3</a>).<a href="#sectio
 </li>
         <li id="section-3-2.2">Issue a SVCB query for $QNAME.<a href="#section-3-2.2" class="pilcrow">¶</a>
 </li>
-        <li id="section-3-2.3">If an AliasMode SVCB record is returned, set $QNAME to its TargetName (without
+        <li id="section-3-2.3">If an AliasMode SVCB record is returned for $QNAME (after following CNAMEs
+as normal), set $QNAME to its TargetName (without
 additional prefixes) and loop back to step 2,
 subject to chain length limits and loop detection heuristics (see
 <a href="#client-failures" class="xref">Section 3.1</a>).<a href="#section-3-2.3" class="pilcrow">¶</a>
@@ -1767,7 +1768,9 @@ protocols SHALL implement SVCB-optional behavior (except as noted in
 be needed for connection establishment.  SVCB-optional clients SHALL append an
 alternative endpoint consisting of the final value of $QNAME, the authority
 endpoint's port number, and no SvcParams, to the list of alternative endpoints, which is 
-attempted before falling back to non-SVCB connection modes.<a href="#section-3-6" class="pilcrow">¶</a></p>
+attempted before falling back to non-SVCB connection modes.  This ensures that
+SVCB-optional clients will make use of an AliasMode record whose TargetName has
+A and/or AAAA records but no SVCB records.<a href="#section-3-6" class="pilcrow">¶</a></p>
 <p id="section-3-7">Some important optimizations are discussed in <a href="#optimizations" class="xref">Section 5</a>
 to avoid additional latency in comparison to ordinary AAAA/A lookups.<a href="#section-3-7" class="pilcrow">¶</a></p>
 <div id="client-failures">
@@ -3094,7 +3097,7 @@ and suggestions on this draft.<a href="#section-15-2" class="pilcrow">¶</a></p>
 <dd class="break"></dd>
 <dt id="ECH">[ECH]</dt>
         <dd>
-<span class="refAuthor">Rescorla, E.</span><span class="refAuthor">, Oku, K.</span><span class="refAuthor">, Sullivan, N.</span><span class="refAuthor">, and C. Wood</span>, <span class="refTitle">"TLS Encrypted Client Hello"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-esni-09</span>, <time datetime="2020-12-16" class="refDate">16 December 2020</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-09.txt">http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-09.txt</a>&gt;</span>. </dd>
+<span class="refAuthor">Rescorla, E.</span><span class="refAuthor">, Oku, K.</span><span class="refAuthor">, Sullivan, N.</span><span class="refAuthor">, and C. A. Wood</span>, <span class="refTitle">"TLS Encrypted Client Hello"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-esni-09</span>, <time datetime="2020-12-16" class="refDate">16 December 2020</time>, <span>&lt;<a href="https://www.ietf.org/archive/id/draft-ietf-tls-esni-09.txt">https://www.ietf.org/archive/id/draft-ietf-tls-esni-09.txt</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="HappyEyeballsV2">[HappyEyeballsV2]</dt>
         <dd>
@@ -3106,7 +3109,7 @@ and suggestions on this draft.<a href="#section-15-2" class="pilcrow">¶</a></p>
 <dd class="break"></dd>
 <dt id="HTTP3">[HTTP3]</dt>
         <dd>
-<span class="refAuthor">Bishop, M.</span>, <span class="refTitle">"Hypertext Transfer Protocol Version 3 (HTTP/3)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-quic-http-33</span>, <time datetime="2020-12-15" class="refDate">15 December 2020</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-quic-http-33.txt">http://www.ietf.org/internet-drafts/draft-ietf-quic-http-33.txt</a>&gt;</span>. </dd>
+<span class="refAuthor">Bishop, M.</span>, <span class="refTitle">"Hypertext Transfer Protocol Version 3 (HTTP/3)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-quic-http-34</span>, <time datetime="2021-02-02" class="refDate">2 February 2021</time>, <span>&lt;<a href="https://www.ietf.org/archive/id/draft-ietf-quic-http-34.txt">https://www.ietf.org/archive/id/draft-ietf-quic-http-34.txt</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC1035">[RFC1035]</dt>
         <dd>
@@ -3193,11 +3196,11 @@ and suggestions on this draft.<a href="#section-15-2" class="pilcrow">¶</a></p>
 <dd class="break"></dd>
 <dt id="I-D.bellis-dnsop-http-record">[I-D.bellis-dnsop-http-record]</dt>
         <dd>
-<span class="refAuthor">Bellis, R.</span>, <span class="refTitle">"A DNS Resource Record for HTTP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bellis-dnsop-http-record-00</span>, <time datetime="2018-11-03" class="refDate">3 November 2018</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-bellis-dnsop-http-record-00.txt">http://www.ietf.org/internet-drafts/draft-bellis-dnsop-http-record-00.txt</a>&gt;</span>. </dd>
+<span class="refAuthor">Bellis, R.</span>, <span class="refTitle">"A DNS Resource Record for HTTP"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bellis-dnsop-http-record-00</span>, <time datetime="2018-11-03" class="refDate">3 November 2018</time>, <span>&lt;<a href="https://www.ietf.org/archive/id/draft-bellis-dnsop-http-record-00.txt">https://www.ietf.org/archive/id/draft-bellis-dnsop-http-record-00.txt</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-dnsop-aname">[I-D.ietf-dnsop-aname]</dt>
         <dd>
-<span class="refAuthor">Finch, T.</span><span class="refAuthor">, Hunt, E.</span><span class="refAuthor">, Dijk, P.</span><span class="refAuthor">, Eden, A.</span><span class="refAuthor">, and W. Mekking</span>, <span class="refTitle">"Address-specific DNS aliases (ANAME)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dnsop-aname-04</span>, <time datetime="2019-07-08" class="refDate">8 July 2019</time>, <span>&lt;<a href="http://www.ietf.org/internet-drafts/draft-ietf-dnsop-aname-04.txt">http://www.ietf.org/internet-drafts/draft-ietf-dnsop-aname-04.txt</a>&gt;</span>. </dd>
+<span class="refAuthor">Finch, T.</span><span class="refAuthor">, Hunt, E.</span><span class="refAuthor">, Dijk, P. V.</span><span class="refAuthor">, Eden, A.</span><span class="refAuthor">, and M. Mekking</span>, <span class="refTitle">"Address-specific DNS aliases (ANAME)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dnsop-aname-04</span>, <time datetime="2019-07-08" class="refDate">8 July 2019</time>, <span>&lt;<a href="https://www.ietf.org/archive/id/draft-ietf-dnsop-aname-04.txt">https://www.ietf.org/archive/id/draft-ietf-dnsop-aname-04.txt</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC6454">[RFC6454]</dt>
         <dd>

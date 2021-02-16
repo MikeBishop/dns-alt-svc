@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 9 August 2021                                         E. Nygren
+Expires: 20 August 2021                                        E. Nygren
                                                      Akamai Technologies
-                                                         5 February 2021
+                                                        16 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 August 2021.
+   This Internet-Draft will expire on 20 August 2021.
 
 Copyright Notice
 
@@ -607,9 +607,10 @@ Table of Contents
 
    2.  Issue a SVCB query for $QNAME.
 
-   3.  If an AliasMode SVCB record is returned, set $QNAME to its
-       TargetName (without additional prefixes) and loop back to step 2,
-       subject to chain length limits and loop detection heuristics (see
+   3.  If an AliasMode SVCB record is returned for $QNAME (after
+       following CNAMEs as normal), set $QNAME to its TargetName
+       (without additional prefixes) and loop back to step 2, subject to
+       chain length limits and loop detection heuristics (see
        Section 3.1).
 
    4.  If one or more "compatible" (Section 7) ServiceMode records are
@@ -639,7 +640,9 @@ Table of Contents
    clients SHALL append an alternative endpoint consisting of the final
    value of $QNAME, the authority endpoint's port number, and no
    SvcParams, to the list of alternative endpoints, which is attempted
-   before falling back to non-SVCB connection modes.
+   before falling back to non-SVCB connection modes.  This ensures that
+   SVCB-optional clients will make use of an AliasMode record whose
+   TargetName has A and/or AAAA records but no SVCB records.
 
    Some important optimizations are discussed in Section 5 to avoid
    additional latency in comparison to ordinary AAAA/A lookups.
@@ -1752,10 +1755,10 @@ Table of Contents
               Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
               2016, <https://www.rfc-editor.org/info/rfc7858>.
 
-   [ECH]      Rescorla, E., Oku, K., Sullivan, N., and C. Wood, "TLS
+   [ECH]      Rescorla, E., Oku, K., Sullivan, N., and C. A. Wood, "TLS
               Encrypted Client Hello", Work in Progress, Internet-Draft,
               draft-ietf-tls-esni-09, 16 December 2020,
-              <http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-
+              <https://www.ietf.org/archive/id/draft-ietf-tls-esni-
               09.txt>.
 
    [HappyEyeballsV2]
@@ -1771,8 +1774,9 @@ Table of Contents
 
    [HTTP3]    Bishop, M., "Hypertext Transfer Protocol Version 3
               (HTTP/3)", Work in Progress, Internet-Draft, draft-ietf-
-              quic-http-33, 15 December 2020, <http://www.ietf.org/
-              internet-drafts/draft-ietf-quic-http-33.txt>.
+              quic-http-34, 2 February 2021,
+              <https://www.ietf.org/archive/id/draft-ietf-quic-http-
+              34.txt>.
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
@@ -1866,15 +1870,15 @@ Table of Contents
    [I-D.bellis-dnsop-http-record]
               Bellis, R., "A DNS Resource Record for HTTP", Work in
               Progress, Internet-Draft, draft-bellis-dnsop-http-record-
-              00, 3 November 2018, <http://www.ietf.org/internet-drafts/
+              00, 3 November 2018, <https://www.ietf.org/archive/id/
               draft-bellis-dnsop-http-record-00.txt>.
 
    [I-D.ietf-dnsop-aname]
-              Finch, T., Hunt, E., Dijk, P., Eden, A., and W. Mekking,
-              "Address-specific DNS aliases (ANAME)", Work in Progress,
-              Internet-Draft, draft-ietf-dnsop-aname-04, 8 July 2019,
-              <http://www.ietf.org/internet-drafts/draft-ietf-dnsop-
-              aname-04.txt>.
+              Finch, T., Hunt, E., Dijk, P. V., Eden, A., and M.
+              Mekking, "Address-specific DNS aliases (ANAME)", Work in
+              Progress, Internet-Draft, draft-ietf-dnsop-aname-04, 8
+              July 2019, <https://www.ietf.org/archive/id/draft-ietf-
+              dnsop-aname-04.txt>.
 
    [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454,
               DOI 10.17487/RFC6454, December 2011,
