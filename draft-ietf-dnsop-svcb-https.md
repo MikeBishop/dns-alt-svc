@@ -1143,12 +1143,9 @@ identifies the desired service.
 The SVCB-optional client behavior specified in {{client-behavior}} permits clients
 to fall back to a direct connection if all SVCB options fail.  This behavior is
 not suitable for ECH, because fallback would negate the privacy benefits of
-ECH.  Accordingly, ECH-capable SVCB-optional clients MUST implement the following
-behavior for connection establishment:
-
-1. Perform SVCB resolution as described in {{client-behavior}}.
-2. If SVCB resolution succeeded, and all alternative endpoints have an "echconfig"
-   key, use SVCB-reliant connection establishment.
+ECH.  Accordingly, ECH-capable SVCB-optional clients MUST switch to
+SVCB-reliant connection establishment if SVCB resolution succeeded (following
+{{client-behavior}}) and all alternative endpoints have an "echconfig" key.
 
 As a latency optimization, clients MAY prefetch DNS records that will only be used
 in SVCB-optional mode.
