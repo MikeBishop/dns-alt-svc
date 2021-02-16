@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-02-05T15:40:01.784805+00:00",
+  "timestamp": "2021-02-16T16:16:45.832850+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -22264,13 +22264,13 @@
       "labels": [],
       "body": "This change significantly refactors the client requirements, separating\r\nrecommended performance optimizations from minimal compliance\r\nrequirements.\r\n\r\nAddresses #287",
       "createdAt": "2021-02-01T19:42:06Z",
-      "updatedAt": "2021-02-05T15:39:39Z",
+      "updatedAt": "2021-02-16T16:16:41Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "701240a1d2bd1195afc7381d7f936de5fa784120",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-svcb-reliant2",
-      "headRefOid": "7371fd9250873d5535a77571a90add73b9fd73f6",
+      "headRefOid": "22169eba93def06f4886e99983489cdf94fce07c",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -22282,6 +22282,13 @@
           "body": "All this seems reasonable to me.  From the perspective of an HTTPS client, this is a little harder to follow than the previous text (as I would expect since the previous text was targeted really to just telling HTTPS clients what to do), but it's still reasonable enough and hopefully resolves concerns regarding clients other than HTTPS clients.",
           "createdAt": "2021-02-02T18:35:48Z",
           "updatedAt": "2021-02-02T18:35:48Z"
+        },
+        {
+          "author": "moonshiner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "impartial third party:  I like these phrasing adjustments. ",
+          "createdAt": "2021-02-05T21:42:53Z",
+          "updatedAt": "2021-02-05T21:42:53Z"
         }
       ],
       "reviews": [
@@ -22301,43 +22308,43 @@
               "originalPosition": 57,
               "body": "```suggestion\r\nfallback to lower-priority alternatives.  Clients issue AAAA and/or A\r\n```",
               "createdAt": "2021-02-01T22:27:54Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 64,
               "body": "This definition of SVCB-reliant doesn't match with my understanding.  I think that what you want to do is note that there are two reasons to make an A/AAAA query in parallel.  The primary one being that the client might be willing to fall back to A/AAAA queries if there are no SVCB records, but you might also want to allow for the possibility that a TargetName form SVCB record references the same name and so there might be an advantage in making the A/AAAA queries in parallel to allow for that outcome.\r\n\r\n(Unfortunately, if you *need* SVCB, you need the TargetName form, and you don't get to predict when that will appear, so you basically have to make the parallel query always once you decide that it is worth the parallel.)\r\n\r\nYou mention the latter below, which is good, but I think that it applies here.",
               "createdAt": "2021-02-01T22:32:41Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 83,
               "body": "terminate the connection or terminate the connection attempt?",
               "createdAt": "2021-02-01T22:39:20Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 69,
               "body": "I don't understand this.  Are you trying to back-fill a default value for SVCB in the case you don't need one?  Why not just say \"if the endpoint does not require SVCB, then it can use A/AAAA records when SVCB is not available\"?",
               "createdAt": "2021-02-01T22:42:19Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 95,
               "body": "This isn't something you recommend.  You just need to say that the reason you issue A/AAAA in parallel is that you are predicting that TargetName is present and that TargetName is \".\", which is what {{zone-performance}} (two curlies!) recommends for those that provision records.",
               "createdAt": "2021-02-01T22:44:19Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 117,
               "body": "```suggestion\r\nclients proceed with connection establishment as described in\r\n```",
               "createdAt": "2021-02-01T22:44:40Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 133,
               "body": "Citation?",
               "createdAt": "2021-02-01T22:45:18Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22357,31 +22364,31 @@
               "originalPosition": 64,
               "body": "I'm not sure I understand your concern here, but I hope these changes have clarified it somewhat.",
               "createdAt": "2021-02-02T01:54:00Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 69,
               "body": "There are actually _two_ \"default\" fallbacks listed here, in a specific order and with different normativity.  The main motivation is to support using AliasMode to point to a hosting provider that doesn't use SVCB.\r\n\r\nI've adjusted this text to improve clarity (and avoid assuming that non-SVCB connection means A/AAAA, since it could also be SRV or something else).",
               "createdAt": "2021-02-02T01:56:11Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 83,
               "body": "Connection attempt.  Reworded.",
               "createdAt": "2021-02-02T01:56:25Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 95,
               "body": "{{zone-performance}} actually didn't recommend that.  I've moved this recommendation from here to there.",
               "createdAt": "2021-02-02T01:57:11Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             },
             {
               "originalPosition": 133,
               "body": "Clarified",
               "createdAt": "2021-02-02T01:58:11Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22401,7 +22408,7 @@
               "originalPosition": 64,
               "body": "I think that the key difference between reliant and optional is whether the information in the ServiceMode is critical to operation of the client.\r\n\r\nRelated question: does an SVCB-optional client switch to SVCB-reliant if it encounters an AliasMode record?  Or, can it follow to the target name and just consume A/AAAA (or whatever) instead, without ever having seen a ServiceMode record?",
               "createdAt": "2021-02-02T03:11:58Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22421,7 +22428,7 @@
               "originalPosition": 69,
               "body": "As the text still says that you issue A/AAAA when you hit a ServiceMode record, I'm now more confused by this.\r\n\r\nI'm still totally short on clarity here.  What is being appended to?  And I still don't know what \"the authority endpoint\" is or what it is appended to.  Are you saying that if you exhaust SVCB lookups and you are don't need the ServiceForm information, you could just pretend to have received a SVCB ServiceForm record that consists of $QNAME, the port, and no SvcParams?  Why say that at all?  What advantage does this have over letting the client fall back to non-SVCB resolution?\r\n\r\n\r\n\r\n",
               "createdAt": "2021-02-02T03:17:26Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22441,7 +22448,7 @@
               "originalPosition": 64,
               "body": "> I think that the key difference between reliant and optional is whether the information in the ServiceMode is critical to operation of the client.\r\n\r\nAgreed.  How does that differ from the definition given here?\r\n\r\n> Related question: does an SVCB-optional client switch to SVCB-reliant if it encounters an AliasMode record?\r\n\r\nNo.\r\n\r\n> Or, can it follow to the target name and just consume A/AAAA (or whatever) instead, without ever having seen a ServiceMode record?\r\n\r\nYes.  That's important, to support use of AliasMode pointing to a hosting provider that doesn't have a SVCB record.\r\n\r\nAdditionally, as currently specified, SVCB-optional clients are generally encouraged (and in some cases required) to fall back to non-SVCB connection if all the SVCB alternative endpoints are tried and they all fail. (See #256 for some debate about that.)",
               "createdAt": "2021-02-02T03:18:01Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22461,7 +22468,7 @@
               "originalPosition": 133,
               "body": "I was noting that this might need citation, though the clarification is fine.",
               "createdAt": "2021-02-02T03:18:21Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22481,7 +22488,7 @@
               "originalPosition": 64,
               "body": ">  How does that differ from the definition given here?\r\n\r\nThe definition here concentrates on what the client does (connect to the ServiceForm endpoint), rather than the reasons for the same.\r\n\r\nDoes the draft explain the AliasForm-CNAME isomorphism?  There's a lot of text, but I can't see anything there.  Seems important.",
               "createdAt": "2021-02-02T03:21:44Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22501,7 +22508,7 @@
               "originalPosition": 69,
               "body": "> As the text still says that you issue A/AAAA when you hit a ServiceMode record, I'm now more confused by this.\r\n\r\nConnection using a ServiceMode record always requires an address lookup for TargetName.  Connection _not_ using SVCB doesn't strictly require an address lookup ... who knows what the non-SVCB connection procedure is for an arbitrary protocol?\r\n\r\n> What is being appended to?\r\n\r\nThe priority-ordered list of alternative endpoints.\r\n\r\n> And I still don't know what \"the authority endpoint\" is or what it is appended to.\r\n\r\nThat's defined in [the definitions section](https://tools.ietf.org/html/draft-ietf-dnsop-svcb-https-02#section-1.4).\r\n\r\n> Are you saying that if you exhaust SVCB lookups and you are don't need the ServiceForm information, you could just pretend to have received a SVCB ServiceForm record that consists of $QNAME, the port, and no SvcParams?\r\n\r\nYes.\r\n\r\n> Why say that at all?\r\n\r\nMostly to handle the case where there is an AliasMode record but no ServiceMode record.  Adding this endpoint unconditionally for fallback is not necessary but seems like it could improve reliability (one more endpoint to try) without expanding the DNS response.",
               "createdAt": "2021-02-02T03:29:14Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22521,7 +22528,7 @@
               "originalPosition": 64,
               "body": "> The definition here concentrates on what the client does (connect to the ServiceForm endpoint), rather than the reasons for the same.\r\n\r\nOK, I've reversed the polarity of the definitions.  Does that help?\r\n\r\n> Does the draft explain the AliasForm-CNAME isomorphism?\r\n\r\nIt's not really an isomorphism.  [The AliasMode section](https://tools.ietf.org/html/draft-ietf-dnsop-svcb-https-02#section-2.4.2) discusses the relationship in some detail.  I'm happy to improve the description but I think it's out of scope for this PR.",
               "createdAt": "2021-02-02T03:37:13Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
             }
           ]
         },
@@ -22541,7 +22548,99 @@
               "originalPosition": 70,
               "body": "```suggestion\r\nendpoint's port number, and no SvcParams, to the list of alternative endpoints, which is \r\nattempted before falling back to non-SVCB connection modes.\r\n```\r\n\r\nDoes this need to be explicitly ServiceMode?",
               "createdAt": "2021-02-02T21:31:10Z",
-              "updatedAt": "2021-02-05T15:39:39Z"
+              "updatedAt": "2021-02-16T16:16:05Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTg5ODk2NjM1",
+          "commit": {
+            "abbreviatedOid": "7371fd9"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "This does seem to be cleaner and more readable and the previous text, so does seem to be a general improvement.",
+          "createdAt": "2021-02-12T23:10:41Z",
+          "updatedAt": "2021-02-12T23:18:49Z",
+          "comments": [
+            {
+              "originalPosition": 16,
+              "body": "Do we want to keep a reference to potential of CNAMEs in-place, or this is adequately covered elsewhere and in examples?",
+              "createdAt": "2021-02-12T23:10:41Z",
+              "updatedAt": "2021-02-16T16:16:05Z"
+            },
+            {
+              "originalPosition": 71,
+              "body": "The case somewhat ambiguous here is the scenario where an AliasMode record points to a name with only A/AAAA records.  It may help to call this out explicitly.  Which may be clarifying that each time $QNAME changes, SVCB-optional clients SHOULD issue AAAA/A queries.  We may also want some text such as:  \"Note that SVCB-optional clients should be prepared to handle the case where the TargetName of an AliasMode SVCB RR has only AAAA/A records and no ServiceMode record.\"",
+              "createdAt": "2021-02-12T23:17:30Z",
+              "updatedAt": "2021-02-16T16:16:05Z"
+            },
+            {
+              "originalPosition": 170,
+              "body": "Does this mean that ECH-capable SVCB-optional clients can't use Alt-Svc until we define an Alt-Svc-bis that addresses relevant issues?",
+              "createdAt": "2021-02-12T23:18:16Z",
+              "updatedAt": "2021-02-16T16:16:05Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTg5OTAwNjI5",
+          "commit": {
+            "abbreviatedOid": "7371fd9"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-12T23:23:00Z",
+          "updatedAt": "2021-02-12T23:23:00Z",
+          "comments": [
+            {
+              "originalPosition": 69,
+              "body": "Whereas with a precise read of the text does cover the \"the case where there is an AliasMode record but no ServiceMode record\" it is not obvious to a reader as shown by both Martin and I not quite getting this until reading a few times.  At a minimum we should have a parenthetical which concretely calls out this case.",
+              "createdAt": "2021-02-12T23:23:00Z",
+              "updatedAt": "2021-02-16T16:16:05Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkxMzg4OTMy",
+          "commit": {
+            "abbreviatedOid": "22169eb"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-16T16:16:21Z",
+          "updatedAt": "2021-02-16T16:16:21Z",
+          "comments": [
+            {
+              "originalPosition": 71,
+              "body": "OK, I've added a clarification for that case.",
+              "createdAt": "2021-02-16T16:16:21Z",
+              "updatedAt": "2021-02-16T16:16:21Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkxMzg5Mjg1",
+          "commit": {
+            "abbreviatedOid": "22169eb"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-16T16:16:41Z",
+          "updatedAt": "2021-02-16T16:16:41Z",
+          "comments": [
+            {
+              "originalPosition": 16,
+              "body": "OK, added to Step 3.",
+              "createdAt": "2021-02-16T16:16:41Z",
+              "updatedAt": "2021-02-16T16:16:41Z"
             }
           ]
         }
