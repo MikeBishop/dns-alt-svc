@@ -503,7 +503,8 @@ for a service, as performed by the client.  It MUST be implemented as follows:
 
 2. Issue a SVCB query for $QNAME.
 
-3. If an AliasMode SVCB record is returned, set $QNAME to its TargetName (without
+3. If an AliasMode SVCB record is returned for $QNAME (after following CNAMEs
+   as normal), set $QNAME to its TargetName (without
    additional prefixes) and loop back to step 2,
    subject to chain length limits and loop detection heuristics (see
    {{client-failures}}).
@@ -532,7 +533,9 @@ SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
 be needed for connection establishment.  SVCB-optional clients SHALL append an
 alternative endpoint consisting of the final value of $QNAME, the authority
 endpoint's port number, and no SvcParams, to the list of alternative endpoints, which is 
-attempted before falling back to non-SVCB connection modes.
+attempted before falling back to non-SVCB connection modes.  This ensures that
+SVCB-optional clients will make use of an AliasMode record whose TargetName has
+A and/or AAAA records but no SVCB records.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
