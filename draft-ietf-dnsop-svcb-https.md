@@ -1704,6 +1704,13 @@ reduce implementation complexity.
 
 # Change history
 
+* draft-ietf-dnsop-svcb-https-03
+    * Simplified escaping of comma-separated values
+    * Reorganized client requirements
+    * Added a warning about port filtering for cross-protocol attacks
+    * Clarified self-consistency rules for SvcParams
+    * Added a non-normative mapping summary table for HTTPS
+
 * draft-ietf-dnsop-svcb-https-02
     * Added a Privacy Considerations section
     * Adjusted resolution fallback description
