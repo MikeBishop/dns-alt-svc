@@ -496,7 +496,7 @@ is the effective TargetName:
 # Client behavior {#client-behavior}
 
 "SVCB resolution" is the process of enumerating the priority-ordered endpoints
-for a service, as performed by the client.  It MUST be implemented as follows:
+for a service, as performed by the client.  SVCB resolution is implemented as follows:
 
 1. Let $QNAME be the service name plus appropriate prefixes for the
    scheme (see {{svcb-names}}).
