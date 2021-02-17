@@ -495,59 +495,58 @@ is the effective TargetName:
 
 # Client behavior {#client-behavior}
 
-A SVCB-aware client selects an endpoint for a service using the following
-procedure:
+"SVCB resolution" is the process of enumerating the priority-ordered endpoints
+for a service, as performed by the client.  SVCB resolution is implemented as follows:
 
-1. Let $ADDR_QNAME be the service name.  Let $SVCB_QNAME be the service name
-   plus appropriate prefixes for the scheme (see {{svcb-names}}).
+1. Let $QNAME be the service name plus appropriate prefixes for the
+   scheme (see {{svcb-names}}).
 
-2. In parallel, issue AAAA/A queries for $ADDR_QNAME
-   and a SVCB query for $SVCB_QNAME.
-   The answers for these may or may not include CNAME pointers
-   before reaching one or more of these records.
+2. Issue a SVCB query for $QNAME.
 
-3. If an AliasMode SVCB record is returned for $SVCB_QNAME,
-   clients MUST set $ADDR_QNAME and $SVCB_QNAME to its TargetName (without
+3. If an AliasMode SVCB record is returned for $QNAME (after following CNAMEs
+   as normal), set $QNAME to its TargetName (without
    additional prefixes) and loop back to step 2,
    subject to chain length limits and loop detection heuristics (see
    {{client-failures}}).
 
-4. If one or more "compatible" ({{mandatory}}) ServiceMode records are returned
-   for $SVCB_QNAME, clients SHOULD select the highest-priority compatible record.
-   This record's TargetName and SvcParams represent the preferred endpoint.  If
-   connection to this endpoint fails, the client SHOULD try to connect using
-   values from the next-highest-priority compatible record, etc. If all attempts
-   fail, clients SHOULD go to step 5 (except as noted in {{ech-client-behavior}}).
+4. If one or more "compatible" ({{mandatory}}) ServiceMode records are returned,
+   these represent the alternative endpoints.
 
-5. At this point there are no usable ServiceMode records, because
-   - there were no SVCB records found for $SVCB_QNAME, OR
-   - all records found were incompatible with this client, OR
-   - all connection attempts using ServiceMode records failed.
-
-   Accordingly, clients SHALL connect to the
-   endpoint consisting of $ADDR_QNAME, the authority endpoint's
-   port number, and no SvcParams.
-
-If all of the above connection attempts fail, clients MAY connect to the
-authority endpoint (except as noted in {{client-failures}} and
-{{ech-client-behavior}}).
+5. Otherwise, SVCB resolution has failed, and the list of known endpoints is
+   empty.
 
 This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
 
-When selecting between AAAA and A records to use, clients may use an approach
-such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
+Once SVCB resolution has concluded, the client proceeds with connection
+establishment.  Clients SHOULD try higher-priority alternatives first, with
+fallback to lower-priority alternatives.  Clients issue AAAA and/or A
+queries for the selected TargetName, and MAY choose between them using an
+approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
+
+A client is called "SVCB-optional" if it can connect without the use of
+ServiceMode records, and "SVCB-reliant" otherwise.  Clients for pre-existing
+protocols (e.g. HTTPS) SHALL implement SVCB-optional behavior (except as
+noted in {{client-failures}} and {{ech-client-behavior}}).
+
+SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
+be needed for connection establishment.  SVCB-optional clients SHALL append an
+alternative endpoint consisting of the final value of $QNAME, the authority
+endpoint's port number, and no SvcParams, to the list of alternative endpoints, which is 
+attempted before falling back to non-SVCB connection modes.  This ensures that
+SVCB-optional clients will make use of an AliasMode record whose TargetName has
+A and/or AAAA records but no SVCB records.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
 ## Handling resolution failures {#client-failures}
 
-If a SVCB query results in a SERVFAIL error, transport error, or timeout,
+If SVCB resolution fails due to a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
 cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
-{{!DoH=RFC8484}}), the client SHOULD NOT fall back to $ADDR_QNAME (step 5
-above) or the authority endpoint.  Otherwise, an active attacker
+{{!DoH=RFC8484}}), a SVCB-optional client SHOULD abandon the connection
+attempt like a SVCB-reliant client would.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -663,12 +662,18 @@ NSEC3).
 # Performance optimizations {#optimizations}
 
 For optimal performance (i.e. minimum connection setup time), clients
-SHOULD issue address (AAAA and/or A) and SVCB queries
-simultaneously, and SHOULD implement a client-side DNS cache.
+SHOULD implement a client-side DNS cache.
 Responses in the Additional section of a SVCB response SHOULD be placed
 in cache before performing any followup queries.
-With these optimizations in place, and conforming DNS servers,
+With this behavior, and conforming DNS servers,
 using SVCB does not add network latency to connection setup.
+
+To improve performance when using a non-conforming recursive resolver, clients
+SHOULD issue speculative A and/or AAAA queries in parallel with each SVCB
+query, based on a predicted value of TargetName (see {{zone-performance}}).
+
+After a ServiceMode RRSet is received, clients MAY try more than one option
+in parallel, and MAY prefetch A and AAAA records for multiple TargetNames.
 
 ## Optimistic pre-connection and connection reuse
 
@@ -681,7 +686,7 @@ implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{HappyEyeballsV2}}.
 
-An SVCB record is consistent with a connection
+A SVCB record is consistent with a connection
 if the client would attempt an equivalent connection when making use of
 that record. If a SVCB record is consistent with an active or in-progress
 connection C, the client MAY prefer that record and use C as its connection.
@@ -699,7 +704,8 @@ though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
 with any active or in-progress connection,
-clients must proceed as described in Step 3 of the procedure in {{client-behavior}}.
+clients proceed with connection establishment as described in
+{{client-behavior}}.
 
 ## Generating and using incomplete responses {#incomplete-response}
 
@@ -1048,10 +1054,11 @@ if a usable Alt-Svc value is available in the local cache.
 If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPS RR
 client connection procedure ({{client-behavior}}).
 
-For clients that implement support for ECH, the interaction between
-HTTPS RRs and Alt-Svc is described in {{ech-client-behavior}}.
+Clients that implement support for ECH MUST perform the HTTPS RR query first,
+and MUST only make use of Alt-Svc when operating in SVCB-optional mode (see
+{{ech-client-behavior}}).
 
-This specification does not alter the DNS queries performed when connecting
+This specification does not alter the DNS records used when connecting
 to an Alt-Svc hostname (typically A and/or AAAA only).
 
 ## Requiring Server Name Indication
@@ -1133,24 +1140,15 @@ identifies the desired service.
 
 ## Client behavior {#ech-client-behavior}
 
-The general client behavior specified in {{client-behavior}} permits clients
-to retry connection with a less preferred alternative if the preferred option
-fails, including falling back to a direct connection if all SVCB options fail.
-This behavior is
+The SVCB-optional client behavior specified in {{client-behavior}} permits clients
+to fall back to a direct connection if all SVCB options fail.  This behavior is
 not suitable for ECH, because fallback would negate the privacy benefits of
-ECH.  Accordingly, ECH-capable clients SHALL implement the following
-behavior for connection establishment:
+ECH.  Accordingly, ECH-capable SVCB-optional clients MUST switch to
+SVCB-reliant connection establishment if SVCB resolution succeeded (following
+{{client-behavior}}) and all alternative endpoints have an "echconfig" key.
 
-1. Perform connection establishment using HTTPS RRs as described in
-   {{client-behavior}}.  After step 4, if there were compatible HTTPS RRs,
-   they all had an "echconfig" key, and attempts to connect to them all failed,
-   terminate connection establishment.
-2. If the client implements Alt-Svc, try to connect using any entries from
-   the Alt-Svc cache.
-3. Continue connection establishment as in {{client-behavior}} if necessary.
-
-As a latency optimization, clients MAY prefetch DNS records for later steps
-before they are needed.
+As a latency optimization, clients MAY prefetch DNS records that will only be used
+in SVCB-optional mode.
 
 ## Deployment considerations
 
@@ -1177,13 +1175,16 @@ target names that indicate the scheme in use (e.g. `foosvc.example.net` for
 `foo://` schemes).  This will help to avoid confusion when another scheme needs to
 be added to the configuration.
 
-## Structuring zones for performance
+## Structuring zones for performance {#zone-performance}
 
 To avoid a delay for clients using a nonconforming recursive resolver,
-domain owners SHOULD minimize the use of AliasMode records, and choose
-TargetName to be a domain for which the client will have already issued
-address queries (see {{client-behavior}}).  For foo://foo.example.com:8080,
-this might look like:
+domain owners SHOULD minimize the use of AliasMode records, and SHOULD
+choose TargetName according to a predictable convention that is known
+to the client, so that clients can issue A and/or AAAA queries for TargetName
+in advance (see {{optimizations}}).  Unless otherwise specified, the
+convention is to set TargetName to the service name for an initial
+ServiceMode record, or to "." if it is reached via an alias.  For
+foo://foo.example.com:8080, this might look like:
 
     $ORIGIN example.com. ; Origin
     foo                  3600 IN CNAME foosvc.example.net.
