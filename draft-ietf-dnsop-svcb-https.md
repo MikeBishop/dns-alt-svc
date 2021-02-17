@@ -526,8 +526,8 @@ approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 
 A client is called "SVCB-optional" if it can connect without the use of
 ServiceMode records, and "SVCB-reliant" otherwise.  Clients for pre-existing
-protocols SHALL implement SVCB-optional behavior (except as noted in
-{{client-failures}} and {{ech-client-behavior}}).
+protocols (e.g. HTTPS) SHALL implement SVCB-optional behavior (except as
+noted in {{client-failures}} and {{ech-client-behavior}}).
 
 SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
 be needed for connection establishment.  SVCB-optional clients SHALL append an
