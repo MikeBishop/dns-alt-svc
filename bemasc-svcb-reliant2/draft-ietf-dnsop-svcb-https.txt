@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 20 August 2021                                        E. Nygren
+Expires: 21 August 2021                                        E. Nygren
                                                      Akamai Technologies
-                                                        16 February 2021
+                                                        17 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 20 August 2021.
+   This Internet-Draft will expire on 21 August 2021.
 
 Copyright Notice
 
@@ -599,8 +599,8 @@ Table of Contents
 3.  Client behavior
 
    "SVCB resolution" is the process of enumerating the priority-ordered
-   endpoints for a service, as performed by the client.  It MUST be
-   implemented as follows:
+   endpoints for a service, as performed by the client.  SVCB resolution
+   is implemented as follows:
 
    1.  Let $QNAME be the service name plus appropriate prefixes for the
        scheme (see Section 2.3).
