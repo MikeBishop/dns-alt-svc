@@ -5,12 +5,12 @@
 HTTP Working Group                                           B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 14 January 2021                             Akamai Technologies
-                                                            13 July 2020
+Expires: 21 August 2021                              Akamai Technologies
+                                                        17 February 2021
 
 
      Finding HTTP Alternative Services via the Domain Name Service
-               draft-schwartz-httpbis-dns-alt-svc-latest
+                   draft-schwartz-httpbis-dns-alt-svc
 
 Abstract
 
@@ -38,11 +38,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 14 January 2021.
+   This Internet-Draft will expire on 21 August 2021.
 
 Copyright Notice
 
-   Copyright (c) 2020 IETF Trust and the persons identified as the
+   Copyright (c) 2021 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -50,41 +50,33 @@ Copyright Notice
    license-info) in effect on the date of publication of this document.
    Please review these documents carefully, as they describe your rights
    and restrictions with respect to this document.  Code Components
-
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 1]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
-
    extracted from this document must include Simplified BSD License text
    as described in Section 4.e of the Trust Legal Provisions and are
    provided without warranty as described in the Simplified BSD License.
 
 Table of Contents
 
-   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-     1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
-   2.  The ALTSVC record type  . . . . . . . . . . . . . . . . . . .   3
-     2.1.  Comparison with alternatives  . . . . . . . . . . . . . .   4
-       2.1.1.  Differences from the SRV RRTYPE . . . . . . . . . . .   4
-       2.1.2.  Differences from the TXT RRTYPE . . . . . . . . . . .   5
-   3.  Differences from Alt-Svc as transmitted over HTTP . . . . . .   5
-     3.1.  Omitting Max Age  . . . . . . . . . . . . . . . . . . . .   5
-     3.2.  Multiple records and values . . . . . . . . . . . . . . .   5
-     3.3.  Interaction with other standards  . . . . . . . . . . . .   6
-     3.4.  Granularity and lifetime control  . . . . . . . . . . . .   6
-   4.  Client behaviors  . . . . . . . . . . . . . . . . . . . . . .   6
-     4.1.  Cache interaction . . . . . . . . . . . . . . . . . . . .   7
-     4.2.  Optimizing for performance  . . . . . . . . . . . . . . .   7
-     4.3.  Optimizing for privacy  . . . . . . . . . . . . . . . . .   8
-   5.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
-   7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
-     7.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
-     7.2.  Informative References  . . . . . . . . . . . . . . . . .  10
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  11
+   1.  Introduction
+     1.1.  Terminology
+   2.  The ALTSVC record type
+     2.1.  Comparison with alternatives
+       2.1.1.  Differences from the SRV RRTYPE
+       2.1.2.  Differences from the TXT RRTYPE
+   3.  Differences from Alt-Svc as transmitted over HTTP
+     3.1.  Omitting Max Age
+     3.2.  Multiple records and values
+     3.3.  Interaction with other standards
+     3.4.  Granularity and lifetime control
+   4.  Client behaviors
+     4.1.  Cache interaction
+     4.2.  Optimizing for performance
+     4.3.  Optimizing for privacy
+   5.  Security Considerations
+   6.  IANA Considerations
+   7.  References
+     7.1.  Normative References
+     7.2.  Informative References
+   Authors' Addresses
 
 1.  Introduction
 
@@ -98,21 +90,6 @@ Table of Contents
 
    *  standards for sending information in this format from a server to
       a client over HTTP/1.1 and HTTP/2.
-
-
-
-
-
-
-
-
-
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 2]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
 
    Together, these components provide a toolkit that has proven useful
    and effective for informing a client of alternative services for an
@@ -158,17 +135,6 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
    In the case of the ALTSVC RR, the origin is represented by prefixing
    the port and scheme with "_", then concatenating them with the host,
    resulting in a domain name like "_443._https.www.example.com.".
-
-
-
-
-
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 3]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
 
    The IANA DNS Underscore Global Scoped Entry Registry [Attrleaf] MUST
    have an entry under the ALTSVC RRType for this scheme.  The scheme
@@ -219,13 +185,6 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
       protocols, whereas Alt-Svc can signal such an upgrade (e.g. to
       HTTP/2).
 
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 4]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
-
    *  SRV records are not extensible, whereas Alt-Svc can be extended
       with new parameters.  For example, this is what allows the privacy
       improvements related to SNI selection in [AltSvcSNI].
@@ -271,17 +230,6 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
    [AltSvc].  As specified there, "the order of values relects the
    server's preference".
 
-
-
-
-
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 5]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
-
    When receiving an RRSET containing multiple ALTSVC records, clients
    SHOULD apply a random shuffle to the records before using them, to
    ensure randomized load-balancing.  This is consistent with DNS rules
@@ -325,18 +273,6 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
    compensate.
 
 4.  Client behaviors
-
-
-
-
-
-
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 6]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
 
 4.1.  Cache interaction
 
@@ -382,17 +318,6 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
    values, clients MAY prefer those that will not require an address
    query, either because the corresponding address record is already in
    cache or because the host is an IP address.
-
-
-
-
-
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 7]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
 
    Note that this procedure does not rely on recursive resolvers
    handling the ALTSVC record type correctly.  If ALTSVC queries receive
@@ -443,13 +368,6 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
 
                                  Table 1
 
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 8]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
-
    Per [Attrleaf], please add the following entries to the DNS
    Underscore Global Scoped Entry Registry:
 
@@ -474,37 +392,33 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
    [AltSvcSNI]
               Bishop, M., "The "SNI" Alt-Svc Parameter", Work in
               Progress, Internet-Draft, draft-bishop-httpbis-sni-altsvc-
-              02, 24 May 2018, <http://www.ietf.org/internet-drafts/
-              draft-bishop-httpbis-sni-altsvc-02.txt>.
+              02, 24 May 2018, <https://www.ietf.org/archive/id/draft-
+              bishop-httpbis-sni-altsvc-02.txt>.
 
-   [Attrleaf] Crocker, D., "DNS Scoped Data Through "Underscore" Naming
-              of Attribute Leaves", Work in Progress, Internet-Draft,
-              draft-ietf-dnsop-attrleaf-16, 16 November 2018,
-              <http://www.ietf.org/internet-drafts/draft-ietf-dnsop-
+   [Attrleaf] Crocker, D., "Scoped Interpretation of DNS Resource
+              Records through "Underscored" Naming of Attribute Leaves",
+              Work in Progress, Internet-Draft, draft-ietf-dnsop-
+              attrleaf-16, 16 November 2018,
+              <https://www.ietf.org/archive/id/draft-ietf-dnsop-
               attrleaf-16.txt>.
 
    [DOH]      Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", Work in Progress, Internet-Draft, draft-ietf-doh-
-              dns-over-https-14, 16 August 2018, <http://www.ietf.org/
-              internet-drafts/draft-ietf-doh-dns-over-https-14.txt>.
+              dns-over-https-14, 16 August 2018,
+              <https://www.ietf.org/archive/id/draft-ietf-doh-dns-over-
+              https-14.txt>.
 
    [I-D.ietf-tls-tls13]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", Work in Progress, Internet-Draft, draft-
-              ietf-tls-tls13-28, 20 March 2018, <http://www.ietf.org/
-              internet-drafts/draft-ietf-tls-tls13-28.txt>.
+              ietf-tls-tls13-28, 20 March 2018,
+              <https://www.ietf.org/archive/id/draft-ietf-tls-
+              tls13-28.txt>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
-
-
-
-Schwartz & Bishop        Expires 14 January 2021                [Page 9]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
 
    [RFC2181]  Elz, R. and R. Bush, "Clarifications to the DNS
               Specification", RFC 2181, DOI 10.17487/RFC2181, July 1997,
@@ -553,15 +467,6 @@ Internet-Draft               Alt-Svc via DNS                   July 2020
               Considerations", BCP 42, RFC 6895, DOI 10.17487/RFC6895,
               April 2013, <https://www.rfc-editor.org/info/rfc6895>.
 
-
-
-
-
-Schwartz & Bishop        Expires 14 January 2021               [Page 10]
-
-Internet-Draft               Alt-Svc via DNS                   July 2020
-
-
    [RFC7871]  Contavalli, C., van der Gaast, W., Lawrence, D., and W.
               Kumari, "Client Subnet in DNS Queries", RFC 7871,
               DOI 10.17487/RFC7871, May 2016,
@@ -583,34 +488,3 @@ Authors' Addresses
    Akamai Technologies
 
    Email: mbishop@evequefou.be
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Schwartz & Bishop        Expires 14 January 2021               [Page 11]
