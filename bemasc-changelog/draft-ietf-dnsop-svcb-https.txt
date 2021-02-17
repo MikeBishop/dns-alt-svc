@@ -2060,7 +2060,7 @@ Appendix D.  Change history
 
    *  draft-ietf-dnsop-svcb-https-03
 
-      -  Simplified escaping rules for comma-separated values
+      -  Simplified escaping of comma-separated values
 
       -  Reorganized client requirements
 
