@@ -573,7 +573,9 @@ destinations with a proxy that does not provide SVCB query capability
 (e.g. through an affiliated DNS resolver), the client would have to perform
 SVCB queries though a separate resolver.  This might disclose the client's
 destinations to an additional party, creating privacy concerns.  If these
-concerns apply, the client SHOULD disable SVCB resolution.
+concerns apply, the client SHOULD mitigate these concerns in some way,
+such as by issuing the SVCB DNS lookups through a proxy (as will be needed
+by SVCB-reliant clients).
 
 If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the smallest-SvcPriority
