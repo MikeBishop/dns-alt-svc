@@ -573,11 +573,11 @@ destinations with a proxy that does not provide SVCB query capability
 (e.g. through an affiliated DNS resolver), the client would have to perform
 SVCB queries though a separate resolver.  This might disclose the client's
 destinations to an additional party, creating privacy concerns.  If these
-concerns apply, SVCB-optional clients SHOULD disable SVCB resolution.
-SVCB-reliant clients cannot function in this configuration, so they must
-arrange for SVCB resolution with appropriate privacy and routing properties.
-such as by issuing the SVCB DNS lookups through a proxy (as will be needed
-by SVCB-reliant clients).
+concerns apply, SVCB-optional clients SHOULD disable SVCB resolution
+unless they arrange for SVCB resolution with appropriate privacy 
+and routing properties.  As SVCB-reliant clients cannot function in this 
+configuration, they must arrange for SVCB resolution with appropriate 
+privacy and routing properties.
 
 If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the smallest-SvcPriority
