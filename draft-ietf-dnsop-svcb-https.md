@@ -335,7 +335,7 @@ registered appropriately with IANA (see {{other-standards}}).
 Protocol mapping documents MAY specify additional underscore-prefixed labels
 to be prepended.  For schemes that specify a port (Section 3.2.3
 of {{?URI=RFC3986}}), one reasonable possibility is to prepend the indicated port
-number (or the default if no port number is specified).  We term this behavior
+number if a non-default port number is specified.  We term this behavior
 "Port Prefix Naming", and use it in the examples throughout this document.
 
 See {{httpsnames}} for the HTTPS RR behavior.
