@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 10 July 2021                                          E. Nygren
+Expires: 27 August 2021                                        E. Nygren
                                                      Akamai Technologies
-                                                          6 January 2021
+                                                        23 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 10 July 2021.
+   This Internet-Draft will expire on 27 August 2021.
 
 Copyright Notice
 
@@ -1569,15 +1569,17 @@ Table of Contents
 
    *  Meaning: a short description
 
-   *  Reference: pointer to specification text
+   *  Format Reference: pointer to specification text
 
    Apart from the initial contents, the SvcParamKey name MUST NOT start
    with "key".
 
-   Entries in this registry are subject to a Specification Required
-   registration policy ([RFC8126], Section 4.6).  The provided
-   specification MUST specify the SvcParamValue's presentation format
-   and MAY detail its intended meaning and use.
+   Entries in this registry are subject to a First Come First Served
+   registration policy ([RFC8126], Section 4.6).  The Format Reference
+   MUST specify how to convert the SvcParamValue's presentation format
+   to wire format and MAY detail its intended meaning and use.  An entry
+   MAY specify a Format Reference of the form "Same as (other key Name)"
+   if it uses the same presentation and wire formats as an existing key.
 
    This arrangement supports the development of new parameters while
    ensuring that zone files can be made interoperable.
@@ -1587,36 +1589,41 @@ Table of Contents
    The "Service Binding (SVCB) Parameter Registry" shall initially be
    populated with the registrations below:
 
-   +=============+=================+======================+===========+
-   | Number      | Name            | Meaning              | Reference |
-   +=============+=================+======================+===========+
-   | 0           | mandatory       | Mandatory keys in    | (This     |
-   |             |                 | this RR              | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 1           | alpn            | Additional supported | (This     |
-   |             |                 | protocols            | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 2           | no-default-alpn | No support for       | (This     |
-   |             |                 | default protocol     | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 3           | port            | Port for alternative | (This     |
-   |             |                 | endpoint             | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 4           | ipv4hint        | IPv4 address hints   | (This     |
-   |             |                 |                      | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 5           | echconfig       | Encrypted            | (This     |
-   |             |                 | ClientHello info     | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 6           | ipv6hint        | IPv6 address hints   | (This     |
-   |             |                 |                      | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 65280-65534 | N/A             | Private Use          | (This     |
-   |             |                 |                      | document) |
-   +-------------+-----------------+----------------------+-----------+
-   | 65535       | invalid         | Reserved ("Invalid   | (This     |
-   |             |                 | key")                | document) |
-   +-------------+-----------------+----------------------+-----------+
+   +=============+=================+================+=================+
+   | Number      | Name            | Meaning        | Format          |
+   |             |                 |                | Reference       |
+   +=============+=================+================+=================+
+   | 0           | mandatory       | Mandatory keys | (This document) |
+   |             |                 | in this RR     | Section 6.5     |
+   +-------------+-----------------+----------------+-----------------+
+   | 1           | alpn            | Additional     | (This document) |
+   |             |                 | supported      | Section 6.1     |
+   |             |                 | protocols      |                 |
+   +-------------+-----------------+----------------+-----------------+
+   | 2           | no-default-alpn | No support for | (This document) |
+   |             |                 | default        | Section 6.1     |
+   |             |                 | protocol       |                 |
+   +-------------+-----------------+----------------+-----------------+
+   | 3           | port            | Port for       | (This document) |
+   |             |                 | alternative    | Section 6.2     |
+   |             |                 | endpoint       |                 |
+   +-------------+-----------------+----------------+-----------------+
+   | 4           | ipv4hint        | IPv4 address   | (This document) |
+   |             |                 | hints          | Section 6.4     |
+   +-------------+-----------------+----------------+-----------------+
+   | 5           | echconfig       | Encrypted      | (This document) |
+   |             |                 | ClientHello    | Section 6.3     |
+   |             |                 | info           |                 |
+   +-------------+-----------------+----------------+-----------------+
+   | 6           | ipv6hint        | IPv6 address   | (This document) |
+   |             |                 | hints          | Section 6.4     |
+   +-------------+-----------------+----------------+-----------------+
+   | 65280-65534 | N/A             | Private Use    | (This document) |
+   +-------------+-----------------+----------------+-----------------+
+   | 65535       | invalid         | Reserved       | (This document) |
+   |             |                 | ("Invalid      |                 |
+   |             |                 | key")          |                 |
+   +-------------+-----------------+----------------+-----------------+
 
                                  Table 1
 
@@ -1665,137 +1672,142 @@ Table of Contents
    [ALPN]     Friedl, S., Popov, A., Langley, A., and E. Stephan,
               "Transport Layer Security (TLS) Application-Layer Protocol
               Negotiation Extension", RFC 7301, DOI 10.17487/RFC7301,
-              July 2014, <https://www.rfc-editor.org/info/rfc7301>.
+              July 2014,
+              <https://datatracker.ietf.org/doc/html/rfc7301>.
 
    [Attrleaf] Crocker, D., "Scoped Interpretation of DNS Resource
               Records through "Underscored" Naming of Attribute Leaves",
               BCP 222, RFC 8552, DOI 10.17487/RFC8552, March 2019,
-              <https://www.rfc-editor.org/info/rfc8552>.
+              <https://datatracker.ietf.org/doc/html/rfc8552>.
 
    [base64]   Josefsson, S., "The Base16, Base32, and Base64 Data
               Encodings", RFC 4648, DOI 10.17487/RFC4648, October 2006,
-              <https://www.rfc-editor.org/info/rfc4648>.
+              <https://datatracker.ietf.org/doc/html/rfc4648>.
 
    [DNAME]    Rose, S. and W. Wijngaards, "DNAME Redirection in the
               DNS", RFC 6672, DOI 10.17487/RFC6672, June 2012,
-              <https://www.rfc-editor.org/info/rfc6672>.
+              <https://datatracker.ietf.org/doc/html/rfc6672>.
 
    [DoH]      Hoffman, P. and P. McManus, "DNS Queries over HTTPS
               (DoH)", RFC 8484, DOI 10.17487/RFC8484, October 2018,
-              <https://www.rfc-editor.org/info/rfc8484>.
+              <https://datatracker.ietf.org/doc/html/rfc8484>.
 
    [DoT]      Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
               Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
-              2016, <https://www.rfc-editor.org/info/rfc7858>.
+              2016, <https://datatracker.ietf.org/doc/html/rfc7858>.
 
-   [ECH]      Rescorla, E., Oku, K., Sullivan, N., and C. Wood, "TLS
+   [ECH]      Rescorla, E., Oku, K., Sullivan, N., and C. A. Wood, "TLS
               Encrypted Client Hello", Work in Progress, Internet-Draft,
               draft-ietf-tls-esni-09, 16 December 2020,
-              <http://www.ietf.org/internet-drafts/draft-ietf-tls-esni-
-              09.txt>.
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              esni-09.txt>.
 
    [HappyEyeballsV2]
               Schinazi, D. and T. Pauly, "Happy Eyeballs Version 2:
               Better Connectivity Using Concurrency", RFC 8305,
               DOI 10.17487/RFC8305, December 2017,
-              <https://www.rfc-editor.org/info/rfc8305>.
+              <https://datatracker.ietf.org/doc/html/rfc8305>.
 
    [HSTS]     Hodges, J., Jackson, C., and A. Barth, "HTTP Strict
               Transport Security (HSTS)", RFC 6797,
               DOI 10.17487/RFC6797, November 2012,
-              <https://www.rfc-editor.org/info/rfc6797>.
+              <https://datatracker.ietf.org/doc/html/rfc6797>.
 
    [HTTP3]    Bishop, M., "Hypertext Transfer Protocol Version 3
               (HTTP/3)", Work in Progress, Internet-Draft, draft-ietf-
-              quic-http-33, 15 December 2020, <http://www.ietf.org/
-              internet-drafts/draft-ietf-quic-http-33.txt>.
+              quic-http-34, 2 February 2021,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-quic-
+              http-34.txt>.
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
-              November 1987, <https://www.rfc-editor.org/info/rfc1035>.
+              November 1987,
+              <https://datatracker.ietf.org/doc/html/rfc1035>.
 
    [RFC1928]  Leech, M., Ganis, M., Lee, Y., Kuris, R., Koblas, D., and
               L. Jones, "SOCKS Protocol Version 5", RFC 1928,
               DOI 10.17487/RFC1928, March 1996,
-              <https://www.rfc-editor.org/info/rfc1928>.
+              <https://datatracker.ietf.org/doc/html/rfc1928>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
-              <https://www.rfc-editor.org/info/rfc2119>.
+              <https://datatracker.ietf.org/doc/html/rfc2119>.
 
    [RFC3225]  Conrad, D., "Indicating Resolver Support of DNSSEC",
               RFC 3225, DOI 10.17487/RFC3225, December 2001,
-              <https://www.rfc-editor.org/info/rfc3225>.
+              <https://datatracker.ietf.org/doc/html/rfc3225>.
 
    [RFC3597]  Gustafsson, A., "Handling of Unknown DNS Resource Record
               (RR) Types", RFC 3597, DOI 10.17487/RFC3597, September
-              2003, <https://www.rfc-editor.org/info/rfc3597>.
+              2003, <https://datatracker.ietf.org/doc/html/rfc3597>.
 
    [RFC5234]  Crocker, D., Ed. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234,
               DOI 10.17487/RFC5234, January 2008,
-              <https://www.rfc-editor.org/info/rfc5234>.
+              <https://datatracker.ietf.org/doc/html/rfc5234>.
 
    [RFC5952]  Kawamura, S. and M. Kawashima, "A Recommendation for IPv6
               Address Text Representation", RFC 5952,
               DOI 10.17487/RFC5952, August 2010,
-              <https://www.rfc-editor.org/info/rfc5952>.
+              <https://datatracker.ietf.org/doc/html/rfc5952>.
 
    [RFC6066]  Eastlake 3rd, D., "Transport Layer Security (TLS)
               Extensions: Extension Definitions", RFC 6066,
               DOI 10.17487/RFC6066, January 2011,
-              <https://www.rfc-editor.org/info/rfc6066>.
+              <https://datatracker.ietf.org/doc/html/rfc6066>.
 
    [RFC6147]  Bagnulo, M., Sullivan, A., Matthews, P., and I. van
               Beijnum, "DNS64: DNS Extensions for Network Address
               Translation from IPv6 Clients to IPv4 Servers", RFC 6147,
               DOI 10.17487/RFC6147, April 2011,
-              <https://www.rfc-editor.org/info/rfc6147>.
+              <https://datatracker.ietf.org/doc/html/rfc6147>.
 
    [RFC7050]  Savolainen, T., Korhonen, J., and D. Wing, "Discovery of
               the IPv6 Prefix Used for IPv6 Address Synthesis",
               RFC 7050, DOI 10.17487/RFC7050, November 2013,
-              <https://www.rfc-editor.org/info/rfc7050>.
+              <https://datatracker.ietf.org/doc/html/rfc7050>.
 
    [RFC7231]  Fielding, R., Ed. and J. Reschke, Ed., "Hypertext Transfer
               Protocol (HTTP/1.1): Semantics and Content", RFC 7231,
               DOI 10.17487/RFC7231, June 2014,
-              <https://www.rfc-editor.org/info/rfc7231>.
+              <https://datatracker.ietf.org/doc/html/rfc7231>.
 
    [RFC7595]  Thaler, D., Ed., Hansen, T., and T. Hardie, "Guidelines
               and Registration Procedures for URI Schemes", BCP 35,
               RFC 7595, DOI 10.17487/RFC7595, June 2015,
-              <https://www.rfc-editor.org/info/rfc7595>.
+              <https://datatracker.ietf.org/doc/html/rfc7595>.
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
               RFC 8126, DOI 10.17487/RFC8126, June 2017,
-              <https://www.rfc-editor.org/info/rfc8126>.
+              <https://datatracker.ietf.org/doc/html/rfc8126>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
-              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+              May 2017, <https://datatracker.ietf.org/doc/html/rfc8174>.
 
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
-              <https://www.rfc-editor.org/info/rfc8446>.
+              <https://datatracker.ietf.org/doc/html/rfc8446>.
 
    [WebSocket]
               Fette, I. and A. Melnikov, "The WebSocket Protocol",
               RFC 6455, DOI 10.17487/RFC6455, December 2011,
-              <https://www.rfc-editor.org/info/rfc6455>.
+              <https://datatracker.ietf.org/doc/html/rfc6455>.
 
 14.2.  Informative References
 
    [AltSvc]   Nottingham, M., McManus, P., and J. Reschke, "HTTP
               Alternative Services", RFC 7838, DOI 10.17487/RFC7838,
-              April 2016, <https://www.rfc-editor.org/info/rfc7838>.
+              April 2016,
+              <https://datatracker.ietf.org/doc/html/rfc7838>.
 
    [DNSTerm]  Hoffman, P., Sullivan, A., and K. Fujiwara, "DNS
               Terminology", BCP 219, RFC 8499, DOI 10.17487/RFC8499,
-              January 2019, <https://www.rfc-editor.org/info/rfc8499>.
+              January 2019,
+              <https://datatracker.ietf.org/doc/html/rfc8499>.
 
    [FETCH]    "Fetch Living Standard", May 2020,
               <https://fetch.spec.whatwg.org/>.
@@ -1803,33 +1815,35 @@ Table of Contents
    [I-D.bellis-dnsop-http-record]
               Bellis, R., "A DNS Resource Record for HTTP", Work in
               Progress, Internet-Draft, draft-bellis-dnsop-http-record-
-              00, 3 November 2018, <http://www.ietf.org/internet-drafts/
-              draft-bellis-dnsop-http-record-00.txt>.
+              00, 3 November 2018,
+              <https://datatracker.ietf.org/doc/html/draft-bellis-dnsop-
+              http-record-00.txt>.
 
    [I-D.ietf-dnsop-aname]
-              Finch, T., Hunt, E., Dijk, P., Eden, A., and W. Mekking,
-              "Address-specific DNS aliases (ANAME)", Work in Progress,
-              Internet-Draft, draft-ietf-dnsop-aname-04, 8 July 2019,
-              <http://www.ietf.org/internet-drafts/draft-ietf-dnsop-
-              aname-04.txt>.
+              Finch, T., Hunt, E., Dijk, P. V., Eden, A., and M.
+              Mekking, "Address-specific DNS aliases (ANAME)", Work in
+              Progress, Internet-Draft, draft-ietf-dnsop-aname-04, 8
+              July 2019, <https://datatracker.ietf.org/doc/html/draft-
+              ietf-dnsop-aname-04.txt>.
 
    [RFC6454]  Barth, A., "The Web Origin Concept", RFC 6454,
               DOI 10.17487/RFC6454, December 2011,
-              <https://www.rfc-editor.org/info/rfc6454>.
+              <https://datatracker.ietf.org/doc/html/rfc6454>.
 
    [RFC6895]  Eastlake 3rd, D., "Domain Name System (DNS) IANA
               Considerations", BCP 42, RFC 6895, DOI 10.17487/RFC6895,
-              April 2013, <https://www.rfc-editor.org/info/rfc6895>.
+              April 2013,
+              <https://datatracker.ietf.org/doc/html/rfc6895>.
 
    [SRV]      Gulbrandsen, A., Vixie, P., and L. Esibov, "A DNS RR for
               specifying the location of services (DNS SRV)", RFC 2782,
               DOI 10.17487/RFC2782, February 2000,
-              <https://www.rfc-editor.org/info/rfc2782>.
+              <https://datatracker.ietf.org/doc/html/rfc2782>.
 
    [URI]      Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66,
               RFC 3986, DOI 10.17487/RFC3986, January 2005,
-              <https://www.rfc-editor.org/info/rfc3986>.
+              <https://datatracker.ietf.org/doc/html/rfc3986>.
 
 Appendix A.  Decoding text in zone files
 
