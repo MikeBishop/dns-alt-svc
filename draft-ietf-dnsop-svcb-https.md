@@ -250,7 +250,7 @@ The SVCB record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
 
 SvcPriority is a number in the range 0-65535,
-TargetName is a domain name,
+TargetName is a `<domain-name>` ({{!RFC1035}} Section 5.1),
 and the SvcParams are a whitespace-separated list, with each SvcParam
 consisting of a SvcParamKey=SvcParamValue pair or a standalone SvcParamKey.
 SvcParamKeys are subject to IANA control ({{svcparamregistry}}).
