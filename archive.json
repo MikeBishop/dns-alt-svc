@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-02-18T14:51:55.359766+00:00",
+  "timestamp": "2021-02-23T15:17:10.076368+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -5239,7 +5239,7 @@
       "id": "MDU6SXNzdWU3ODU2NDI3NDY=",
       "title": "Can you use SVCB without A/AAAA?",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/287",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "martinthomson",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [
@@ -5248,8 +5248,8 @@
       "labels": [],
       "body": "It does not look like the draft considers the possibility that a protocol might depend on SVCB exclusively.\r\n\r\nI think that it should be possible to deploy a protocol that only uses SVCB and not A/AAAA to find services.\r\n\r\nThe changes are fairly simple, you go from this text in Section 3:\r\n\r\n>   2.  In parallel, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\r\n\r\nTo something like:\r\n\r\n>   2.  If the service allows the use of address records, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME in parallel.  Otherwise, issue a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\r\n\r\n... and\r\n\r\n> Accordingly, clients SHALL connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\r\n\r\n... becomes:\r\n\r\n> Accordingly, if the service allows the use of address records, clients connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\r\n\r\nEdit to note: The reason you might want to do this is that you have a service name (like \"example.com\"), but you don't want the A/AAAA records you use for another protocol (like HTTPS) being used for your fancy new protocol.",
       "createdAt": "2021-01-14T04:34:14Z",
-      "updatedAt": "2021-01-14T20:56:17Z",
-      "closedAt": null,
+      "updatedAt": "2021-02-18T15:39:55Z",
+      "closedAt": "2021-02-18T15:39:55Z",
       "comments": [
         {
           "author": "bemasc",
@@ -5271,6 +5271,13 @@
           "body": "\nFWIW, to me, this really really looks like a discussion\nthat ought not be held only as a github issue.\n\nS.\n\nOn 14/01/2021 04:34, Martin Thomson wrote:\n> It does not look like the draft considers the possibility that a protocol might depend on SVCB exclusively.\n> \n> I think that it should be possible to deploy a protocol that only uses SVCB and not A/AAAA to find services.\n> \n> The changes are fairly simple, you go from this text in Section 3:\n> \n>>    2.  In parallel, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\n> \n> To something like:\n> \n>>    2.  If the service allows the use of address records, issue AAAA/A queries for $ADDR_QNAME and a SVCB query for $SVCB_QNAME in parallel.  Otherwise, issue a SVCB query for $SVCB_QNAME.  The answers for these may or may not include CNAME pointers before reaching one or more of these records.\n> \n> ... and\n> \n>>         Accordingly, clients SHALL connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\n> \n> ... becomes:\n> \n>>       Accordingly, if the service allows the use of address records, clients connect to the endpoint consisting of $ADDR_QNAME, the authority endpoint's port number, and no SvcParams.\n> \n",
           "createdAt": "2021-01-14T20:56:17Z",
           "updatedAt": "2021-01-14T20:56:17Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Fixed by #291",
+          "createdAt": "2021-02-18T15:39:55Z",
+          "updatedAt": "2021-02-18T15:39:55Z"
         }
       ]
     },
@@ -5286,7 +5293,7 @@
       "labels": [],
       "body": "There may be a few other places we need to mention the implications of SVCB-optional vs mandatory protocols.  For example:\r\n\r\n* We should clarify that HTTPS is SVCB-optional by default (although that future specifications may build SVCB-required services on top of HTTPS)\r\n* We may wish to add this optional/mandatory status to the non-normative table on protocols\r\n* We should cover the implications on Proxies.  In-particular, for a SVCB-mandatory protocol a client MUST get a SVCB record prior to initiating a CONNECT (if only because this is needed to get the SvcDomainName), at least absent optimizations that may be defined in the future.\r\n\r\nThere may be others that jump out with a read for this in-mind.",
       "createdAt": "2021-02-17T15:44:15Z",
-      "updatedAt": "2021-02-18T14:42:55Z",
+      "updatedAt": "2021-02-18T20:03:30Z",
       "closedAt": null,
       "comments": [
         {
@@ -5295,6 +5302,46 @@
           "body": "> * We should clarify that HTTPS is SVCB-optional by default (although that future specifications may build SVCB-required services on top of HTTPS)\r\n\r\nI think this is already pretty clear (e.g. [here](https://github.com/MikeBishop/dns-alt-svc/blame/317384a8964912b849aafdc825cd5fa251d8b424/draft-ietf-dnsop-svcb-https.md#L529)).\r\n\r\n> * We may wish to add this optional/mandatory status to the non-normative table on protocols\r\n\r\nThe current text speaks about this as a property of the client, not the protocol or mapping.  While most HTTPS clients should be SVCB-optional, I think it's conceivable that in green-field contexts, SVCB-reliant behavior may be permissible.\r\n\r\n> * We should cover the implications on Proxies.  In-particular, for a SVCB-mandatory protocol a client MUST get a SVCB record prior to initiating a CONNECT (if only because this is needed to get the SvcDomainName), at least absent optimizations that may be defined in the future.\r\n\r\nDo you think there's potential for confusion here?  This seems pretty straightforward to me.  The current text says \"If these concerns apply, the client SHOULD disable SVCB resolution.\", which seems unambiguous, even if the effect is different for SVCB-reliant and SVCB-optional clients.",
           "createdAt": "2021-02-18T14:42:55Z",
           "updatedAt": "2021-02-18T14:42:55Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I think #295 may be adequate to address this.\r\nThere is no way to implement a SVCB-reliant client as the proxy text currently stands.\r\n(I suspect various forms of privacy proxies will want to use DoH or ODoH or similar lookups\r\nvia a proxy to get SVCB records prior to making CONNECT requests.)",
+          "createdAt": "2021-02-18T20:01:59Z",
+          "updatedAt": "2021-02-18T20:03:30Z"
+        }
+      ]
+    },
+    {
+      "number": 296,
+      "id": "MDU6SXNzdWU4MTQ0NzI4Mzg=",
+      "title": "TargetName presentation format clarity",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/issues/296",
+      "state": "OPEN",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [
+        "bemasc"
+      ],
+      "labels": [],
+      "body": "Is the TargetName supposed to be a FQDN (with trailing dot) in presentation format? The text doesn't seems to [say so](https://tools.ietf.org/html/draft-ietf-dnsop-svcb-https-02#section-2.1) (unless I'm looking at the wrong thing or overlooking something entirely), but the examples seem to suggest it:\r\n\r\n```\r\n   example.com.      7200  IN HTTPS 0 svc.example.net.\r\n   svc.example.net.  7200  IN CNAME svc2.example.net.\r\n```",
+      "createdAt": "2021-02-23T13:38:02Z",
+      "updatedAt": "2021-02-23T15:11:01Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "TargetName is supposed to be a \"domain name\", which is a specific thing in zone files.  In a zone file, a domain name can be fully-qualified, zone-relative, or even use special syntax like `@`.",
+          "createdAt": "2021-02-23T15:00:45Z",
+          "updatedAt": "2021-02-23T15:00:45Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Could we clarify that in the text? I can send a PR if it helps. (I realize this may probably be obvious to DNS experts, but I tripped over it.)",
+          "createdAt": "2021-02-23T15:08:30Z",
+          "updatedAt": "2021-02-23T15:08:30Z"
         }
       ]
     }
@@ -18833,26 +18880,72 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NDU4MDM1OTA2",
       "title": "Proposal: Skip the default port prefix",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/230",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "bemasc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
-      "labels": [],
+      "labels": [
+        "wg"
+      ],
       "body": "This changes the definition of \"Port Prefix Naming\" to only include the\r\n_port prefix if a non-default port is specified.  None of the examples\r\nexercise this case, and the HTTPS RR overrides it, so this only matters\r\nfor future protocol mappings that choose to follow this advice.",
       "createdAt": "2020-07-28T20:25:44Z",
-      "updatedAt": "2020-09-22T14:41:05Z",
+      "updatedAt": "2021-02-18T19:12:35Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "bd3bd0b9e3aad9e51dbe6911f4d451cb24af5bbe",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-noport",
       "headRefOid": "334db890a8ef0ed1007c741898e0c758e831b783",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
-      "reviews": []
+      "closedAt": "2021-02-18T19:12:33Z",
+      "mergedAt": "2021-02-18T19:12:33Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "3325f69984a64b525b4f770a8dd82c69b4b0197f"
+      },
+      "comments": [
+        {
+          "author": "tfpauly",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Looks good to me.",
+          "createdAt": "2021-02-18T17:06:07Z",
+          "updatedAt": "2021-02-18T17:06:07Z"
+        },
+        {
+          "author": "vcunat",
+          "authorAssociation": "NONE",
+          "body": "I see no issue with it, and reducing the depth is good for performance in case QNAME minimization is used.",
+          "createdAt": "2021-02-18T18:20:16Z",
+          "updatedAt": "2021-02-18T18:20:16Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNDQ3MTg0",
+          "commit": {
+            "abbreviatedOid": "334db89"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-02-18T17:06:13Z",
+          "updatedAt": "2021-02-18T17:06:13Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNTU3NTI4",
+          "commit": {
+            "abbreviatedOid": "334db89"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "(Unless we want to give an example or be explicit about when this can be omitted?)",
+          "createdAt": "2021-02-18T19:09:42Z",
+          "updatedAt": "2021-02-18T19:09:42Z",
+          "comments": []
+        }
+      ]
     },
     {
       "number": 231,
@@ -19580,10 +19673,12 @@
       "author": "bemasc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
-      "labels": [],
+      "labels": [
+        "wg"
+      ],
       "body": "This change removes the First Come First Served registration policy\r\nand the Expert Review policy, and combines them into a single\r\nSpecification Required range, with guidelines for what constitutes a\r\nminimal specification.  The goal of this change is to avoid zone file\r\nincompatibilities that could arise from the registration of keys whose\r\npresentation format is poorly documented.",
       "createdAt": "2020-10-02T02:53:17Z",
-      "updatedAt": "2021-01-06T02:11:27Z",
+      "updatedAt": "2021-02-18T17:04:53Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "1515e3d3124a10c85d71664eb6ad470a7a97d995",
@@ -19643,6 +19738,13 @@
           "body": "> The conversion between wire format and presentation format won't literally fit inside an IANA registry entry, so we use a pointer to it.\r\n\r\nIs there any limit to what goes in the IANA registry? I've seen some pretty verbose registry tables.",
           "createdAt": "2020-12-17T17:45:41Z",
           "updatedAt": "2020-12-17T17:45:41Z"
+        },
+        {
+          "author": "tfpauly",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I still think that we can specify what we need in the first-come first-served bucket. From RFC 8126:\r\n\r\n```\r\n   For the First Come First Served policy, assignments are made to\r\n   anyone on a first come, first served basis.  There is no substantive\r\n   review of the request, other than to ensure that it is well-formed\r\n   and doesn't duplicate an existing assignment.  However, requests must\r\n   include a minimal amount of clerical information, such as a point of\r\n   contact (including an email address, and sometimes a postal address)\r\n   and a brief description of how the value will be used.  Additional\r\n   information specific to the type of value requested may also need to\r\n   be provided, as defined by the namespace.\r\n```\r\n\r\nLet's just define that in order to be well-formed in the namespace, you need the zone file format.",
+          "createdAt": "2021-02-18T17:04:53Z",
+          "updatedAt": "2021-02-18T17:04:53Z"
         }
       ],
       "reviews": [
@@ -22894,6 +22996,232 @@
           "createdAt": "2021-02-17T15:45:18Z",
           "updatedAt": "2021-02-17T15:45:18Z",
           "comments": []
+        }
+      ]
+    },
+    {
+      "number": 294,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTc1NzQ0OTg3",
+      "title": "Proposal: Recommend not exceeding chain length 8",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/294",
+      "state": "OPEN",
+      "author": "bemasc",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [
+        "wg"
+      ],
+      "body": "This change instructs zone operators not to create excessively long\r\nalias chains.  This change does not affect the normative requirements\r\nfor resolvers, which are only required to follow at least one AliasMode\r\nalias.",
+      "createdAt": "2021-02-18T14:56:13Z",
+      "updatedAt": "2021-02-18T22:07:01Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "56ab3850e30653ece5bc141a37e8d56ccb11fb17",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "bemasc-limit8",
+      "headRefOid": "7fe75d9644df2c7c18878bb9f8f107c3a90f1006",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "body": "Since other parties are only required to follow at least one, I would make the zone operator recommendation similarly short to maximize compatibility.  I don't think that would be an overburdensome recommendation since it's only a SHOULD, not a MUST.",
+          "createdAt": "2021-02-18T19:08:55Z",
+          "updatedAt": "2021-02-18T19:08:55Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "8 seems reasonable as proposed",
+          "createdAt": "2021-02-18T19:11:01Z",
+          "updatedAt": "2021-02-18T19:11:01Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "@ericorth, Are you saying you would prefer a lower number here?  Note that, as currently phrased, this is the combined total number of CNAME and AliasMode records in the chain, and this section already says \"domain owners SHOULD minimize the use of AliasMode records\".\r\n\r\nI'd like to avoid setting too tight a bound here, given previous discussions in DNSOP where participants emphasized that resolvers must be free to choose their own limits.  While this is not quite the same context, it seems like smaller numbers may make it harder to get consensus.",
+          "createdAt": "2021-02-18T19:19:03Z",
+          "updatedAt": "2021-02-18T19:19:03Z"
+        },
+        {
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "body": "I have a weak preference for a lower number but won't fight for it if you think it would cause consensus-building issues.\r\n\r\nHow about a compromise that might be easier for consensus.  Leave the formal \"SHOULD\" recommendation at 8, but include a sentence after it pointing out that shorter chain links, ideally at most 1, are best for compatibility and performance.  (Assuming there's not already language to about that effect that I'm forgetting about.)",
+          "createdAt": "2021-02-18T19:27:00Z",
+          "updatedAt": "2021-02-18T19:27:00Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "If this was just AliasMode chains something shorter would be fine.  With this also including CNAMEs, I don't think we can go below 8.",
+          "createdAt": "2021-02-18T19:29:23Z",
+          "updatedAt": "2021-02-18T19:29:23Z"
+        },
+        {
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "body": "Fair enough.  Do you think it would be more reasonable to, after the overall chain recommendation of 8, to more explicitly recommend a short number of SVCB-alias links in that chain? Or would that just be too redundant with the \"should avoid alias\" part already in there?",
+          "createdAt": "2021-02-18T19:31:48Z",
+          "updatedAt": "2021-02-18T19:31:48Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "> Fair enough. Do you think it would be more reasonable to, after the overall chain recommendation of 8, to more explicitly recommend a short number of SVCB-alias links in that chain? Or would that just be too redundant with the \"should avoid alias\" part already in there?\r\n\r\nThat seems redundant to me.  It's also a compatibility issue (not performance), so this doesn't seem like exactly the right place for it.  I feel like we already have relevant normative text about the number of AliasModes twice (once in the AliasMode section and again in this section) so a third version is not needed.",
+          "createdAt": "2021-02-18T22:02:55Z",
+          "updatedAt": "2021-02-18T22:02:55Z"
+        },
+        {
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "body": "Okay.  Sounds like I'm just being forgetful on how much relevant recommendation is already in the draft, and that we're already in a good place.  So recommended full chain length maximum of 8 SGTM.",
+          "createdAt": "2021-02-18T22:07:01Z",
+          "updatedAt": "2021-02-18T22:07:01Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNDQ3OTk5",
+          "commit": {
+            "abbreviatedOid": "7fe75d9"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "8 is a sensible limit. If anything, it could be lower.",
+          "createdAt": "2021-02-18T17:07:01Z",
+          "updatedAt": "2021-02-18T17:07:01Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNTU4MzM2",
+          "commit": {
+            "abbreviatedOid": "7fe75d9"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-02-18T19:10:45Z",
+          "updatedAt": "2021-02-18T19:10:45Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 295,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTc1OTI5OTcy",
+      "title": "DNS for SVCB-reliant proxy usage",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/295",
+      "state": "OPEN",
+      "author": "enygren",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Addresses one aspect of #293\r\n\r\nDo we need to give more details on how a proxy might be used for DNS lookups (eg, to a DoH server) or is this fine as-is?  Should this be non-normative?",
+      "createdAt": "2021-02-18T19:31:41Z",
+      "updatedAt": "2021-02-18T21:49:05Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "3325f69984a64b525b4f770a8dd82c69b4b0197f",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "enygren-proxy-reliant",
+      "headRefOid": "d28e6244cba9b8936e0c42b0f6e41de1d2a20418",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I'd prefer not to recommend DNS-over-proxy to an unaffiliated DNS resolver, since it violates the constraint earlier in the paragraph about disclosing information to more parties.",
+          "createdAt": "2021-02-18T20:38:55Z",
+          "updatedAt": "2021-02-18T20:38:55Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNTk1OTA5",
+          "commit": {
+            "abbreviatedOid": "bbc2f2a"
+          },
+          "author": "tfpauly",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "Text seems reasonable! I expect we can specify more details here in another document.",
+          "createdAt": "2021-02-18T19:59:00Z",
+          "updatedAt": "2021-02-18T19:59:00Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNjI0NDY2",
+          "commit": {
+            "abbreviatedOid": "bbc2f2a"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-18T20:38:00Z",
+          "updatedAt": "2021-02-18T20:38:00Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "```suggestion\r\nconcerns apply, SVCB-optional clients SHOULD disable SVCB resolution.\r\nSVCB-reliant clients cannot function in this configuration, so they must\r\narrange for SVCB resolution with appropriate privacy and routing properties.\r\n```",
+              "createdAt": "2021-02-18T20:38:00Z",
+              "updatedAt": "2021-02-18T21:13:11Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNjQ0OTY4",
+          "commit": {
+            "abbreviatedOid": "bbc2f2a"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-18T21:07:10Z",
+          "updatedAt": "2021-02-18T21:07:11Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "Perhaps we also allow for \"SVCB-optional clients SHOULD disable SVCB resolution\r\nunless they arrange for SVCB resolution with appropriate privacy and routing properties.\"",
+              "createdAt": "2021-02-18T21:07:10Z",
+              "updatedAt": "2021-02-18T21:13:11Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTkzNjU3MDgy",
+          "commit": {
+            "abbreviatedOid": "d28e624"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-18T21:24:22Z",
+          "updatedAt": "2021-02-18T21:49:05Z",
+          "comments": [
+            {
+              "originalPosition": 3,
+              "body": "```suggestion\r\nSVCB resolution separately, likely disclosing the destinations to additional parties.\r\n```",
+              "createdAt": "2021-02-18T21:24:22Z",
+              "updatedAt": "2021-02-18T21:49:05Z"
+            },
+            {
+              "originalPosition": 9,
+              "body": "```suggestion\r\nClients that support such proxies SHOULD arrange for a separate SVCB resolution\r\nprocedure with appropriate privacy properties, or disable SVCB resolution entirely if\r\nSVCB-optional.\r\n```",
+              "createdAt": "2021-02-18T21:25:11Z",
+              "updatedAt": "2021-02-18T21:49:05Z"
+            }
+          ]
         }
       ]
     }
