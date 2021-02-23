@@ -793,7 +793,7 @@ For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
 
-## "port"
+## "port" {#svcparamkeys-port}
 
 The "port" SvcParamKey defines the TCP or UDP port
 that should be used to reach this alternative endpoint.
@@ -1446,14 +1446,16 @@ A registration MUST include the following fields:
 * Number: wire format numeric identifier (range 0-65535)
 * Name: unique presentation name
 * Meaning: a short description
-* Reference: pointer to specification text
+* Format Reference: pointer to specification text
 
 Apart from the initial contents, the SvcParamKey name MUST NOT start with "key".
 
-Entries in this registry are subject to a Specification Required registration
-policy ({{!RFC8126}}, Section 4.6).  The provided specification MUST specify
-the SvcParamValue's presentation format and MAY detail its intended meaning
-and use.
+Entries in this registry are subject to a First Come First Served registration
+policy ({{!RFC8126}}, Section 4.6).  The Format Reference MUST specify
+how to convert the SvcParamValue's presentation format to wire format and MAY
+detail its intended meaning and use.  An entry MAY specify a Format Reference of
+the form "Same as (other key Name)" if it uses the same presentation and wire
+formats as an existing key.
 
 This arrangement supports the development of new parameters while ensuring that
 zone files can be made interoperable.
@@ -1463,17 +1465,17 @@ zone files can be made interoperable.
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| Number      | Name            | Meaning                         | Reference       |
-| ----------- | ------          | ----------------------          | --------------- |
-| 0           | mandatory       | Mandatory keys in this RR       | (This document) |
-| 1           | alpn            | Additional supported protocols  | (This document) |
-| 2           | no-default-alpn | No support for default protocol | (This document) |
-| 3           | port            | Port for alternative endpoint   | (This document) |
-| 4           | ipv4hint        | IPv4 address hints              | (This document) |
-| 5           | echconfig       | Encrypted ClientHello info      | (This document) |
-| 6           | ipv6hint        | IPv6 address hints              | (This document) |
-| 65280-65534 | N/A             | Private Use                     | (This document) |
-| 65535       | invalid         | Reserved ("Invalid key")        | (This document) |
+| Number      | Name            | Meaning                         | Format Reference                           |
+| ----------- | ------          | ----------------------          | ------------------------------------------ |
+| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}              |
+| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}               |
+| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}               |
+| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}      |
+| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}}   |
+| 5           | echconfig       | Encrypted ClientHello info      | (This document) {{svcparamkeys-echconfig}} |
+| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}}   |
+| 65280-65534 | N/A             | Private Use                     | (This document)                            |
+| 65535       | invalid         | Reserved ("Invalid key")        | (This document)                            |
 
 ## Registry updates {#registry-updates}
 
