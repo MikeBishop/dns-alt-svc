@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 27 August 2021                                        E. Nygren
+Expires: 28 August 2021                                        E. Nygren
                                                      Akamai Technologies
-                                                        23 February 2021
+                                                        24 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 27 August 2021.
+   This Internet-Draft will expire on 28 August 2021.
 
 Copyright Notice
 
@@ -1571,8 +1571,8 @@ Table of Contents
 
    *  Format Reference: pointer to specification text
 
-   Apart from the initial contents, the SvcParamKey name MUST NOT start
-   with "key".
+   The characters in the registered Name MUST be lower-case alphanumeric
+   or "-" (Section 2.1) and it MUST NOT start with "key".
 
    Entries in this registry are subject to a First Come First Served
    registration policy ([RFC8126], Section 4.6).  The Format Reference
