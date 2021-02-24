@@ -1196,6 +1196,8 @@ foo://foo.example.com:8080, this might look like:
 
 Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
 this is likely unnecessary and makes responses slower and larger.
+Also, zone structures that require following more than 8 aliases
+(counting both AliasMode and CNAME records) are NOT RECOMMENDED.
 
 ## Examples
 
