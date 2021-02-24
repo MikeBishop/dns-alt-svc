@@ -857,7 +857,7 @@ address div.right {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Schwartz, et al.</td>
-<td class="center">Expires 22 August 2021</td>
+<td class="center">Expires 28 August 2021</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -870,12 +870,12 @@ address div.right {
 <dd class="internet-draft">draft-ietf-dnsop-svcb-https</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2021-02-18" class="published">18 February 2021</time>
+<time datetime="2021-02-24" class="published">24 February 2021</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2021-08-22">22 August 2021</time></dd>
+<dd class="expires"><time datetime="2021-08-28">28 August 2021</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -931,7 +931,7 @@ available there.  The authors (gratefully) accept pull requests.<a href="#sectio
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 22 August 2021.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 28 August 2021.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1810,11 +1810,9 @@ destinations with a proxy that does not provide SVCB query capability
 (e.g. through an affiliated DNS resolver), the client would have to perform
 SVCB queries though a separate resolver.  This might disclose the client's
 destinations to an additional party, creating privacy concerns.  If these
-concerns apply, SVCB-optional clients SHOULD disable SVCB resolution
-unless they arrange for SVCB resolution with appropriate privacy 
-and routing properties.  As SVCB-reliant clients cannot function in this 
-configuration, they must arrange for SVCB resolution with appropriate 
-privacy and routing properties.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+Clients that support such proxies SHOULD arrange for a separate SVCB resolution
+procedure with appropriate privacy properties, or disable SVCB resolution entirely if
+SVCB-optional.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
 <p id="section-3.2-2">If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the smallest-SvcPriority
 option that is compatible with the client and the proxy.  The client
