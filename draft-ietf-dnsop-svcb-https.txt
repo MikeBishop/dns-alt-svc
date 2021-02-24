@@ -5,9 +5,9 @@
 DNSOP Working Group                                          B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 22 August 2021                                        E. Nygren
+Expires: 28 August 2021                                        E. Nygren
                                                      Akamai Technologies
-                                                        18 February 2021
+                                                        24 February 2021
 
 
  Service binding and parameter specification via the DNS (DNS SVCB and
@@ -49,7 +49,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 22 August 2021.
+   This Internet-Draft will expire on 28 August 2021.
 
 Copyright Notice
 
@@ -1319,6 +1319,8 @@ Table of Contents
 
    Domain owners SHOULD avoid using a TargetName that is below a DNAME,
    as this is likely unnecessary and makes responses slower and larger.
+   Also, zone structures that require following more than 8 aliases
+   (counting both AliasMode and CNAME records) are NOT RECOMMENDED.
 
 10.3.  Examples
 
