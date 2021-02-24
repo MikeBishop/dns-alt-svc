@@ -571,8 +571,7 @@ use named destinations, in which case the client does not perform
 any A or AAAA queries for destination domains.  If the client is using named
 destinations with a proxy that does not provide SVCB query capability
 (e.g. through an affiliated DNS resolver), the client would have to perform
-SVCB queries though a separate resolver.  This might disclose the client's
-destinations to an additional party, creating privacy concerns.  If these
+SVCB resolution separately, likely disclosing the destinations to additional parties.
 Clients that support such proxies SHOULD arrange for a separate SVCB resolution
 procedure with appropriate privacy properties, or disable SVCB resolution entirely if
 SVCB-optional.
