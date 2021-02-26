@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-02-24T16:28:17.157278+00:00",
+  "timestamp": "2021-02-26T20:13:00.345744+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -5317,7 +5317,7 @@
       "id": "MDU6SXNzdWU4MTQ0NzI4Mzg=",
       "title": "TargetName presentation format clarity",
       "url": "https://github.com/MikeBishop/dns-alt-svc/issues/296",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "chris-wood",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [
@@ -5326,8 +5326,8 @@
       "labels": [],
       "body": "Is the TargetName supposed to be a FQDN (with trailing dot) in presentation format? The text doesn't seems to [say so](https://tools.ietf.org/html/draft-ietf-dnsop-svcb-https-02#section-2.1) (unless I'm looking at the wrong thing or overlooking something entirely), but the examples seem to suggest it:\r\n\r\n```\r\n   example.com.      7200  IN HTTPS 0 svc.example.net.\r\n   svc.example.net.  7200  IN CNAME svc2.example.net.\r\n```",
       "createdAt": "2021-02-23T13:38:02Z",
-      "updatedAt": "2021-02-23T15:11:01Z",
-      "closedAt": null,
+      "updatedAt": "2021-02-24T16:36:18Z",
+      "closedAt": "2021-02-24T16:36:18Z",
       "comments": [
         {
           "author": "bemasc",
@@ -5342,6 +5342,95 @@
           "body": "Could we clarify that in the text? I can send a PR if it helps. (I realize this may probably be obvious to DNS experts, but I tripped over it.)",
           "createdAt": "2021-02-23T15:08:30Z",
           "updatedAt": "2021-02-23T15:08:30Z"
+        }
+      ]
+    },
+    {
+      "number": 298,
+      "id": "MDU6SXNzdWU4MTY4NjgxNzM=",
+      "title": "\"echconfig\" is an \"ECHConfigs\" struct in ECH",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/issues/298",
+      "state": "OPEN",
+      "author": "sayrer",
+      "authorAssociation": "NONE",
+      "assignees": [
+        "bemasc"
+      ],
+      "labels": [],
+      "body": "> The SvcParamKey to enable Encrypted ClientHello (ECH) is \"echconfig\".\r\n\r\nThe ECH draft says this is a list of \"ECHConfig\" structs: \"ECHConfigs\".\r\n\r\n> The client-facing server advertises a sequence of ECH configurations to clients, serialized as follows.\r\n> ECHConfig ECHConfigs<1..2^16-1>;\r\n\r\nThis pluralization mismatch tripped me up testing ECH draft-09. ",
+      "createdAt": "2021-02-25T22:43:10Z",
+      "updatedAt": "2021-02-26T20:12:59Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "davidben",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Oh oops, I guess this slipped through while this was going through some churn on the ECH side. I'd support renaming the SVCB name to match.",
+          "createdAt": "2021-02-26T01:43:30Z",
+          "updatedAt": "2021-02-26T01:43:30Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "This was deliberate.  From the DNS perspective, this key contains a unitary base64 blob.  Also, even the list-valued keys here have singular names (alpn=..., mandatory=..., ipv4hint=...).",
+          "createdAt": "2021-02-26T01:59:12Z",
+          "updatedAt": "2021-02-26T01:59:12Z"
+        },
+        {
+          "author": "sayrer",
+          "authorAssociation": "NONE",
+          "body": "The draft does clarify this distinction in Section 9.\r\n\r\nMaybe Section 6.3 could say\r\n> The SvcParamKey to enable Encrypted ClientHello (ECH) is \"echconfig\". Its value, an ECHConfigs vector [ECH], is defined in Section 9.  It is applicable to most TLS-based protocols.\r\n\r\nA little bit of redundancy, but the naming is confusing, imo. Alternatively, perhaps the SVCB key could be \"ech\", just to avoid the clash.",
+          "createdAt": "2021-02-26T02:05:23Z",
+          "updatedAt": "2021-02-26T02:08:21Z"
+        },
+        {
+          "author": "davidben",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "The singular \"echonfig\" name seems likely to confuse things. Plain \"ech\" seems reasonable. (Perhaps we should also re-re-re-reconsider the names in ECH. \"ECHConfigs\" may have been too clever... ECHConfigList?)",
+          "createdAt": "2021-02-26T02:12:50Z",
+          "updatedAt": "2021-02-26T02:12:50Z"
+        },
+        {
+          "author": "sayrer",
+          "authorAssociation": "NONE",
+          "body": "Now would be the right time to do either of those changes. It looks like ECH will need to be revised for the newest HPKE draft, and the wire format of the DNS data will change at that time, too. See https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-tls-esni-09.txt&url2=https://tlswg.github.io/draft-ietf-tls-esni/draft-ietf-tls-esni.txt",
+          "createdAt": "2021-02-26T02:19:35Z",
+          "updatedAt": "2021-02-26T02:19:35Z"
+        },
+        {
+          "author": "davidben",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Yes, there are a lot of revisions we know we need for ECH. :-P",
+          "createdAt": "2021-02-26T02:21:30Z",
+          "updatedAt": "2021-02-26T02:21:30Z"
+        },
+        {
+          "author": "moonshiner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "from a DNS implementer/operator point of view, I would like to +1 this small bit of redundancy.  \r\n\r\n",
+          "createdAt": "2021-02-26T14:37:46Z",
+          "updatedAt": "2021-02-26T14:37:46Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "The original context for singular/plural is in #127.\r\n\r\nI would prefer to change the name in draft-ietf-tls-esni.  In my view, having structs there named for both the plural and the singular is the main source of confusion.  However, changing the name here is certainly still possible, if increasingly annoying.\r\n\r\nWhile we're talking about changing the name and format, I would also like to revisit the redundant length field.  It seems inelegant, but the main question is what's easiest for TLS library APIs.",
+          "createdAt": "2021-02-26T14:55:59Z",
+          "updatedAt": "2021-02-26T14:55:59Z"
+        },
+        {
+          "author": "dmcardle",
+          "authorAssociation": "NONE",
+          "body": "100% agree that ECHConfigs ending with an S is a source of confusion.  Attempting to summarize the various options:\r\n\r\n| Name of SvcParamKey  | Name for a list of ECHConfig | General sentiment |\r\n| ------------- | ------------- | ----|\r\n| echconfig  | ECHConfigs  | Confusing! |\r\n| echconfigs  | ECHConfigs  | For consistency, it's desirable for the SvcParamKey name to be singular. |\r\n| ech  | ECHConfigs  | Perhaps undesirable because SvcParamKey name does not hint at a type. |\r\n| echconfiglist  | ECHConfigList  | (I'm personally supportive of this one) |\r\n\r\nAlso agree that the redundant length prefix is inelegant, but I'd rather keep it. It's really a coincidence that the length prefixes are the same size, and ECH does not prescribe a delivery mechanism.",
+          "createdAt": "2021-02-26T15:24:06Z",
+          "updatedAt": "2021-02-26T15:24:06Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I think my favorite pairing is probably \"ech=\" and \"ECHConfigList\"",
+          "createdAt": "2021-02-26T15:27:04Z",
+          "updatedAt": "2021-02-26T15:27:04Z"
         }
       ]
     }
@@ -19678,13 +19767,13 @@
       ],
       "body": "This change removes the First Come First Served registration policy\r\nand the Expert Review policy, and combines them into a single\r\nSpecification Required range, with guidelines for what constitutes a\r\nminimal specification.  The goal of this change is to avoid zone file\r\nincompatibilities that could arise from the registration of keys whose\r\npresentation format is poorly documented.",
       "createdAt": "2020-10-02T02:53:17Z",
-      "updatedAt": "2021-02-23T20:27:20Z",
+      "updatedAt": "2021-02-24T16:40:41Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "1515e3d3124a10c85d71664eb6ad470a7a97d995",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-iana",
-      "headRefOid": "00019526f39676838a1564b86b23595e511829e6",
+      "headRefOid": "99910fcc0b746463d4186e2719f7c9ce6e5b3506",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -19771,7 +19860,7 @@
               "originalPosition": 29,
               "body": "This temporary first-come-first-served seems awkward. I think requiring the IANA registration to define the presentation format is much simpler and consistent with IANA policy.",
               "createdAt": "2020-12-16T21:57:42Z",
-              "updatedAt": "2021-02-23T20:24:50Z"
+              "updatedAt": "2021-02-24T16:40:41Z"
             }
           ]
         },
@@ -19791,7 +19880,7 @@
               "originalPosition": 29,
               "body": "Does that mean you're OK with having to specify the presentation format before IANA allocates you a number?  Remember that FCFS doesn't mean you get to choose your number (except at IANA's discretion).",
               "createdAt": "2020-12-16T22:19:32Z",
-              "updatedAt": "2021-02-23T20:24:50Z"
+              "updatedAt": "2021-02-24T16:40:41Z"
             }
           ]
         },
@@ -19811,7 +19900,7 @@
               "originalPosition": 29,
               "body": "Yeah, I think it's quite reasonable to have to give information like that on the allocation.",
               "createdAt": "2020-12-17T17:43:25Z",
-              "updatedAt": "2021-02-23T20:24:50Z"
+              "updatedAt": "2021-02-24T16:40:41Z"
             }
           ]
         },
@@ -19831,7 +19920,7 @@
               "originalPosition": 29,
               "body": "The apparent goal of this text is to be able to claim a code-point for experimental purposes before the presentation format is fixed.  RFC 7120 requires any early allocations to be from within the IETF, and for the implementation to be fully stable.  FCFS-to-reserve is an end-run around those requirements.  (And something that IANA specifically says [does not exist](https://www.iana.org/help/protocol-registration):  \"There is an early allocation process available, but there is no reservation system.\")  Is the intended audience here non-IETF and/or unstable usage?  If not, let's just stick with early allocation.\r\n\r\nNote that there is still a Private Use range, which would work as a place to implement until the specification is stable enough for EA.",
               "createdAt": "2020-12-17T18:49:23Z",
-              "updatedAt": "2021-02-23T20:24:50Z"
+              "updatedAt": "2021-02-24T16:40:41Z"
             }
           ]
         },
@@ -19851,7 +19940,7 @@
               "originalPosition": 29,
               "body": "I don't think the FCFS range should be meant for code points that are intended to be later reserved and standardized. Rather, I'd expect them to be used for non-private use for specs that aren't fully standardized, but have value for deploying and support. Stable specs and RFCs would use the more official space once they have final formats, etc.\r\n\r\nAn example is how Oblivious DoH is using a value in the FCFS range with a specific definition that is used for interoperating implementations on the public Internet; it's well-defined, but it may not be the same as some later RFC that could eventually take precedence.",
               "createdAt": "2020-12-22T00:39:41Z",
-              "updatedAt": "2021-02-23T20:24:50Z"
+              "updatedAt": "2021-02-24T16:40:41Z"
             }
           ]
         },
@@ -19871,7 +19960,7 @@
               "originalPosition": 29,
               "body": "Per @MikeBishop's observation, I've removed the sentence on temporary reservation.\r\n\r\nOblivious DoH would be in violation of the policy either way.  FCFS doesn't mean \"take a number\"; it means \"ask and ye shall receive\".  However, I think \"Specification Required\" should work fine for Oblivious DoH.  You have a specification (an I-D) that defines the presentation format unambiguously, so you meet the criteria.  Done.",
               "createdAt": "2021-01-06T02:11:27Z",
-              "updatedAt": "2021-02-23T20:24:50Z"
+              "updatedAt": "2021-02-24T16:40:41Z"
             }
           ]
         }
@@ -23138,24 +23227,26 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTc1OTI5OTcy",
       "title": "DNS for SVCB-reliant proxy usage",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/295",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "enygren",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Addresses one aspect of #293\r\n\r\nDo we need to give more details on how a proxy might be used for DNS lookups (eg, to a DoH server) or is this fine as-is?  Should this be non-normative?",
       "createdAt": "2021-02-18T19:31:41Z",
-      "updatedAt": "2021-02-18T21:49:05Z",
+      "updatedAt": "2021-02-24T21:23:42Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "3325f69984a64b525b4f770a8dd82c69b4b0197f",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "enygren-proxy-reliant",
-      "headRefOid": "d28e6244cba9b8936e0c42b0f6e41de1d2a20418",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "63c7eea80680faeb46cbba90d24d011d83c176bd",
+      "closedAt": "2021-02-24T21:23:42Z",
+      "mergedAt": "2021-02-24T21:23:42Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "ca7b0236cedc4f2c1dda1e63d8152f52b81d31ed"
+      },
       "comments": [
         {
           "author": "bemasc",
@@ -23195,7 +23286,7 @@
               "originalPosition": 5,
               "body": "```suggestion\r\nconcerns apply, SVCB-optional clients SHOULD disable SVCB resolution.\r\nSVCB-reliant clients cannot function in this configuration, so they must\r\narrange for SVCB resolution with appropriate privacy and routing properties.\r\n```",
               "createdAt": "2021-02-18T20:38:00Z",
-              "updatedAt": "2021-02-18T21:13:11Z"
+              "updatedAt": "2021-02-24T20:18:37Z"
             }
           ]
         },
@@ -23215,7 +23306,7 @@
               "originalPosition": 5,
               "body": "Perhaps we also allow for \"SVCB-optional clients SHOULD disable SVCB resolution\r\nunless they arrange for SVCB resolution with appropriate privacy and routing properties.\"",
               "createdAt": "2021-02-18T21:07:10Z",
-              "updatedAt": "2021-02-18T21:13:11Z"
+              "updatedAt": "2021-02-24T20:18:37Z"
             }
           ]
         },
@@ -23235,15 +23326,48 @@
               "originalPosition": 3,
               "body": "```suggestion\r\nSVCB resolution separately, likely disclosing the destinations to additional parties.\r\n```",
               "createdAt": "2021-02-18T21:24:22Z",
-              "updatedAt": "2021-02-18T21:49:05Z"
+              "updatedAt": "2021-02-24T20:18:37Z"
             },
             {
               "originalPosition": 9,
               "body": "```suggestion\r\nClients that support such proxies SHOULD arrange for a separate SVCB resolution\r\nprocedure with appropriate privacy properties, or disable SVCB resolution entirely if\r\nSVCB-optional.\r\n```",
               "createdAt": "2021-02-18T21:25:11Z",
-              "updatedAt": "2021-02-18T21:49:05Z"
+              "updatedAt": "2021-02-24T20:18:37Z"
             }
           ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk3ODg5NTM5",
+          "commit": {
+            "abbreviatedOid": "b729c4c"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-24T20:20:34Z",
+          "updatedAt": "2021-02-24T20:20:34Z",
+          "comments": [
+            {
+              "originalPosition": 3,
+              "body": "Need to cleanup.\r\n```suggestion\r\ndestinations to an additional party, creating privacy concerns.\r\n```",
+              "createdAt": "2021-02-24T20:20:34Z",
+              "updatedAt": "2021-02-24T20:20:34Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk3OTQ3NDE4",
+          "commit": {
+            "abbreviatedOid": "63c7eea"
+          },
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-02-24T21:23:37Z",
+          "updatedAt": "2021-02-24T21:23:37Z",
+          "comments": []
         }
       ]
     },
@@ -23252,24 +23376,26 @@
       "id": "MDExOlB1bGxSZXF1ZXN0NTc4NTMwMjM2",
       "title": "Add reference to domain name syntax",
       "url": "https://github.com/MikeBishop/dns-alt-svc/pull/297",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "bemasc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Fixes #296",
       "createdAt": "2021-02-23T15:18:06Z",
-      "updatedAt": "2021-02-23T15:19:46Z",
+      "updatedAt": "2021-02-24T16:36:22Z",
       "baseRepository": "MikeBishop/dns-alt-svc",
       "baseRefName": "master",
       "baseRefOid": "3325f69984a64b525b4f770a8dd82c69b4b0197f",
       "headRepository": "MikeBishop/dns-alt-svc",
       "headRefName": "bemasc-domain-name",
       "headRefOid": "07eddcdcf0286f9421480193228980b8fd38f1db",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2021-02-24T16:36:18Z",
+      "mergedAt": "2021-02-24T16:36:18Z",
+      "mergedBy": "bemasc",
+      "mergeCommit": {
+        "oid": "bb8b33f072c8355646668459dbb84739205ffa5b"
+      },
       "comments": [
         {
           "author": "bemasc",
@@ -23277,6 +23403,13 @@
           "body": "@chris-wood Please review",
           "createdAt": "2021-02-23T15:18:46Z",
           "updatedAt": "2021-02-23T15:18:46Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Committing trivial fix without coauthor review.",
+          "createdAt": "2021-02-24T16:36:12Z",
+          "updatedAt": "2021-02-24T16:36:12Z"
         }
       ],
       "reviews": [
