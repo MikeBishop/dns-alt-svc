@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2021-02-26T20:13:00.345744+00:00",
+  "timestamp": "2021-03-02T21:25:04.600544+00:00",
   "repo": "MikeBishop/dns-alt-svc",
   "labels": [
     {
@@ -5359,7 +5359,7 @@
       "labels": [],
       "body": "> The SvcParamKey to enable Encrypted ClientHello (ECH) is \"echconfig\".\r\n\r\nThe ECH draft says this is a list of \"ECHConfig\" structs: \"ECHConfigs\".\r\n\r\n> The client-facing server advertises a sequence of ECH configurations to clients, serialized as follows.\r\n> ECHConfig ECHConfigs<1..2^16-1>;\r\n\r\nThis pluralization mismatch tripped me up testing ECH draft-09. ",
       "createdAt": "2021-02-25T22:43:10Z",
-      "updatedAt": "2021-02-26T20:12:59Z",
+      "updatedAt": "2021-02-26T23:04:28Z",
       "closedAt": null,
       "comments": [
         {
@@ -5431,8 +5431,80 @@
           "body": "I think my favorite pairing is probably \"ech=\" and \"ECHConfigList\"",
           "createdAt": "2021-02-26T15:27:04Z",
           "updatedAt": "2021-02-26T15:27:04Z"
+        },
+        {
+          "author": "moonshiner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "If I may have a say, I'd go with ECHConfigList also.   \r\n\r\nWonderful table @dmcardle ",
+          "createdAt": "2021-02-26T21:05:18Z",
+          "updatedAt": "2021-02-26T21:05:18Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "How in-flux is ECH at this point, and how many implementations are out there?  Should we also rev the codepoint for the param when ECH stablizes, or is there no implementations/usage out there that matter yet?",
+          "createdAt": "2021-02-26T21:43:35Z",
+          "updatedAt": "2021-02-26T21:43:35Z"
+        },
+        {
+          "author": "moonshiner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I think cloudflare is the primary deployed implementation.  Most others are branches to stable deployed code. ",
+          "createdAt": "2021-02-26T21:51:01Z",
+          "updatedAt": "2021-02-26T21:51:01Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "I don't believe Cloudflare has deployed ECH with SVCB, so they're not yet creating pressure on this codepoint.\r\n\r\nECH is internally versioned, so as long as ECH doesn't break its own internal format (simple TLV just like SVCB), it can rev versions without creating a problem.",
+          "createdAt": "2021-02-26T22:00:30Z",
+          "updatedAt": "2021-02-26T22:00:30Z"
+        },
+        {
+          "author": "moonshiner",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Thanks and that is the best answer.  I don't want to start off throwing away a code point, ",
+          "createdAt": "2021-02-26T22:02:09Z",
+          "updatedAt": "2021-02-26T22:02:09Z"
+        },
+        {
+          "author": "sftcd",
+          "authorAssociation": "NONE",
+          "body": "\n\nOn 26/02/2021 22:00, Benjamin M. Schwartz wrote:\n> I don't believe Cloudflare has deployed ECH with SVCB, \n\nDepends what you call \"deployed\" I guess:\n\n$  dig +short -t TYPE65 crypto.cloudflare.com\n\\# 135 0001000001000302683200040008A29F874FA29F884F000500490047 \nFE0900430013636C6F7564666C6172652D65736E692E636F6D0020C4 \n57457B9DEEC27C7F17A1E90F283FC89DF3B7BB31BEAAB8E91CDEB490 \nA0284000200004000100010000000000060020260647000007000000 \n000000A29F874F260647000007000000000000A29F884F\n\nI don't know of anyone other than developers testing\nECH interop who're using that but you might want to\ncheck with CF.\n\nCheers,\nS.\n\n> so they're not\n> yet creating pressure on this codepoint.\n> \n> ECH is internally versioned, so as long as ECH doesn't break its own\n> internal format (simple TLV just like SVCB), it can rev versions\n> without creating a problem.\n> \n",
+          "createdAt": "2021-02-26T22:25:53Z",
+          "updatedAt": "2021-02-26T22:25:53Z"
+        },
+        {
+          "author": "sayrer",
+          "authorAssociation": "NONE",
+          "body": "The crypto.cloudflare.com server is what lead me to file this issue, and it is sending an obsolete wire format (ECH draft-09) which uses an obsolete HPKE algorithm (draft-irtf-cfrg-hpke-07). I think it's fine to revise all of these things.",
+          "createdAt": "2021-02-26T22:57:28Z",
+          "updatedAt": "2021-02-26T22:57:28Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "> I don't believe Cloudflare has deployed ECH with SVCB, so they're not yet creating pressure on this codepoint.\r\n\r\nAs @sftcd points out, this isn't quite true. Our interop endpoint for -09 is live and is using SVCB to mint ECHConfigLists. But we can easily move to something new as needed. ",
+          "createdAt": "2021-02-26T23:03:36Z",
+          "updatedAt": "2021-02-26T23:04:28Z"
         }
       ]
+    },
+    {
+      "number": 300,
+      "id": "MDU6SXNzdWU4MTc3NTY2OTI=",
+      "title": "Decide which reference type you want for Attrleaf",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/issues/300",
+      "state": "OPEN",
+      "author": "moonshiner",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Normative or Informative? there are both here.\r\n\r\nLine Numbers included. \r\n\r\n92:({{https}}) by avoiding the need for an Attrleaf label {{?Attrleaf=RFC8552}}\r\n332:follows the Attrleaf naming pattern {{Attrleaf}}, so the scheme MUST be\r\n981:By removing the Attrleaf labels {{?Attrleaf}}\r\n1366:For services other than HTTPS, the SVCB RR and an Attrleaf label {{?Attrleaf}}\r\n1394:Registry {{!Attrleaf}}.  The scheme SHOULD have an entry in the IANA URI Schemes\r\n1540:Per {{?Attrleaf}}, please add the following entry to the DNS Underscore",
+      "createdAt": "2021-02-26T23:53:11Z",
+      "updatedAt": "2021-02-26T23:53:11Z",
+      "closedAt": null,
+      "comments": []
     }
   ],
   "pulls": [
@@ -23424,6 +23496,75 @@
           "body": "LGTM -- thanks!",
           "createdAt": "2021-02-23T15:19:46Z",
           "updatedAt": "2021-02-23T15:19:46Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 299,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTgxMDkzNTkz",
+      "title": "s/echconfig/ech/",
+      "url": "https://github.com/MikeBishop/dns-alt-svc/pull/299",
+      "state": "OPEN",
+      "author": "bemasc",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "See #298 and https://github.com/tlswg/draft-ietf-tls-esni/pull/391",
+      "createdAt": "2021-02-26T20:13:37Z",
+      "updatedAt": "2021-02-26T23:58:10Z",
+      "baseRepository": "MikeBishop/dns-alt-svc",
+      "baseRefName": "master",
+      "baseRefOid": "ca7b0236cedc4f2c1dda1e63d8152f52b81d31ed",
+      "headRepository": "MikeBishop/dns-alt-svc",
+      "headRefName": "bemasc-ech",
+      "headRefOid": "6814b028bf35179de65756767a4fd7a257ab12d6",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "marka63",
+          "authorAssociation": "NONE",
+          "body": "This should not be happening.  You are abusing the code point allocation.  The record format is supposed to be FIXED when the code point is allocated.  I complained before the code point was allocated that it was not the right time in the development process to perform the allocation.  When the code point is allocated the DNS record should be stable. That is both WIRE and PRESENTATION formats.  Remember master file format is a INTERCHANGE specification.\n\nThe DNS has a reserved range for private types which are fine for experimentation.\n\nMark\n\n> On 27 Feb 2021, at 07:13, Benjamin M. Schwartz <notifications@github.com> wrote:\n> \n> See #298 and tlswg/draft-ietf-tls-esni#391\n> \n> You can view, comment on, or merge this pull request online at:\n> \n>   https://github.com/MikeBishop/dns-alt-svc/pull/299\n> \n> Commit Summary\n> \n> \t\u2022 s/echconfig/ech/\n> File Changes\n> \n> \t\u2022 M draft-ietf-dnsop-svcb-https.md (60)\n> Patch Links:\n> \n> \t\u2022 https://github.com/MikeBishop/dns-alt-svc/pull/299.patch\n> \t\u2022 https://github.com/MikeBishop/dns-alt-svc/pull/299.diff\n> \u2014\n> You are receiving this because you are subscribed to this thread.\n> Reply to this email directly, view it on GitHub, or unsubscribe.\n> \n\n-- \nMark Andrews, ISC\n1 Seymour St., Dundas Valley, NSW 2117, Australia\nPHONE: +61 2 9871 4742              INTERNET: marka@isc.org\n\n",
+          "createdAt": "2021-02-26T22:16:38Z",
+          "updatedAt": "2021-02-26T22:16:38Z"
+        },
+        {
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "body": "Does this argue that we should change the codepoint and abandon echconfig/5 as part of the switch to the \"ech\" key name?  (In some ways this is happening due to the dependent ECH draft making changes.)  That then makes this a key addition rather than a change.",
+          "createdAt": "2021-02-26T22:22:05Z",
+          "updatedAt": "2021-02-26T22:22:05Z"
+        },
+        {
+          "author": "ericorth",
+          "authorAssociation": "NONE",
+          "body": "+1.  If there's any concern whatsoever about compatibility problems from renaming \"echconfig\", let's add a new service parameter codepoint for the renamed param.  In a quick review of the current draft, I don't see any reason that would break stability of SVCB/HTTPS themselves.  I could see an argument if \"echconfig\" were in the automatically-mandatory list, but it's not.",
+          "createdAt": "2021-02-26T22:48:36Z",
+          "updatedAt": "2021-02-26T22:48:36Z"
+        },
+        {
+          "author": "bemasc",
+          "authorAssociation": "COLLABORATOR",
+          "body": "As a practical matter, I don't think we need to go through a deprecation procedure.  The \"echconfig\" contents are defined by a draft (draft-ietf-tls-esni) that is not finished, and indeed has multiple breaking changes in progress.  I don't think anyone who is using \"echconfig\" in a zone today expects it to be interoperable.  The only deployment I'm aware of exists specifically for interoperability testing of draft versions of ECH, and that is the only appropriate use at this stage.\r\n\r\nAs for the Early Allocation rules, note that \"echconfig\" is not part of the SVCB draft standard presentation format.  Rather, it is a proposed entry in an IANA registry that doesn't exist yet.\r\n\r\nWhile I think it's annoying to have to burn a codepoint in order to change the name, I'm happy to do so if necessary.  If that's the consensus, I think we might as well wait until the ECH draft is final before making any change, to avoid having to do this again.",
+          "createdAt": "2021-02-26T23:58:10Z",
+          "updatedAt": "2021-02-26T23:58:10Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk5OTYyMjUx",
+          "commit": {
+            "abbreviatedOid": "6814b02"
+          },
+          "author": "enygren",
+          "authorAssociation": "COLLABORATOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-02-26T21:41:45Z",
+          "updatedAt": "2021-02-26T21:41:45Z",
           "comments": []
         }
       ]
