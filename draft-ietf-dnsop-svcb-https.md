@@ -89,7 +89,7 @@ This document first describes the SVCB RR as a general-purpose resource
 record that can be applied directly and efficiently to a wide range
 of services ({{svcb}}).  The HTTPS RR is then defined as a special
 case of SVCB that improves efficiency and convenience for use with HTTPS
-({{https}}) by avoiding the need for an Attrleaf label {{?Attrleaf=RFC8552}}
+({{https}}) by avoiding the need for an Attrleaf label {{?RFC8552}}
 ({{httpsnames}}).  Other protocols with similar needs may
 follow the pattern of HTTPS and assign their own
 SVCB-compatible RR types.
@@ -135,8 +135,8 @@ Additional goals specific to HTTPS RRs and the HTTPS use-case include:
   alternative endpoint
 * Support non-default TCP and UDP ports
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP(S),
-  where SRV {{?SRV=RFC2782}} has not been widely adopted
-* Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling that the HTTPS
+  where SRV {{?RFC2782}} has not been widely adopted
+* Provide an HSTS-like indication {{!RFC6797}} signaling that the HTTPS
   scheme should be used instead of HTTP for this request (see {{hsts}}).
 
 ## Overview of the SVCB RR
@@ -177,7 +177,7 @@ endpoints that are authoritative for the origin, along with
 parameters associated with each of these alternative endpoints.
 
 For the HTTPS use-case, the HTTPS RR enables many of the benefits of Alt-Svc
-{{?AltSvc=RFC7838}}
+{{?RFC7838}}
 without waiting for a full HTTP connection initiation (multiple roundtrips)
 before learning of the preferred alternative,
 and without necessarily revealing the user's
@@ -206,7 +206,7 @@ hostname as the `host`.
   instructions to the client on how to reach an instance of service.
 
 Additional DNS terminology intends to be consistent
-with {{?DNSTerm=RFC8499}}.
+with {{?RFC8499}}.
 
 SVCB is a contraction of "service binding".  The SVCB RR, HTTPS RR,
 and future RR types that share SVCB's format and registry are
@@ -329,12 +329,12 @@ fall back to non-SVCB connection establishment.
 When querying the SVCB RR, a service is translated into a QNAME by prepending
 the service name with a label indicating the scheme, prefixed with an underscore,
 resulting in a domain name like "_examplescheme.api.example.com.".  This
-follows the Attrleaf naming pattern {{Attrleaf}}, so the scheme MUST be
+follows the Attrleaf naming pattern {{RFC8552}}, so the scheme MUST be
 registered appropriately with IANA (see {{other-standards}}).
 
 Protocol mapping documents MAY specify additional underscore-prefixed labels
 to be prepended.  For schemes that specify a port (Section 3.2.3
-of {{?URI=RFC3986}}), one reasonable possibility is to prepend the indicated port
+of {{?RFC3986}}), one reasonable possibility is to prepend the indicated port
 number if a non-default port number is specified.  We term this behavior
 "Port Prefix Naming", and use it in the examples throughout this document.
 
@@ -522,7 +522,7 @@ Once SVCB resolution has concluded, the client proceeds with connection
 establishment.  Clients SHOULD try higher-priority alternatives first, with
 fallback to lower-priority alternatives.  Clients issue AAAA and/or A
 queries for the selected TargetName, and MAY choose between them using an
-approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
+approach such as Happy Eyeballs {{!RFC8305}}.
 
 A client is called "SVCB-optional" if it can connect without the use of
 ServiceMode records, and "SVCB-reliant" otherwise.  Clients for pre-existing
@@ -544,8 +544,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
 If SVCB resolution fails due to a SERVFAIL error, transport error, or timeout,
 and DNS exchanges between the client and the recursive resolver are
-cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
-{{!DoH=RFC8484}}), a SVCB-optional client SHOULD abandon the connection
+cryptographically protected (e.g. using TLS {{!RFC7858}} or HTTPS
+{{!RFC8484}}), a SVCB-optional client SHOULD abandon the connection
 attempt like a SVCB-reliant client would.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
@@ -640,7 +640,7 @@ construct the full response to the stub resolver:
 In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
-follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).
+follow (e.g. CNAME, DNAME {{!RFC6672}}).
 
 See {{alias-mode}} for additional safeguards for recursive resolvers
 to implement to mitigate loops.
@@ -685,7 +685,7 @@ until it arrives.  For example, a TLS ClientHello can be altered by the
 "echconfig" value of a SVCB response ({{svcparamkeys-echconfig}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
-{{HappyEyeballsV2}}.
+{{RFC8305}}.
 
 A SVCB record is consistent with a connection
 if the client would attempt an equivalent connection when making use of
@@ -737,10 +737,10 @@ alter their presentation or wire formats.
 
 The "alpn" and "no-default-alpn" SvcParamKeys together
 indicate the set of Application Layer Protocol Negotiation (ALPN)
-protocol identifiers {{!ALPN=RFC7301}}
+protocol identifiers {{!RFC7301}}
 and associated transport protocols supported by this service endpoint.
 
-As with Alt-Svc {{AltSvc}}, the ALPN protocol identifier is used to
+As with Alt-Svc {{RFC7838}}, the ALPN protocol identifier is used to
 identify the application protocol and associated suite
 of protocols supported by the endpoint (the "protocol suite").
 Clients filter the set of ALPN identifiers to match the protocol suites they
@@ -796,7 +796,7 @@ TLS over TCP with a ProtocolNameList of \["http/1.1", "h2"\], and could also
 attempt a connection using QUIC, with a ProtocolNameList of \["h3"\].
 
 Once the client has constructed a ClientHello, protocol negotiation in that
-handshake proceeds as specified in {{!ALPN}}, without regard to the SVCB ALPN
+handshake proceeds as specified in {{!RFC7301}}, without regard to the SVCB ALPN
 set.
 
 With this procedure in place, an attacker who can modify DNS and network
@@ -878,7 +878,7 @@ unordered collection, and clients SHOULD pick addresses to use in a random order
 An empty list of addresses is invalid.
 
 When selecting between IPv4 and IPv6 addresses to use, clients may use an
-approach such as Happy Eyeballs {{!HappyEyeballsV2}}.
+approach such as Happy Eyeballs {{!RFC8305}}.
 When only "ipv4hint" is present, IPv6-only clients may synthesize
 IPv6 addresses as specified in {{!RFC7050}} or ignore the "ipv4hint" key and
 wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
@@ -967,7 +967,7 @@ secure and authenticated HTTPS connection.
 
 The HTTPS RR parallels the concepts
 introduced in the HTTP Alternative Services proposed standard
-{{AltSvc}}.  Clients and servers that implement HTTPS RRs are
+{{RFC7838}}.  Clients and servers that implement HTTPS RRs are
 not required to implement Alt-Svc.
 
 ## Query names for HTTPS RRs {#httpsnames}
@@ -978,7 +978,7 @@ then the client's original QNAME is
 equal to the service name (i.e. the origin's hostname),
 without any prefix labels.
 
-By removing the Attrleaf labels {{?Attrleaf}}
+By removing the Attrleaf labels {{?RFC8552}}
 used in SVCB, this construction enables offline DNSSEC signing of
 wildcard domains, which are commonly used with HTTPS.  Reusing the
 service name also allows the targets of existing CNAME chains
@@ -1076,7 +1076,7 @@ the origin, not the TargetName.
 
 By publishing a usable HTTPS RR, the server operator indicates that all
 useful HTTP resources on that origin are reachable over HTTPS, similar to
-HTTP Strict Transport Security {{HSTS}}.
+HTTP Strict Transport Security {{RFC6797}}.
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
 to determine if any HTTPS RRs exist for that origin.  To do so,
@@ -1088,7 +1088,7 @@ the client SHOULD construct a corresponding "https" URL as follows:
 
 3. Do not alter any other aspect of the URL.
 
-This construction is equivalent to Section 8.3 of {{HSTS}}, point 5.
+This construction is equivalent to Section 8.3 of {{RFC6797}}, point 5.
 
 If an HTTPS RR query for this "https" URL returns any AliasMode HTTPS RRs,
 or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
@@ -1107,13 +1107,13 @@ When making an "https" scheme request to an origin with an HTTPS RR,
 either directly or via the above redirect, such a client MAY remove the user
 recourse option.  Origins that publish HTTPS RRs therefore MUST NOT rely
 on user recourse for access.  For more information, see Section 8.4 and
-Section 12.1 of {{HSTS}}.
+Section 12.1 of {{RFC6797}}.
 
 ## HTTP-based protocols
 
 All protocols employing "http://" or "https://" URLs SHOULD respect HTTPS RRs.
 For example, clients that
-support HTTPS RRs and implement the altered WebSocket {{!WebSocket=RFC6455}}
+support HTTPS RRs and implement the altered WebSocket {{!RFC6455}}
 opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RRs
 for the `requestURL`.
 
@@ -1126,7 +1126,7 @@ The SVCB "echconfig" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigs vector
 {{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is a single ECHConfigs encoded in Base64 {{!base64=RFC4648}}.
+the value is a single ECHConfigs encoded in Base64 {{!RFC4648}}.
 Base64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
@@ -1363,7 +1363,7 @@ introduces a number of complexities highlighted by this example:
 
 ### Non-HTTPS uses
 
-For services other than HTTPS, the SVCB RR and an Attrleaf label {{?Attrleaf}}
+For services other than HTTPS, the SVCB RR and an Attrleaf label {{?RFC8552}}
 will be used.  For example, to reach an example resource of
 "baz://api.example.com:8765", the following SVCB
 record would be used to alias it to "svc4-baz.example.net."
@@ -1385,13 +1385,13 @@ benefits when used in combination with SVCB records.
 
 To realize the greatest privacy benefits, this proposal is intended for
 use over a privacy-preserving DNS transport (like DNS over TLS
-{{DoT}} or DNS over HTTPS {{DoH}}).
+{{RFC7858}} or DNS over HTTPS {{RFC8484}}).
 However, performance improvements, and some modest privacy improvements,
 are possible without the use of those standards.
 
 Any specification for use of SVCB with a protocol MUST have an entry for its
 scheme under the SVCB RR type in the IANA DNS Underscore Global Scoped Entry
-Registry {{!Attrleaf}}.  The scheme SHOULD have an entry in the IANA URI Schemes
+Registry {{!RFC8552}}.  The scheme SHOULD have an entry in the IANA URI Schemes
 Registry {{!RFC7595}}.  The scheme SHOULD have a defined specification for use
 with SVCB.
 
@@ -1401,7 +1401,7 @@ with SVCB.
 
 SVCB/HTTPS RRs are intended for distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative endpoint
-is authoritative for the service (similar to Section 2.1 of {{AltSvc}}).
+is authoritative for the service (similar to Section 2.1 of {{RFC7838}}).
 Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using SVCB and HTTPS RRs.
 
@@ -1537,7 +1537,7 @@ range of the Resource Record (RR) TYPEs registry:
 | HTTPS    | HTTPS Service Location and Parameter Binding | (This document) |
 
 
-Per {{?Attrleaf}}, please add the following entry to the DNS Underscore
+Per {{?RFC8552}}, please add the following entry to the DNS Underscore
 Global Scoped Entry Registry:
 
 | RR TYPE   | _NODE NAME | Meaning           | Reference       |
@@ -1647,7 +1647,7 @@ to achieve client implementation.
 
 ## Differences from the SRV RR type
 
-An SRV record {{SRV}} can perform a similar function to the SVCB record,
+An SRV record {{RFC2782}} can perform a similar function to the SVCB record,
 informing a client to look in a different location for a service.
 However, there are several differences:
 
