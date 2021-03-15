@@ -815,7 +815,7 @@ For compatibility with clients that require default transports,
 zone operators SHOULD ensure that at least one RR in each RRSet supports the
 default transports.
 
-## "port"
+## "port" {#svcparamkeys-port}
 
 The "port" SvcParamKey defines the TCP or UDP port
 that should be used to reach this alternative endpoint.
@@ -1489,42 +1489,40 @@ ACTION: create and include a reference to this registry.
 
 A registration MUST include the following fields:
 
-* Number: SvcParamKey wire format numeric identifier (range 0-65535)
-* Name: SvcParamKey presentation name
+* Number: wire format numeric identifier (range 0-65535)
+* Name: unique presentation name
 * Meaning: a short description
-* Pointer to specification text
+* Format Reference: pointer to specification text
 
-SvcParamKey entries to be added to this namespace
-have different policies ({{!RFC8126}}, Section 4)
-based on their range:
+The characters in the registered Name MUST be lower-case alphanumeric or "-"
+({{presentation}}) and it MUST NOT start with "key".
 
-| Number      | IANA Policy             |
-| ----------- | ----------------------  |
-| 0-255       | Standards Action        |
-| 256-32767   | Expert Review           |
-| 32768-65280 | First Come First Served |
-| 65280-65534 | Private Use             |
-| 65535       | Standards Action        |
+Entries in this registry are subject to a First Come First Served registration
+policy ({{!RFC8126}}, Section 4.6).  The Format Reference MUST specify
+how to convert the SvcParamValue's presentation format to wire format and MAY
+detail its intended meaning and use.  An entry MAY specify a Format Reference of
+the form "Same as (other key Name)" if it uses the same presentation and wire
+formats as an existing key.
 
-Apart from the initial contents, the SvcParamKey
-name MUST NOT start with "key".
+This arrangement supports the development of new parameters while ensuring that
+zone files can be made interoperable.
 
 ### Initial contents {#iana-keys}
 
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| Number      | Name            | Meaning                         | Reference       |
-| ----------- | ------          | ----------------------          | --------------- |
-| 0           | mandatory       | Mandatory keys in this RR       | (This document) |
-| 1           | alpn            | Additional supported protocols  | (This document) |
-| 2           | no-default-alpn | No support for default protocol | (This document) |
-| 3           | port            | Port for alternative endpoint   | (This document) |
-| 4           | ipv4hint        | IPv4 address hints              | (This document) |
-| 5           | ech             | Encrypted ClientHello info      | (This document) |
-| 6           | ipv6hint        | IPv6 address hints              | (This document) |
-| 65280-65534 | keyNNNNN        | Private Use                     | (This document) |
-| 65535       | key65535        | Reserved ("Invalid key")        | (This document) |
+| Number      | Name            | Meaning                         | Format Reference                         |
+| ----------- | ------          | ----------------------          | ---------------------------------------- |
+| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}            |
+| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}             |
+| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             |
+| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    |
+| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} |
+| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     |
+| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} |
+| 65280-65534 | N/A             | Private Use                     | (This document)                          |
+| 65535       | invalid         | Reserved ("Invalid key")        | (This document)                          |
 
 ## Registry updates {#registry-updates}
 
