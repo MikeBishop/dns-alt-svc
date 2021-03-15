@@ -1124,9 +1124,9 @@ be defined to take precedence over HTTPS RRs.
 
 The SVCB "echconfig" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
-In wire format, the value of the parameter is an ECHConfigs vector
+In wire format, the value of the parameter is an ECHConfigList
 {{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is a single ECHConfigs encoded in Base64 {{!base64=RFC4648}}.
+the value is a single ECHConfigList encoded in Base64 {{!base64=RFC4648}}.
 Base64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
