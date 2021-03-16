@@ -579,7 +579,7 @@ SVCB-optional.
 If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the smallest-SvcPriority
 option that is compatible with the client and the proxy.  When connecting
-using an SVCB record, clients MUST provide the final TargetName and port to the
+using a SVCB record, clients MUST provide the final TargetName and port to the
 proxy, which will perform any required A and AAAA lookups.
 
 Providing the proxy with the final TargetName has several benefits:
