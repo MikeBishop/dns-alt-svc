@@ -1705,6 +1705,13 @@ reduce implementation complexity.
 
 # Change history
 
+* draft-ietf-dnsop-svcb-https-04
+    * Simplify the IANA instructions (pure First Come First Served)
+    * Recommend against publishing chains of >8 aliases
+    * Clarify requirements for using SVCB with a transport proxy
+    * Adjust guidance for Port Prefix Naming
+    * Minor editorial updates
+
 * draft-ietf-dnsop-svcb-https-03
     * Simplified escaping of comma-separated values
     * Reorganized client requirements
