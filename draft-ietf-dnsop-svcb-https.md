@@ -1495,7 +1495,7 @@ A registration MUST include the following fields:
 * Format Reference: pointer to specification text
 
 The characters in the registered Name MUST be lower-case alphanumeric or "-"
-({{presentation}}) and it MUST NOT start with "key".
+({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
 Entries in this registry are subject to a First Come First Served registration
 policy ({{!RFC8126}}, Section 4.6).  The Format Reference MUST specify
