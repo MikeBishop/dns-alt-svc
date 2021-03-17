@@ -1495,7 +1495,7 @@ A registration MUST include the following fields:
 * Format Reference: pointer to specification text
 
 The characters in the registered Name MUST be lower-case alphanumeric or "-"
-({{presentation}}) and it MUST NOT start with "key".
+({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
 Entries in this registry are subject to a First Come First Served registration
 policy ({{!RFC8126}}, Section 4.6).  The Format Reference MUST specify
@@ -1522,7 +1522,7 @@ be populated with the registrations below:
 | 5           | echconfig       | Encrypted ClientHello info      | (This document) {{svcparamkeys-echconfig}} |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}}   |
 | 65280-65534 | N/A             | Private Use                     | (This document)                            |
-| 65535       | invalid         | Reserved ("Invalid key")        | (This document)                            |
+| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                            |
 
 ## Registry updates {#registry-updates}
 
