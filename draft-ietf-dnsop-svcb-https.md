@@ -683,7 +683,7 @@ same ECS extension that it would use for an A/AAAA query.
 
 According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
-Resolvers SHOULD assume that any A/AAAA records in the Additional section
+resolvers SHOULD assume that any A/AAAA records in the Additional section
 are network-invariant.  When responding to a SVCB query with an ECS
 extension (even one whose SOURCE PREFIX-LENGTH is zero), an Authoritative
 server SHOULD NOT add any A/AAAA records for TargetName to the response if
