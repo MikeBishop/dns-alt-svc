@@ -597,11 +597,11 @@ Providing the proxy with the final TargetName has several benefits:
 
 # DNS Server Behavior {#server-behavior}
 
-## Authoritative servers
+## Authoritative servers {#authoritative-behavior}
 
 When replying to a SVCB query, authoritative DNS servers SHOULD return
-A, AAAA, and SVCB records in the Additional Section for any
-in-bailiwick TargetNames.  If the zone is signed, the server SHOULD also
+A, AAAA, and SVCB records in the Additional Section for any TargetNames
+that are in the zone.  If the zone is signed, the server SHOULD also
 include positive or negative DNSSEC responses for these records in the Additional
 section.
 
@@ -659,6 +659,31 @@ each RRSet in the Additional section with the same DNSSEC-related records
 that they would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC,
 NSEC3).
 
+## EDNS Client Subnet (ECS)
+
+The EDNS Client Subnet extension (ECS, {{!RFC7871}}) allows recursive
+resolvers to request IP addresses that are suitable for a particular client
+IP range.  IP addresses appear in two places in Authoritative SVCB responses:
+
+* ipv*hint SvcParams in a ServiceMode response.  Clients only use these hints
+when the recursive resolver does not provide A/AAAA records for TargetName in
+the Additional section, as recommended in {{recursive-behavior}}.
+* A/AAAA records returned by the Authoritative server in the Additional
+section of a SVCB response when TargetName is in-zone, as recommended in
+{{authoritative-behavior}}.
+
+A recursive resolver that uses ECS for A/AAAA queries SHOULD send the
+same ECS prefix for SVCB queries unless it knows that any ipv*hint SvcParams
+will not be used, due to the resolver's implementation of Additional section
+processing.  To disable ECS for SVCB, such a resolver SHOULD include an ECS
+extension with a SOURCE PREFIX-LENGTH of zero, to indicate that ECS is
+supported but disabled.
+
+According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
+Additional section\] MUST NOT be tied to a network".  Accordingly,
+when responding to a SVCB query with the ECS extension, Authoritative
+servers MAY omit these records to ensure that prefix-specific A/AAAA
+records are returned by a subsequent or parallel query.
 
 # Performance optimizations {#optimizations}
 
