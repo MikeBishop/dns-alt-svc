@@ -661,7 +661,7 @@ NSEC3).
 
 ## EDNS Client Subnet (ECS)
 
-The EDNS Client Subnet extension (ECS, {{!RFC7871}}) allows recursive
+The EDNS Client Subnet option (ECS, {{!RFC7871}}) allows recursive
 resolvers to request IP addresses that are suitable for a particular client
 IP range.  IP addresses appear in two places in Authoritative SVCB responses:
 
@@ -676,16 +676,16 @@ SVCB records SHOULD NOT otherwise vary based on ECS.
 
 A recursive resolver that always returns A/AAAA records for TargetName in the
 Additional section, as recommended in {{recursive-behavior}}, SHOULD include
-an ECS extension with a SOURCE PREFIX-LENGTH of zero in SVCB queries, to
+an ECS option with a SOURCE PREFIX-LENGTH of zero in SVCB queries, to
 indicate that ECS is supported but is disabled for this query.  If the
 resolver might not return these Additional records, it SHOULD send the
-same ECS extension that it would use for an A/AAAA query.
+same ECS option that it would use for an A/AAAA query.
 
 According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
 resolvers SHOULD assume that any A/AAAA records in the Additional section
 are network-invariant.  When responding to a SVCB query with an ECS
-extension (even one whose SOURCE PREFIX-LENGTH is zero), an Authoritative
+option (even one whose SOURCE PREFIX-LENGTH is zero), an Authoritative
 server SHOULD NOT add any A/AAAA records for TargetName to the response if
 TargetName has any A/AAAA records that are tied to a network.  
 
