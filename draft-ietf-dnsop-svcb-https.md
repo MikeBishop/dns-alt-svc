@@ -1756,7 +1756,7 @@ This example has a key that is not registered, its value is unquoted.
     1 foo.example.com key667=hello
 
     \# 28 (
-    00 10                                              ; priority
+    00 01                                              ; priority
     03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
     02 9b                                              ; key 667
     00 05                                              ; length 5
@@ -1775,7 +1775,7 @@ a decimal-escaped character.
     1 foo.example.com key667="hello\210qoo"
 
     \# 32 (
-    00 10                                              ; priority
+    00 01                                              ; priority
     03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
     02 9b                                              ; key 667
     00 09                                              ; length 9
@@ -1792,8 +1792,8 @@ Here, two IPv6 hints are quoted in the presentation format.
 
     1 foo.example.com ipv6hint="2001:db8::1,2001:db8::53:1"
 
-    \# 57 (
-    00 10                                              ; priority
+    \# 55 (
+    00 01                                              ; priority
     03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
     00 06                                              ; key 6
     00 20                                              ; length 32
@@ -1815,7 +1815,7 @@ but are sorted in the wire-format.
 
     16 foo.example.org alpn=h2,h3-19 mandatory=alpn ipv4hint=192.0.2.1
 
-    \# 48 (
+    \# 46 (
     00 10                                              ; priority
     03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 6f 72 67 00 ; target
     00 00                                              ; key 0
@@ -1831,7 +1831,6 @@ but are sorted in the wire-format.
     00 04                                              ; param length 4
     c0 00 02 01                                        ; param value
     )
-
 
     \x00\x10                                           # priority
     \x03foo\x07example\x03org\x00                      # target
