@@ -1810,17 +1810,19 @@ Here, two IPv6 hints are quoted in the presentation format.
     \x20\x01\x0d\xb8\x00\x00\x00\x00
          \x00\x00\x00\x00\x00\x53\x00\x01              # second address
 
-In the next vector, the SvcParamValues are not sorted in presentation format,
-but are sorted in the wire-format.
+In the next vector, neither the SvcParamValues nor the mandatory keys are 
+sorted in presentation format, but are correctly sorted in the wire-format.
 
-    16 foo.example.org alpn=h2,h3-19 mandatory=alpn ipv4hint=192.0.2.1
+    16 foo.example.org (alpn=h2,h3-19 mandatory=ipv4hint,alpn
+                        ipv4hint=192.0.2.1)
 
-    \# 46 (
+    \# 48 (
     00 10                                              ; priority
     03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 6f 72 67 00 ; target
     00 00                                              ; key 0
-    00 02                                              ; param length 2
+    00 04                                              ; param length 4
     00 01                                              ; value: key 1
+    00 04                                              ; value: key 4
     00 01                                              ; key 1
     00 09                                              ; param length 9
     02                                                 ; alpn length 2
@@ -1846,6 +1848,32 @@ but are sorted in the wire-format.
     \x00\x04                                           # key 4
     \x00\x04                                           # param length 4
     \xc0\x00\x02\x01                                   # param value
+
+This last vector has an alpn value with an escaped comma and an escaped
+backslash in two presentation formats.
+
+    16 foo.example.org alpn="f\\\\oo\\,bar,h2"
+    16 foo.example.org alpn=f\\\092oo\092,bar,h2
+
+    \# 35 (
+    00 10                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 6f 72 67 00 ; target
+    00 01                                              ; key 1
+    00 0c                                              ; param length 12
+    08                                                 ; alpn length 8
+    66 5c 6f 6f 2c 62 61 72                            ; alpn value
+    02                                                 ; alpn length 2
+    68 32                                              ; alpn value
+    )
+
+    \x00\x10                                           # priority
+    \x03foo\x07example\x03org\x00                      # target
+    \x00\x01                                           # key 1
+    \x00\x0c                                           # param length 12
+    \x08                                               # alpn length 8
+    f\oo,bar                                           # alpn value
+    \x02                                               # alpn length 2
+    h2                                                 # alpn value
 
 # Change history
 
