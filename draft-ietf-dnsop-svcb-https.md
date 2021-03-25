@@ -674,11 +674,11 @@ section of a SVCB response when TargetName is in-zone, as recommended in
 
 SVCB records SHOULD NOT otherwise vary based on ECS.
 
-A recursive resolver that always returns A/AAAA records for TargetName in the
-Additional section, as recommended in {{recursive-behavior}}, SHOULD include
-an ECS option with a SOURCE PREFIX-LENGTH of zero in SVCB queries, to
-indicate that ECS is supported but is disabled for this query.  If the
-resolver might not return these Additional records, it SHOULD send the
+If the resolver plans to resolve A/AAAA records for TargetName and return
+them in the Additional section, as recommended in {{recursive-behavior}},
+it SHOULD include an ECS option with a SOURCE PREFIX-LENGTH of zero in SVCB
+queries, to indicate that ECS is supported but is disabled for this query.
+If the resolver does not plan to perform this resolution, it SHOULD send the
 same ECS option that it would use for an A/AAAA query.
 
 According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
