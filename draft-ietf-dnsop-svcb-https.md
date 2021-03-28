@@ -605,6 +605,8 @@ that are in the zone.  If the zone is signed, the server SHOULD also
 include positive or negative DNSSEC responses for these records in the Additional
 section.
 
+See {{ecs}} for exception.
+
 ## Recursive resolvers {#recursive-behavior}
 
 Recursive resolvers that are aware of SVCB SHOULD help the client to
@@ -659,7 +661,7 @@ each RRSet in the Additional section with the same DNSSEC-related records
 that they would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC,
 NSEC3).
 
-## EDNS Client Subnet (ECS)
+## EDNS Client Subnet (ECS) {#ecs}
 
 The EDNS Client Subnet option (ECS, {{!RFC7871}}) allows recursive
 resolvers to request IP addresses that are suitable for a particular client
@@ -685,9 +687,10 @@ According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
 resolvers SHOULD assume that any A/AAAA records in the Additional section
 are network-invariant.  When responding to a SVCB query with an ECS
-option (even one whose SOURCE PREFIX-LENGTH is zero), an Authoritative
-server SHOULD NOT add any A/AAAA records for TargetName to the response if
-TargetName has any A/AAAA records that are tied to a network.  
+option (even one whose SOURCE PREFIX-LENGTH is zero), Authoritative servers
+must omit such records if they wish to serve subnet-specific addresses.
+Such Authoritative servers can avoid the added latency of a followup query
+by setting TargetName to the value recommended in {{zone-performance}}.
 
 # Performance optimizations {#optimizations}
 
