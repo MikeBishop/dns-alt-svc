@@ -665,23 +665,9 @@ NSEC3).
 
 The EDNS Client Subnet option (ECS, {{!RFC7871}}) allows recursive
 resolvers to request IP addresses that are suitable for a particular client
-IP range.  IP addresses appear in two places in Authoritative SVCB responses:
-
-* ipv*hint SvcParams in a ServiceMode response.  Clients only use these hints
-when the recursive resolver does not provide A/AAAA records for TargetName in
-the Additional section, as recommended in {{recursive-behavior}}.
-* A/AAAA records returned by the Authoritative server in the Additional
-section of a SVCB response when TargetName is in-zone, as recommended in
-{{authoritative-behavior}}.
-
-SVCB records SHOULD NOT otherwise vary based on ECS.
-
-If the resolver plans to resolve A/AAAA records for TargetName and return
-them in the Additional section, as recommended in {{recursive-behavior}},
-it SHOULD include an ECS option with a SOURCE PREFIX-LENGTH of zero in SVCB
-queries, to indicate that ECS is supported but is disabled for this query.
-If the resolver does not plan to perform this resolution, it SHOULD send the
-same ECS option that it would use for an A/AAAA query.
+IP range.  SVCB records may contain IP addresses (in ipv*hint SvcParams),
+or direct users to a subnet-specific TargetName, so recursive resolvers
+SHOULD include the same ECS option in SVCB queries as in A/AAAA queries.
 
 According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
