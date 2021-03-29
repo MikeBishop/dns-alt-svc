@@ -605,7 +605,7 @@ that are in the zone.  If the zone is signed, the server SHOULD also
 include positive or negative DNSSEC responses for these records in the Additional
 section.
 
-See {{ecs}} for exception.
+See {{ecs}} for exceptions.
 
 ## Recursive resolvers {#recursive-behavior}
 
