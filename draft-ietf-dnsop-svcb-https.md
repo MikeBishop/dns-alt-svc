@@ -671,12 +671,15 @@ SHOULD include the same ECS option in SVCB queries as in A/AAAA queries.
 
 According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
-resolvers SHOULD assume that any A/AAAA records in the Additional section
-are network-invariant.  When responding to a SVCB query with an ECS
-option (even one whose SOURCE PREFIX-LENGTH is zero), Authoritative servers
-must omit such records if they wish to serve subnet-specific addresses.
-Such Authoritative servers can avoid the added latency of a followup query
-by setting TargetName to the value recommended in {{zone-performance}}.
+resolvers SHOULD treat any records in the Additional section as having
+SCOPE PREFIX-LENGTH zero, and MAY cache them on this basis.  Authoritative
+servers MUST omit such records if they are not suitable for global use.
+This will cause the resolver to perform a followup query that can receive
+properly tailored ECS.  (This is similar to the usage of CNAME with ECS
+discussed in {{!RFC7871}} Section 7.2.1.)
+
+Authoritative servers that omit Additional records can avoid the added
+latency of a followup query by following the advice in {{zone-performance}}.
 
 # Performance optimizations {#optimizations}
 
