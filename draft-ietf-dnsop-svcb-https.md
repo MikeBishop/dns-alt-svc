@@ -672,8 +672,10 @@ SHOULD include the same ECS option in SVCB queries as in A/AAAA queries.
 According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
 resolvers SHOULD treat any records in the Additional section as having
-SCOPE PREFIX-LENGTH zero, and MAY cache them on this basis.  Authoritative
-servers MUST omit such records if they are not suitable for global use.
+SOURCE PREFIX-LENGTH zero and SCOPE PREFIX-LENGTH as specified
+in the ECS option, and MAY cache them on this basis.  Authoritative
+servers MUST omit such records if they are not suitable
+for use by any stub resolvers that set SOURCE PREFIX-LENGTH to zero.
 This will cause the resolver to perform a followup query that can receive
 properly tailored ECS.  (This is similar to the usage of CNAME with ECS
 discussed in {{!RFC7871}} Section 7.2.1.)
