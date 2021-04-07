@@ -1937,25 +1937,6 @@ the mandatory list ({{mandatory}}).
                           mandatory=key123,key123 key123=abc
                           )
 
-With HTTPS records the SvcParamKeys "port" and "no-default-alpn" are
-automatically mandatory and therefore are required in the
-record ({{value-list}}).
-
-    example.com.   HTTPS   1 foo.example.com. (
-                           mandatory=key123 key123=123
-                           )
-
-
-In the last example, the automatically mandatory SvcParamKeys 
-"port" and "no-default-alpn" should not appear in the 
-mandatory list ({{mandatory}}).
-
-    example.com.   HTTPS   1 foo.example.com. (
-                           mandatory=key123,no-default-alpn,port
-                           key123=123 port=1 no-default-alpn
-                           )
-
-
 # Change history
 
 * draft-ietf-dnsop-svcb-https-04
