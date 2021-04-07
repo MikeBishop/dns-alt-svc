@@ -1810,6 +1810,27 @@ Here, two IPv6 hints are quoted in the presentation format.
     \x20\x01\x0d\xb8\x00\x00\x00\x00
          \x00\x00\x00\x00\x00\x53\x00\x01              # second address
 
+
+This example shows a single IPv6 hint in IPv4 mapped IPv6 presentation
+format.
+
+    1 example.com ipv6hint="2001:db8:ffff:ffff:ffff:ffff:198.51.100.100"
+
+    \# 35 (
+    00 01                                              ; priority
+    07 65 78 61 6d 70 6c 65 03 63 6f 6d 00             ; target
+    00 06                                              ; key 6
+    00 10                                              ; length 16
+    20 01 0d b8 ff ff ff ff ff ff ff ff c6 33 64 64    ; address
+    )
+
+    \x00\x01                                           # priority
+    \x07example\x03com\x00                             # target
+    \x00\x06                                           # key 6
+    \x00\x10                                           # length 16
+    \x20\x01\x0d\xb8\xff\xff\xff\xff
+         \xff\xff\xff\xff\xc6\x33\x64\x64              # address
+
 In the next vector, neither the SvcParamValues nor the mandatory keys are 
 sorted in presentation format, but are correctly sorted in the wire-format.
 
@@ -1874,6 +1895,22 @@ backslash in two presentation formats.
     f\oo,bar                                           # alpn value
     \x02                                               # alpn length 2
     h2                                                 # alpn value
+
+
+## Failure cases
+
+In this subsection example resource records are shown which are not compliant
+with this document for various reasons explained with each example.
+
+### Mandatory key missing
+
+    example.com.   SVCB   1 foo.example.com. mandatory=key123 key456=abc
+
+### Multiple instances of the same mandatory key
+
+    example.com.   SVCB   1 foo.example.com. ( 
+                          mandatory=key123,key123 key123=abc
+                          )
 
 # Change history
 
