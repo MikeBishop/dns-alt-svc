@@ -1899,18 +1899,57 @@ backslash in two presentation formats.
 
 ## Failure cases
 
-In this subsection example resource records are shown which are not compliant
-with this document for various reasons explained with each example.
+In this subsection, example resource records are shown which are not
+compliant with this document. The various reasons for non-compliance
+are explained with each example.
 
-### Mandatory key missing
 
-    example.com.   SVCB   1 foo.example.com. mandatory=key123 key456=abc
+This example has mutilple instances of the same SvcParamKey.
 
-### Multiple instances of the same mandatory key
+    example.com.   SVCB   1 foo.example.com. (
+                           key123=abc key123=abc
+                           )
+
+The next example the SvcParams are missing the comma-separated values.
+
+    example.com.   SVCB   1 foo.example.com. (
+                           alpn port ipv4hint echconfig ipv6hint
+                           )
+
+In this record a mandatory SvcParam is missing.
+
+    example.com.   SVCB   1 foo.example.com. mandatory=key123
+
+The "mandatory" SvcParamKey should not be included in mandatory
+list ({{mandatory}}).
+
+    example.com.   SVCB   1 foo.example.com. mandatory=mandatory
+
+Here there are multiple instances of the same SvcParamKey in
+the mandatory list ({{mandatory}}).
 
     example.com.   SVCB   1 foo.example.com. ( 
                           mandatory=key123,key123 key123=abc
                           )
+
+With HTTPS records the SvcParamKeys "port" and "no-default-alpn" are
+automatically mandatory and therefore are required in the
+record ({{value-list}}).
+
+    example.com.   HTTPS   1 foo.example.com. (
+                           mandatory=key123 key123=123
+                           )
+
+
+In the last example, the automatically mandatory SvcParamKeys 
+"port" and "no-default-alpn" should not appear in the 
+mandatory list ({{mandatory}}).
+
+    example.com.   HTTPS   1 foo.example.com. (
+                           mandatory=key123,no-default-alpn,port
+                           key123=123 port=1 no-default-alpn
+                           )
+
 
 # Change history
 
