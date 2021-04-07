@@ -1904,19 +1904,24 @@ compliant with this document. The various reasons for non-compliance
 are explained with each example.
 
 
-This example has mutilple instances of the same SvcParamKey.
+This example has mutilple instances of the same
+SvcParamKey {{presentation}}.
 
     example.com.   SVCB   1 foo.example.com. (
-                           key123=abc key123=abc
+                           key123=abc key123=def
                            )
 
-The next example the SvcParams are missing the comma-separated values.
+The next example the SvcParams are missing their values.
 
     example.com.   SVCB   1 foo.example.com. (
                            alpn port ipv4hint echconfig ipv6hint
                            )
 
-In this record a mandatory SvcParam is missing.
+The "no-default-alpn" SvcParamKey value must be empty ({{alpn-key}}).
+
+    example.com.   SVCB   1 foo.example.com. no-default-alpn=abc
+
+In this record a mandatory SvcParam is missing ({{mandatory}}).
 
     example.com.   SVCB   1 foo.example.com. mandatory=key123
 
