@@ -1911,11 +1911,15 @@ SvcParamKey {{presentation}}.
                            key123=abc key123=def
                            )
 
-The next example the SvcParams are missing their values.
+In the next examples the SvcParamKeys are missing their values.
 
-    example.com.   SVCB   1 foo.example.com. (
-                           alpn port ipv4hint echconfig ipv6hint
-                           )
+    example.com.   SVCB   1 foo.example.com. mandatory
+    example.com.   SVCB   1 foo.example.com. alpn
+    example.com.   SVCB   1 foo.example.com. port
+    example.com.   SVCB   1 foo.example.com. ipv4hint
+    example.com.   SVCB   1 foo.example.com. echconfig
+    example.com.   SVCB   1 foo.example.com. ipv6hint
+    example.com.   SVCB   1 foo.example.com. keyXXX
 
 The "no-default-alpn" SvcParamKey value MUST be empty ({{alpn-key}}).
 
