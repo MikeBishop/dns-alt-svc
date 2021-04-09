@@ -1704,7 +1704,7 @@ reduce implementation complexity.
 
 # Test vectors
 These test vectors only contain the RDATA portion of SVCB/HTTPS records in
-presentation format, generic format ({{!RFC5397}}) and wire format. The wire
+presentation format, generic format ({{!RFC3597}}) and wire format. The wire
 format uses hexadecimal (\xNN) for each non-ascii byte. As the wireformat is
 long, it is broken into several lines.
 
