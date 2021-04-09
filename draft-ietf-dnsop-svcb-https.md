@@ -765,8 +765,8 @@ empty.  When "no-default-alpn" is specified in an RR,
 "alpn" must also be specified in order for the RR 
 to be "self-consistent" ({{service-mode}}).
 
-Each scheme that uses this SvcParamKey defines a
-"default set" of supported ALPNs, which SHOULD NOT
+Each scheme that uses this SvcParamKey defines a "default set" of ALPNs
+that are supported by nearly all clients and servers, which MAY
 be empty.  To determine the set of protocol suites supported by an
 endpoint (the "SVCB ALPN set"), the client adds the default set to
 the list of `alpn-id`s unless the
