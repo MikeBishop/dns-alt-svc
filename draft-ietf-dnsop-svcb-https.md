@@ -679,6 +679,7 @@ SHOULD include the same ECS option in SVCB queries as in A/AAAA queries.
 
 According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
+when processing a response whose QTYPE is SVCB-compatible,
 resolvers SHOULD treat any records in the Additional section as having
 SOURCE PREFIX-LENGTH zero and SCOPE PREFIX-LENGTH as specified
 in the ECS option.  Authoritative servers MUST omit such records if they are
