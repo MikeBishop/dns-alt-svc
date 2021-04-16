@@ -597,13 +597,15 @@ Providing the proxy with the final TargetName has several benefits:
 
 # DNS Server Behavior {#server-behavior}
 
-## Authoritative servers
+## Authoritative servers {#authoritative-behavior}
 
 When replying to a SVCB query, authoritative DNS servers SHOULD return
-A, AAAA, and SVCB records in the Additional Section for any
-in-bailiwick TargetNames.  If the zone is signed, the server SHOULD also
+A, AAAA, and SVCB records in the Additional Section for any TargetNames
+that are in the zone.  If the zone is signed, the server SHOULD also
 include positive or negative DNSSEC responses for these records in the Additional
 section.
+
+See {{ecs}} for exceptions.
 
 ## Recursive resolvers {#recursive-behavior}
 
@@ -661,6 +663,35 @@ each RRSet in the Additional section with the same DNSSEC-related records
 that they would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC,
 NSEC3).
 
+According to Section 5.4.1 of {{!RFC2181}}, "Unauthenticated RRs received
+and cached from ... the additional data section ... should not be cached in
+such a way that they would ever be returned as answers to a received query.
+They may be returned as additional information where appropriate.".
+Recursive resolvers therefore MAY cache records from the Additional section
+for use in populating Additional section responses, and MAY cache them
+for general use if they are authenticated by DNSSEC.
+
+## EDNS Client Subnet (ECS) {#ecs}
+
+The EDNS Client Subnet option (ECS, {{!RFC7871}}) allows recursive
+resolvers to request IP addresses that are suitable for a particular client
+IP range.  SVCB records may contain IP addresses (in ipv*hint SvcParams),
+or direct users to a subnet-specific TargetName, so recursive resolvers
+SHOULD include the same ECS option in SVCB queries as in A/AAAA queries.
+
+According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
+Additional section\] MUST NOT be tied to a network".  Accordingly,
+when processing a response whose QTYPE is SVCB-compatible,
+resolvers SHOULD treat any records in the Additional section as having
+SOURCE PREFIX-LENGTH zero and SCOPE PREFIX-LENGTH as specified
+in the ECS option.  Authoritative servers MUST omit such records if they are
+not suitable for use by any stub resolvers that set SOURCE PREFIX-LENGTH to
+zero.  This will cause the resolver to perform a followup query that can
+receive properly tailored ECS.  (This is similar to the usage of CNAME with
+ECS discussed in {{!RFC7871}} Section 7.2.1.)
+
+Authoritative servers that omit Additional records can avoid the added
+latency of a followup query by following the advice in {{zone-performance}}.
 
 # Performance optimizations {#optimizations}
 
