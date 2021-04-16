@@ -649,9 +649,11 @@ See {{incomplete-response}} for possible optimizations of this procedure.
 
 ## General requirements
 
-Recursive resolvers SHOULD treat the SvcParams portion of the SVCB RR
-as opaque and SHOULD NOT try to alter their behavior based
-on its contents.
+Recursive resolvers MUST be able to convey SVCB records with unrecognized
+SvcParamKeys or malformed SvcParamValues.  Resolvers MAY treat the entire
+SvcParams portion of the record as opaque.  No part of this specification requires
+recursive resolvers to alter their behavior based on its contents, even if the contents
+are invalid.
 
 When responding to a query that includes the DNSSEC OK bit ({{!RFC3225}}),
 DNSSEC-capable recursive and authoritative DNS servers MUST accompany
