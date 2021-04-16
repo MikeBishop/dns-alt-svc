@@ -1519,8 +1519,9 @@ be populated with the registrations below:
 | 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             |
 | 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    |
 | 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} |
-| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     |
+| 5           | N/A             | Reserved (known colliding use)  | Same as "ech", formerly "echconfig"      |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} |
+| 7           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     |
 | 65280-65534 | N/A             | Private Use                     | (This document)                          |
 | 65535       | invalid         | Reserved ("Invalid key")        | (This document)                          |
 
