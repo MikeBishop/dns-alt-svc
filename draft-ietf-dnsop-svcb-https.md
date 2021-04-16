@@ -1221,7 +1221,7 @@ ECH configuration).  For https://simple.example:8443, the record would be:
 
     _8443._https 7200 IN HTTPS 1 . alpn=h3
 
-These records also tell clients to replace the scheme with "https" when
+These records also respectively tell clients to replace the scheme with "https" when
 loading http://simple.example or http://simple.example:8443.
 
 ### Apex aliasing
