@@ -1214,12 +1214,15 @@ The domain owner could add this record:
 
     @ 7200 IN HTTPS 1 . alpn=h3
 
-to indicate that https://simple.example uses HTTPS, and supports QUIC
+to indicate that https://simple.example supports QUIC
 in addition to HTTPS over TCP (an implicit default).
 The record could also include other information (e.g. non-standard port,
 ECH configuration).  For https://simple.example:8443, the record would be:
 
     _8443._https 7200 IN HTTPS 1 . alpn=h3
+
+These records also tell clients to replace the scheme with "https" when
+loading http://simple.example or http://simple.example:8443.
 
 ### Apex aliasing
 
