@@ -578,8 +578,8 @@ SVCB-optional.
 
 If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the smallest-SvcPriority
-option that is compatible with the client and the proxy.  The client
-SHOULD provide the final TargetName and port to the
+option that is compatible with the client and the proxy.  When connecting
+using a SVCB record, clients MUST provide the final TargetName and port to the
 proxy, which will perform any required A and AAAA lookups.
 
 Providing the proxy with the final TargetName has several benefits:
@@ -597,13 +597,15 @@ Providing the proxy with the final TargetName has several benefits:
 
 # DNS Server Behavior {#server-behavior}
 
-## Authoritative servers
+## Authoritative servers {#authoritative-behavior}
 
 When replying to a SVCB query, authoritative DNS servers SHOULD return
-A, AAAA, and SVCB records in the Additional Section for any
-in-bailiwick TargetNames.  If the zone is signed, the server SHOULD also
+A, AAAA, and SVCB records in the Additional Section for any TargetNames
+that are in the zone.  If the zone is signed, the server SHOULD also
 include positive or negative DNSSEC responses for these records in the Additional
 section.
+
+See {{ecs}} for exceptions.
 
 ## Recursive resolvers {#recursive-behavior}
 
@@ -649,9 +651,11 @@ See {{incomplete-response}} for possible optimizations of this procedure.
 
 ## General requirements
 
-Recursive resolvers SHOULD treat the SvcParams portion of the SVCB RR
-as opaque and SHOULD NOT try to alter their behavior based
-on its contents.
+Recursive resolvers MUST be able to convey SVCB records with unrecognized
+SvcParamKeys or malformed SvcParamValues.  Resolvers MAY treat the entire
+SvcParams portion of the record as opaque.  No part of this specification requires
+recursive resolvers to alter their behavior based on its contents, even if the contents
+are invalid.
 
 When responding to a query that includes the DNSSEC OK bit ({{!RFC3225}}),
 DNSSEC-capable recursive and authoritative DNS servers MUST accompany
@@ -659,6 +663,35 @@ each RRSet in the Additional section with the same DNSSEC-related records
 that they would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC,
 NSEC3).
 
+According to Section 5.4.1 of {{!RFC2181}}, "Unauthenticated RRs received
+and cached from ... the additional data section ... should not be cached in
+such a way that they would ever be returned as answers to a received query.
+They may be returned as additional information where appropriate.".
+Recursive resolvers therefore MAY cache records from the Additional section
+for use in populating Additional section responses, and MAY cache them
+for general use if they are authenticated by DNSSEC.
+
+## EDNS Client Subnet (ECS) {#ecs}
+
+The EDNS Client Subnet option (ECS, {{!RFC7871}}) allows recursive
+resolvers to request IP addresses that are suitable for a particular client
+IP range.  SVCB records may contain IP addresses (in ipv*hint SvcParams),
+or direct users to a subnet-specific TargetName, so recursive resolvers
+SHOULD include the same ECS option in SVCB queries as in A/AAAA queries.
+
+According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
+Additional section\] MUST NOT be tied to a network".  Accordingly,
+when processing a response whose QTYPE is SVCB-compatible,
+resolvers SHOULD treat any records in the Additional section as having
+SOURCE PREFIX-LENGTH zero and SCOPE PREFIX-LENGTH as specified
+in the ECS option.  Authoritative servers MUST omit such records if they are
+not suitable for use by any stub resolvers that set SOURCE PREFIX-LENGTH to
+zero.  This will cause the resolver to perform a followup query that can
+receive properly tailored ECS.  (This is similar to the usage of CNAME with
+ECS discussed in {{!RFC7871}} Section 7.2.1.)
+
+Authoritative servers that omit Additional records can avoid the added
+latency of a followup query by following the advice in {{zone-performance}}.
 
 # Performance optimizations {#optimizations}
 
@@ -765,8 +798,8 @@ empty.  When "no-default-alpn" is specified in an RR,
 "alpn" must also be specified in order for the RR 
 to be "self-consistent" ({{service-mode}}).
 
-Each scheme that uses this SvcParamKey defines a
-"default set" of supported ALPNs, which SHOULD NOT
+Each scheme that uses this SvcParamKey defines a "default set" of ALPNs
+that are supported by nearly all clients and servers, which MAY
 be empty.  To determine the set of protocol suites supported by an
 endpoint (the "SVCB ALPN set"), the client adds the default set to
 the list of `alpn-id`s unless the
@@ -1066,7 +1099,7 @@ to an Alt-Svc hostname (typically A and/or AAAA only).
 
 Clients MUST NOT use an HTTPS RR response unless the
 client supports TLS Server Name Indication (SNI) and
-indicate the origin name when negotiating TLS.
+indicates the origin name when negotiating TLS.
 This supports the conservation of IP addresses.
 
 Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate
@@ -1212,12 +1245,17 @@ Consider a simple zone of the form:
 
 The domain owner could add this record:
 
-    simple.example. 7200 IN HTTPS 1 . alpn=h3
+    @ 7200 IN HTTPS 1 . alpn=h3
 
-to indicate that simple.example uses HTTPS, and supports QUIC
+to indicate that https://simple.example supports QUIC
 in addition to HTTPS over TCP (an implicit default).
-The record could also include other information
-(e.g. non-standard port, ECH configuration).
+The record could also include other information (e.g. non-standard port,
+ECH configuration).  For https://simple.example:8443, the record would be:
+
+    _8443._https 7200 IN HTTPS 1 . alpn=h3
+
+These records also respectively tell clients to replace the scheme with "https" when
+loading http://simple.example or http://simple.example:8443.
 
 ### Apex aliasing
 
@@ -1495,7 +1533,7 @@ A registration MUST include the following fields:
 * Format Reference: pointer to specification text
 
 The characters in the registered Name MUST be lower-case alphanumeric or "-"
-({{presentation}}) and it MUST NOT start with "key".
+({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
 Entries in this registry are subject to a First Come First Served registration
 policy ({{!RFC8126}}, Section 4.6).  The Format Reference MUST specify
@@ -1522,7 +1560,7 @@ be populated with the registrations below:
 | 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} |
 | 65280-65534 | N/A             | Private Use                     | (This document)                          |
-| 65535       | invalid         | Reserved ("Invalid key")        | (This document)                          |
+| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          |
 
 ## Registry updates {#registry-updates}
 
@@ -1702,8 +1740,251 @@ the authoritative.  Thus, splitting the RR type would double, or in
 some cases triple, the load on clients and servers, and would not
 reduce implementation complexity.
 
+# Test vectors
+These test vectors only contain the RDATA portion of SVCB/HTTPS records in
+presentation format, generic format ({{!RFC3597}}) and wire format. The wire
+format uses hexadecimal (\xNN) for each non-ascii byte. As the wireformat is
+long, it is broken into several lines.
+
+## AliasForm
+
+    0 foo.example.com.
+
+    \# 19 (
+    00 00                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
+    )
+
+    \x00\x00                                           # priority
+    \x03foo\x07example\x03com\x00                      # target
+
+## ServiceForm
+The first form is the simple "use the ownername".
+
+    1 .
+
+    \# 3 (
+    00 01      ; priority
+    00         ; target (root label)
+    )
+
+    \x00\x01   # priority
+    \x00       # target, root label
+
+This vector only has a port.
+
+    16 foo.example.com. port=53
+
+    \# 25 (
+    00 10                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
+    00 03                                              ; key 3
+    00 02                                              ; length 2
+    00 35                                              ; value
+    )
+
+    \x00\x10                                           # priority
+    \x03foo\x07example\x03com\x00                      # target
+    \x00\x03                                           # key 3
+    \x00\x02                                           # length: 2 bytes
+    \x00\x35                                           # value
+
+This example has a key that is not registered, its value is unquoted.
+
+    1 foo.example.com. key667=hello
+
+    \# 28 (
+    00 01                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
+    02 9b                                              ; key 667
+    00 05                                              ; length 5
+    68 65 6c 6c 6f                                     ; value
+    )
+
+    \x00\x01                                           # priority
+    \x03foo\x07example\x03com\x00                      # target
+    \x02\x9b                                           # key 667
+    \x00\x05                                           # length 5
+    hello                                              # value
+
+This example has a key that is not registered, its value is quoted and contains
+a decimal-escaped character.
+
+    1 foo.example.com. key667="hello\210qoo"
+
+    \# 32 (
+    00 01                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
+    02 9b                                              ; key 667
+    00 09                                              ; length 9
+    68 65 6c 6c 6f d2 71 6f 6f                         ; value
+    )
+
+    \x00\x01                                           # priority
+    \x03foo\x07example\x03com\x00                      # target
+    \x02\x9b                                           # key 667
+    \x00\x09                                           # length 9
+    hello\xd2qoo                                       # value
+
+Here, two IPv6 hints are quoted in the presentation format.
+
+    1 foo.example.com. ipv6hint="2001:db8::1,2001:db8::53:1"
+
+    \# 55 (
+    00 01                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 ; target
+    00 06                                              ; key 6
+    00 20                                              ; length 32
+    20 01 0d b8 00 00 00 00 00 00 00 00 00 00 00 01    ; first address
+    20 01 0d b8 00 00 00 00 00 00 00 00 00 53 00 01    ; second address
+    )
+
+    \x00\x01                                           # priority
+    \x03foo\x07example\x03com\x00                      # target
+    \x00\x06                                           # key 6
+    \x00\x20                                           # length 32
+    \x20\x01\x0d\xb8\x00\x00\x00\x00
+         \x00\x00\x00\x00\x00\x00\x00\x01              # first address
+    \x20\x01\x0d\xb8\x00\x00\x00\x00
+         \x00\x00\x00\x00\x00\x53\x00\x01              # second address
+
+
+This example shows a single IPv6 hint in IPv4 mapped IPv6 presentation
+format.
+
+    1 example.com. ipv6hint="2001:db8:ffff:ffff:ffff:ffff:198.51.100.100"
+
+    \# 35 (
+    00 01                                              ; priority
+    07 65 78 61 6d 70 6c 65 03 63 6f 6d 00             ; target
+    00 06                                              ; key 6
+    00 10                                              ; length 16
+    20 01 0d b8 ff ff ff ff ff ff ff ff c6 33 64 64    ; address
+    )
+
+    \x00\x01                                           # priority
+    \x07example\x03com\x00                             # target
+    \x00\x06                                           # key 6
+    \x00\x10                                           # length 16
+    \x20\x01\x0d\xb8\xff\xff\xff\xff
+         \xff\xff\xff\xff\xc6\x33\x64\x64              # address
+
+In the next vector, neither the SvcParamValues nor the mandatory keys are 
+sorted in presentation format, but are correctly sorted in the wire-format.
+
+    16 foo.example.org. (alpn=h2,h3-19 mandatory=ipv4hint,alpn
+                        ipv4hint=192.0.2.1)
+
+    \# 48 (
+    00 10                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 6f 72 67 00 ; target
+    00 00                                              ; key 0
+    00 04                                              ; param length 4
+    00 01                                              ; value: key 1
+    00 04                                              ; value: key 4
+    00 01                                              ; key 1
+    00 09                                              ; param length 9
+    02                                                 ; alpn length 2
+    68 32                                              ; alpn value
+    05                                                 ; alpn length 5
+    68 33 2d 31 39                                     ; alpn value
+    00 04                                              ; key 4
+    00 04                                              ; param length 4
+    c0 00 02 01                                        ; param value
+    )
+
+    \x00\x10                                           # priority
+    \x03foo\x07example\x03org\x00                      # target
+    \x00\x00                                           # key 0
+    \x00\x02                                           # param length 2
+    \x00\x01                                           # value: key 1
+    \x00\x01                                           # key 1
+    \x00\x09                                           # param length 9
+    \x02                                               # alpn length 2
+    h2                                                 # alpn value
+    \x05                                               # alpn length 5
+    h3-19                                              # alpn value
+    \x00\x04                                           # key 4
+    \x00\x04                                           # param length 4
+    \xc0\x00\x02\x01                                   # param value
+
+This last vector has an alpn value with an escaped comma and an escaped
+backslash in two presentation formats.
+
+    16 foo.example.org. alpn="f\\\\oo\\,bar,h2"
+    16 foo.example.org. alpn=f\\\092oo\092,bar,h2
+
+    \# 35 (
+    00 10                                              ; priority
+    03 66 6f 6f 07 65 78 61 6d 70 6c 65 03 6f 72 67 00 ; target
+    00 01                                              ; key 1
+    00 0c                                              ; param length 12
+    08                                                 ; alpn length 8
+    66 5c 6f 6f 2c 62 61 72                            ; alpn value
+    02                                                 ; alpn length 2
+    68 32                                              ; alpn value
+    )
+
+    \x00\x10                                           # priority
+    \x03foo\x07example\x03org\x00                      # target
+    \x00\x01                                           # key 1
+    \x00\x0c                                           # param length 12
+    \x08                                               # alpn length 8
+    f\oo,bar                                           # alpn value
+    \x02                                               # alpn length 2
+    h2                                                 # alpn value
+
+
+## Failure cases
+
+In this subsection, example resource records are shown which are not
+compliant with this document. The various reasons for non-compliance
+are explained with each example.
+
+
+This example has multiple instances of the same
+SvcParamKey {{presentation}}.
+
+    example.com.   SVCB   1 foo.example.com. (
+                           key123=abc key123=def
+                           )
+
+In the next examples the SvcParamKeys are missing their values.
+
+    example.com.   SVCB   1 foo.example.com. mandatory
+    example.com.   SVCB   1 foo.example.com. alpn
+    example.com.   SVCB   1 foo.example.com. port
+    example.com.   SVCB   1 foo.example.com. ipv4hint
+    example.com.   SVCB   1 foo.example.com. ipv6hint
+
+The "no-default-alpn" SvcParamKey value MUST be empty ({{alpn-key}}).
+
+    example.com.   SVCB   1 foo.example.com. no-default-alpn=abc
+
+In this record a mandatory SvcParam is missing ({{mandatory}}).
+
+    example.com.   SVCB   1 foo.example.com. mandatory=key123
+
+The "mandatory" SvcParamKey MUST not be included in mandatory
+list ({{mandatory}}).
+
+    example.com.   SVCB   1 foo.example.com. mandatory=mandatory
+
+Here there are multiple instances of the same SvcParamKey in
+the mandatory list ({{mandatory}}).
+
+    example.com.   SVCB   1 foo.example.com. ( 
+                          mandatory=key123,key123 key123=abc
+                          )
 
 # Change history
+
+* draft-ietf-dnsop-svcb-https-04
+    * Simplify the IANA instructions (pure First Come First Served)
+    * Recommend against publishing chains of >8 aliases
+    * Clarify requirements for using SVCB with a transport proxy
+    * Adjust guidance for Port Prefix Naming
+    * Minor editorial updates
 
 * draft-ietf-dnsop-svcb-https-03
     * Simplified escaping of comma-separated values
