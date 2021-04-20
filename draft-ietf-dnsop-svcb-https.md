@@ -188,7 +188,7 @@ intended destination to all entities along the network path.
 ## Parameter for Encrypted ClientHello
 
 This document also defines a parameter for Encrypted ClientHello {{!ECH}}
-keys. See {{echconfig}}.
+keys. See {{ech-param}}.
 
 ## Terminology
 
@@ -356,7 +356,7 @@ to indicate that "foo://api.example.com:8443" is aliased to "svc4.example.net".
 The owner of example.net, in turn, could publish this record:
 
     svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
-        alpn="bar" port="8004" echconfig="..." )
+        alpn="bar" port="8004" ech="..." )
 
 to indicate that these services are served on port number 8004,
 which supports the protocol "bar" and its associated transport in
@@ -487,7 +487,7 @@ is the effective TargetName:
 
     example.com.      7200  IN HTTPS 0 svc.example.net.
     svc.example.net.  7200  IN CNAME svc2.example.net.
-    svc2.example.net. 7200  IN HTTPS 1 . port=8002 echconfig="..."
+    svc2.example.net. 7200  IN HTTPS 1 . port=8002 ech="..."
     svc2.example.net. 300   IN A     192.0.2.2
     svc2.example.net. 300   IN AAAA  2001:db8::2
 
@@ -587,7 +587,7 @@ Providing the proxy with the final TargetName has several benefits:
 * It allows the client to use the SvcParams, if present, which is
   only usable with a specific TargetName.  The SvcParams may
   include information that enhances performance (e.g. alpn) and privacy
-  (e.g. echconfig).
+  (e.g. ech).
 
 * It allows the service to delegate the apex domain.
 
@@ -715,7 +715,7 @@ If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
 until it arrives.  For example, a TLS ClientHello can be altered by the
-"echconfig" value of a SVCB response ({{svcparamkeys-echconfig}}).  Clients
+"ech" value of a SVCB response ({{svcparamkeys-ech}}).  Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{HappyEyeballsV2}}.
@@ -728,12 +728,12 @@ For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
     _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net. (
-        echconfig="111..." ipv6hint=2001:db8::1 port=1234 )
+        ech="111..." ipv6hint=2001:db8::1 port=1234 )
                                    SVCB 2 svc2.example.net. (
-        echconfig="222..." ipv6hint=2001:db8::2 port=1234 )
+        ech="222..." ipv6hint=2001:db8::2 port=1234 )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
-it MAY proceed with TLS on that connection using `echconfig="222..."`, even
+it MAY proceed with TLS on that connection using `ech="222..."`, even
 though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
@@ -868,13 +868,13 @@ endpoint, changing the port number might cause that client to lose access to
 the service, so operators should exercise caution when using this SvcParamKey
 to specify a non-default port.
 
-## "echconfig" {#svcparamkeys-echconfig}
+## "ech" {#svcparamkeys-ech}
 
-The SvcParamKey to enable Encrypted ClientHello (ECH) is "echconfig".  Its
-value is defined in {{echconfig}}.  It is applicable to most TLS-based
+The SvcParamKey to enable Encrypted ClientHello (ECH) is "ech".  Its
+value is defined in {{ech-param}}.  It is applicable to most TLS-based
 protocols.
 
-When publishing a record containing an "echconfig" parameter, the publisher
+When publishing a record containing an "ech" parameter, the publisher
 MUST ensure that all IP addresses of TargetName correspond to servers
 that have access to the corresponding private key or are authoritative
 for the public name. (See Section 7.2.2 of {{!ECH}} for more
@@ -953,7 +953,7 @@ SvcParamValue MUST NOT contain escape sequences.
 
 For example, the following is a valid list of SvcParams:
 
-    echconfig=... key65333=ex1 key65444=ex2 mandatory=key65444,echconfig
+    ech=... key65333=ex1 key65444=ex2 mandatory=key65444,ech
 
 In wire format, the keys are represented by their numeric values in
 network byte order, concatenated in ascending order.
@@ -1153,9 +1153,9 @@ for the `requestURL`.
 An HTTP-based protocol MAY define its own SVCB mapping.  Such mappings MAY
 be defined to take precedence over HTTPS RRs.
 
-# SVCB/HTTPS RR parameter for ECH configuration {#echconfig}
+# SVCB/HTTPS RR parameter for ECH configuration {#ech-param}
 
-The SVCB "echconfig" parameter is defined for
+The SVCB "ech" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigList
 {{!ECH}}, including the redundant length prefix.  In presentation format,
@@ -1179,17 +1179,17 @@ to fall back to a direct connection if all SVCB options fail.  This behavior is
 not suitable for ECH, because fallback would negate the privacy benefits of
 ECH.  Accordingly, ECH-capable SVCB-optional clients MUST switch to
 SVCB-reliant connection establishment if SVCB resolution succeeded (following
-{{client-behavior}}) and all alternative endpoints have an "echconfig" key.
+{{client-behavior}}) and all alternative endpoints have an "ech" key.
 
 As a latency optimization, clients MAY prefetch DNS records that will only be used
 in SVCB-optional mode.
 
 ## Deployment considerations
 
-An HTTPS RRSet containing some RRs with "echconfig" and some without is
+An HTTPS RRSet containing some RRs with "ech" and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-"echconfig" as more preferred (i.e. smaller SvcPriority) than those
+"ech" as more preferred (i.e. smaller SvcPriority) than those
 without, in order to maximize the likelihood that ECH will be used in the
 absence of an active adversary.
 
@@ -1290,8 +1290,8 @@ it has deployed HTTP/3 on a new server pool with a different
 configuration.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPS 1 h3pool alpn=h2,h3 echconfig="123..."
-                  HTTPS 2 .      alpn=h2 echconfig="abc..."
+    pool  7200 IN HTTPS 1 h3pool alpn=h2,h3 ech="123..."
+                  HTTPS 2 .      alpn=h2 ech="abc..."
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
     h3pool 300 IN A        192.0.2.3
@@ -1344,8 +1344,8 @@ or due to logic within the authoritative DNS server:
      ; path use these records.
      ; This CDN uses a different alternative service for HTTP/3.
      $ORIGIN svc1.example.  ; domain for CDN 1
-     cdn1     1800 IN HTTPS 1 h3pool alpn=h3 echconfig="123..."
-                      HTTPS 2 . alpn=h2 echconfig="123..."
+     cdn1     1800 IN HTTPS 1 h3pool alpn=h3 ech="123..."
+                      HTTPS 2 . alpn=h2 ech="123..."
                       A    192.0.2.2
                       AAAA 2001:db8:192::4
      h3pool 300 IN A 192.0.2.3
@@ -1355,7 +1355,7 @@ or due to logic within the authoritative DNS server:
      ; path use these records.
      ; Note that this CDN only supports HTTP/2.
      $ORIGIN svc2.example. ; domain operated by CDN 2     
-     customer 300 IN HTTPS 1 . alpn=h2 echconfig="xyz..."
+     customer 300 IN HTTPS 1 . alpn=h2 ech="xyz..."
                60 IN A    198.51.100.2
                      A    198.51.100.3
                      A    198.51.100.4
@@ -1371,7 +1371,7 @@ or due to logic within the authoritative DNS server:
                      AAAA 2001:db8:113::8
 
 Note that in the above example, the different CDNs have different
-echconfig and different capabilities, but clients will use HTTPS RRs
+ECH configurations and different capabilities, but clients will use HTTPS RRs
 as a bound-together unit.
 
 Domain owners should be cautious when using a multi-CDN configuration, as it
@@ -1395,7 +1395,7 @@ introduces a number of complexities highlighted by this example:
 
 * If not all CDNs publish HTTPS records, clients will sometimes
   receive NODATA for HTTPS queries (as with cdn3.svc3.example above),
-  and thus no echconfig, but could receive A/AAAA records from
+  and thus no "ech" SvcParam, but could receive A/AAAA records from
   a different CDN which does support ECH.  Clients will be unable
   to use ECH in this case.
 
@@ -1453,8 +1453,8 @@ security benefits.  A hostile recursive resolver can always deny service to
 SVCB queries, but network intermediaries can often prevent resolution as well,
 even when the client and recursive resolver validate DNSSEC and use a secure
 transport.  These downgrade attacks can prevent the HTTPS upgrade provided by
-the HTTPS RR ({{hsts}}), and disable the encryption enabled by the echconfig
-SvcParamKey ({{echconfig}}).  To prevent downgrades, {{client-failures}}
+the HTTPS RR ({{hsts}}), and disable the encryption enabled by the "ech"
+SvcParamKey ({{ech-param}}).  To prevent downgrades, {{client-failures}}
 recommends that clients abandon the connection attempt when such an attack is
 detected.
 
@@ -1550,17 +1550,17 @@ zone files can be made interoperable.
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| Number      | Name            | Meaning                         | Format Reference                           |
-| ----------- | ------          | ----------------------          | ------------------------------------------ |
-| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}              |
-| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}               |
-| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}               |
-| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}      |
-| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}}   |
-| 5           | echconfig       | Encrypted ClientHello info      | (This document) {{svcparamkeys-echconfig}} |
-| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}}   |
-| 65280-65534 | N/A             | Private Use                     | (This document)                            |
-| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                            |
+| Number      | Name            | Meaning                         | Format Reference                         |
+| ----------- | ------          | ----------------------          | ---------------------------------------- |
+| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}            |
+| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}             |
+| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             |
+| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    |
+| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} |
+| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     |
+| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} |
+| 65280-65534 | N/A             | Private Use                     | (This document)                          |
+| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          |
 
 ## Registry updates {#registry-updates}
 
