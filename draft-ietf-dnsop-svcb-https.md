@@ -1594,6 +1594,7 @@ Tim Wicinski, Tommy Pauly, Chris Wood, David Benjamin,
 Mark Andrews, Emily Stark, Eric Orth, Kyle Rose,
 Craig Taylor, Dan McArdle, Brian Dickson,
 Willem Toorop, Pieter Lexis, Puneet Sood,
+Olivier Poitrey, Mashooq Muhaimen,
 Tom Carpay, and many others for their feedback
 and suggestions on this draft.
 
