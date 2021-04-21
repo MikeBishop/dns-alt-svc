@@ -1979,6 +1979,13 @@ the mandatory list ({{mandatory}}).
 
 # Change history
 
+* draft-ietf-dnsop-svcb-https-05
+    * Specify interaction with EDNS Client Subnet and Additional section caching
+    * Rename "echconfig" to "ech"
+    * Add a suite of test vectors (both valid and invalid) and more examples
+    * Clarify requirements for resolvers' (non-)use of SvcParams
+    * Clarify guidance regarding default ALPN values
+
 * draft-ietf-dnsop-svcb-https-04
     * Simplify the IANA instructions (pure First Come First Served)
     * Recommend against publishing chains of >8 aliases
