@@ -655,9 +655,10 @@ Recursive resolvers MUST be able to convey SVCB records with unrecognized
 SvcParamKeys, and MAY treat the entire
 SvcParams portion of the record as opaque.  No part of this specification requires
 recursive resolvers to alter their behavior based on its contents, even if the contents
-are invalid.  To ensure compatibility with complex SvcParam specifications,
-recursive resolvers MAY validate the values of recognized SvcParamKeys, but
-MUST NOT reject the record on this basis unless a value is obviously invalid.
+are invalid.  Recursive resolvers MAY validate the values of recognized
+SvcParamKeys and reject records containing invalid values.  However, for
+complex value types whose interpretation might differ between implementations
+(e.g. URIs), resolvers SHOULD limit validation to basic sanity checks.
 
 When responding to a query that includes the DNSSEC OK bit ({{!RFC3225}}),
 DNSSEC-capable recursive and authoritative DNS servers MUST accompany
