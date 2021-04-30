@@ -1896,8 +1896,9 @@ sorted in presentation format, but are correctly sorted in the wire-format.
     \x00\x10                                           # priority
     \x03foo\x07example\x03org\x00                      # target
     \x00\x00                                           # key 0
-    \x00\x02                                           # param length 2
+    \x00\x04                                           # param length 4
     \x00\x01                                           # value: key 1
+    \x00\x04                                           # value: key 4
     \x00\x01                                           # key 1
     \x00\x09                                           # param length 9
     \x02                                               # alpn length 2
