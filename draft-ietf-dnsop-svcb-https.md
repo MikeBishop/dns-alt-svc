@@ -1748,7 +1748,7 @@ long, it is broken into several lines.
 
 ## AliasForm
 
-    0 foo.example.com.
+    example.com.   HTTPS   0 foo.example.com.
 
     \# 19 (
     00 00                                              ; priority
@@ -1761,7 +1761,7 @@ long, it is broken into several lines.
 ## ServiceForm
 The first form is the simple "use the ownername".
 
-    1 .
+    example.com.   SVCB   1 .
 
     \# 3 (
     00 01      ; priority
@@ -1773,7 +1773,7 @@ The first form is the simple "use the ownername".
 
 This vector only has a port.
 
-    16 foo.example.com. port=53
+    example.com.   SVCB   16 foo.example.com. port=53
 
     \# 25 (
     00 10                                              ; priority
@@ -1791,7 +1791,7 @@ This vector only has a port.
 
 This example has a key that is not registered, its value is unquoted.
 
-    1 foo.example.com. key667=hello
+    example.com.   SVCB   1 foo.example.com. key667=hello
 
     \# 28 (
     00 01                                              ; priority
@@ -1810,7 +1810,7 @@ This example has a key that is not registered, its value is unquoted.
 This example has a key that is not registered, its value is quoted and contains
 a decimal-escaped character.
 
-    1 foo.example.com. key667="hello\210qoo"
+    example.com.   SVCB   1 foo.example.com. key667="hello\210qoo"
 
     \# 32 (
     00 01                                              ; priority
@@ -1828,7 +1828,7 @@ a decimal-escaped character.
 
 Here, two IPv6 hints are quoted in the presentation format.
 
-    1 foo.example.com. ipv6hint="2001:db8::1,2001:db8::53:1"
+    example.com.   SVCB   1 foo.example.com. ipv6hint="2001:db8::1,2001:db8::53:1"
 
     \# 55 (
     00 01                                              ; priority
@@ -1852,7 +1852,7 @@ Here, two IPv6 hints are quoted in the presentation format.
 This example shows a single IPv6 hint in IPv4-mapped IPv6 presentation
 format({{?RFC3513}}).
 
-    1 example.com. ipv6hint="::ffff:198.51.100.100"
+    example.com.   SVCB   1 example.com. ipv6hint="::ffff:198.51.100.100"
 
     \# 35 (
     00 01                                              ; priority
@@ -1872,8 +1872,10 @@ format({{?RFC3513}}).
 In the next vector, neither the SvcParamValues nor the mandatory keys are 
 sorted in presentation format, but are correctly sorted in the wire-format.
 
-    16 foo.example.org. (alpn=h2,h3-19 mandatory=ipv4hint,alpn
-                        ipv4hint=192.0.2.1)
+    example.com.   SVCB   16 foo.example.org. (
+                          alpn=h2,h3-19 mandatory=ipv4hint,alpn
+                          ipv4hint=192.0.2.1
+                          )
 
     \# 48 (
     00 10                                              ; priority
@@ -1912,8 +1914,8 @@ sorted in presentation format, but are correctly sorted in the wire-format.
 This last vector has an alpn value with an escaped comma and an escaped
 backslash in two presentation formats.
 
-    16 foo.example.org. alpn="f\\\\oo\\,bar,h2"
-    16 foo.example.org. alpn=f\\\092oo\092,bar,h2
+    example.com.   SVCB   16 foo.example.org. alpn="f\\\\oo\\,bar,h2"
+    example.com.   SVCB   16 foo.example.org. alpn=f\\\092oo\092,bar,h2
 
     \# 35 (
     00 10                                              ; priority
