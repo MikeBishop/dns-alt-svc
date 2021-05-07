@@ -1828,7 +1828,9 @@ a decimal-escaped character.
 
 Here, two IPv6 hints are quoted in the presentation format.
 
-    example.com.   SVCB   1 foo.example.com. ipv6hint="2001:db8::1,2001:db8::53:1"
+    example.com.   SVCB   1 foo.example.com. (
+                          ipv6hint="2001:db8::1,2001:db8::53:1"
+                          )
 
     \# 55 (
     00 01                                              ; priority
