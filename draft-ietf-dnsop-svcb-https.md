@@ -240,6 +240,20 @@ definition should specify both their presentation format and wire encoding
 (e.g., domain names, binary data, or numeric values). The initial SvcParamKeys
 and formats are defined in {{keys}}.
 
+Storing a key-value map within a single RR, rather than placing each key-value
+pair in a separate RR, provides the following advantages:
+
+* It enables a familiar key=value zone file syntax that matches zone authors'
+  experience with command-line arguments and other typical key-value mappings.
+* It avoids requiring zone file authors to manage inter-pair binding IDs.
+* It makes each record independently meaningful, consistent with the usual
+  convention for DNS records (c.f. SRV, MX, AAAA, etc.).
+* It saves at least 11 bytes of overhead per parameter by avoiding repetition of
+  the name, type, class, TTL, and inter-pair binding ID.
+* It provides a wire format whose structural nesting matches the logical scope
+  of each key=value pair, and avoids requiring cross-RR reconstruction of
+  bindings by the client.
+
 ## Zone file presentation format {#presentation}
 
 The presentation format of the record is:
