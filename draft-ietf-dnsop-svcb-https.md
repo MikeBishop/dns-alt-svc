@@ -786,9 +786,10 @@ ALPNs are identified by their registered "Identification Sequence"
     alpn-id = 1*255OCTET
 
 The presentation `value` SHALL be a comma-separated list ({{value-list}})
-of one or more `alpn-id`s.  So long as there are no registered protocol
-identifiers containing "," or "\\", zone file implementations MAY disallow
-these characters instead of implementing the `value-list` escaping procedure.
+of one or more `alpn-id`s.  Zone file implementations MAY disallow the
+"," and "\\" characters instead of implementing the `value-list` escaping
+procedure, relying on the opaque key format (e.g. `key1=\002h2`) in the
+event that these characters are needed.
 
 The wire format value for "alpn" consists of at least one
 `alpn-id` prefixed by its length as a single octet, and these length-value
