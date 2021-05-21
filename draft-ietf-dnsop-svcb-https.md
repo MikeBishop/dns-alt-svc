@@ -1090,10 +1090,14 @@ client connection procedure ({{client-behavior}}).
 
 Clients that implement support for ECH MUST perform the HTTPS RR query first,
 and MUST only make use of Alt-Svc when operating in SVCB-optional mode (see
-{{ech-client-behavior}}).
+{{ech-client-behavior}}).  This rule allows origins to send Alt-Svc
+advertisements (which do not currently support ECH) without compromising the
+privacy assurances of ECH configurations they have published in the DNS.
 
 This specification does not alter the DNS records used when connecting
-to an Alt-Svc hostname (typically A and/or AAAA only).
+to an Alt-Svc hostname (typically A and/or AAAA only) or the data contained
+in Alt-Svc field values.  Future specifications may enable more use of
+Alt-Svc with HTTPS RR queries and/or ECH.
 
 ## Requiring Server Name Indication
 
