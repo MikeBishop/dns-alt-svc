@@ -480,7 +480,8 @@ without the use of SVCB.
 ### ServiceMode
 
 For ServiceMode SVCB RRs, if TargetName has the value ".", then the
-owner name of this record MUST be used as the effective TargetName.
+owner name of this record, with a possible underscore prefix removed,
+MUST be used as the effective TargetName.
 
 For example, in the following example "svc2.example.net"
 is the effective TargetName:
@@ -491,7 +492,10 @@ is the effective TargetName:
     svc2.example.net. 300   IN A     192.0.2.2
     svc2.example.net. 300   IN AAAA  2001:db8::2
 
+And in the following example "ns.example.net" is the effective TargetName:
 
+    example.com.         7200  IN NS ns.example.net
+    _dns.ns.example.net. 7200  IN SVCB 1 . alpn=dot
 
 # Client behavior {#client-behavior}
 
@@ -636,7 +640,7 @@ construct the full response to the stub resolver:
       terminate.
 
 3. All the resolved SVCB records are in ServiceMode.  Resolve A and AAAA
-   queries for each TargetName (or for the owner name if TargetName
+   queries for each TargetName (or for the [modified FIXME INSERT REF] owner name if TargetName
    is "."), incorporate all the results, and terminate.
 
 In this procedure, "resolve" means the resolver's ordinary recursive
