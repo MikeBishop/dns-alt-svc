@@ -249,42 +249,41 @@ The presentation format of the record is:
 The SVCB record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
 
-SvcPriority is a number in the range 0-65535,
-TargetName is a `<domain-name>` ({{!RFC1035}} Section 5.1),
-and the SvcParams are a whitespace-separated list, with each SvcParam
+SvcPriority is an integer in the range 0-65535.
+
+TargetName is a `<domain-name>` ({{!RFC1035}} Section 5.1).
+
+SvcParams are a whitespace-separated list, with each SvcParam
 consisting of a SvcParamKey=SvcParamValue pair or a standalone SvcParamKey.
+SvcParams in MAY appear in any order, but each SvcParamKey MUST NOT appear more than once.
+
+The SvcParamKey is constructed from lower-case alphanumeric characters and "-".
 SvcParamKeys are subject to IANA control ({{svcparamregistry}}).
 
-Each SvcParamKey SHALL appear at most once in the SvcParams.
-In presentation format, SvcParamKeys are lower-case alphanumeric strings.
-Key names should contain 1-63 characters from the ranges "a"-"z", "0"-"9", and "-".
-In ABNF {{!RFC5234}},
+An unrecognized or generic SvcParamKey is represented as "keyNNNNN"
+where NNNNN is the numeric value of the key type without leading zeros.
 
-    alpha-lc      = %x61-7A   ;  a-z
-    SvcParamKey   = 1*63(alpha-lc / DIGIT / "-")
-    SvcParam      = SvcParamKey ["=" SvcParamValue]
-    SvcParamValue = char-string
-    value         = *OCTET
+The SvcParamValue is a `<character-string>` ({{!RFC1035}} Section 5.1)
+expressed in one of two ways: a quote (") delimited string,
+or a contiguous sequence of characters without interior spaces.
 
-The SvcParamValue is parsed using the
-character-string decoding algorithm ({{decoding}}), producing a `value`.
-The `value` is then validated and converted into wire-format in a manner
-specific to each key.
+Because a SvcParamValue is a text string several special encodings are
+necessary to allow arbitrary data to be included.  In particular:
 
-When the "=" is omitted, the `value` is interpreted as empty.
+\X      where X is any character other than a digit (0-9), is
+        used to quote that character so that any special meaning
+        does not apply.  For example, "\," can be used to place
+        a comma within a list element.
 
-Unrecognized keys are represented in presentation
-format as "keyNNNNN" where NNNNN is the numeric
-value of the key type without leading zeros.
-A SvcParam in this form SHALL be parsed as specified above, and
-the decoded `value` SHALL be used as its wire format encoding.
+\DDD    where each D is a digit is the octet corresponding to
+        the decimal number described by DDD.  The resulting
+        octet is assumed to be text and is not checked for
+        special meaning.
 
-For some SvcParamKeys, the `value` corresponds to a list or set of
-items.  Presentation formats for such keys SHOULD use a comma-separated list
-({{value-list}}).
+The form and content of a SvcParamValue and its conversion to wire format
+is specific to the corresponding SvcParamKey.
 
-SvcParams in presentation format MAY appear in any order, but keys MUST NOT be
-repeated.
+When the "=" is omitted, the SvcParamValue is interpreted as empty.
 
 ## RDATA wire format
 
@@ -294,7 +293,7 @@ The RDATA for the SVCB RR consists of:
   byte order.
 * the uncompressed, fully-qualified TargetName, represented as
   a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
-* the SvcParams, consuming the remainder of the record
+* the SvcParams, exactly filling the remainder of the record
   (so smaller than 65535 octets and constrained by the RDATA
   and DNS message sizes).
 
@@ -781,17 +780,16 @@ support, and this informs the underlying transport protocol used (such
 as QUIC-over-UDP or TLS-over-TCP).
 
 ALPNs are identified by their registered "Identification Sequence"
-(`alpn-id`), which is a sequence of 1-255 octets.
+(`alpn-id`), which is a sequence of 1-255 characters.
 
-    alpn-id = 1*255OCTET
-
-The presentation `value` SHALL be a comma-separated list ({{value-list}})
+The presentation SvcParamValue SHALL be a comma-separated list
 of one or more `alpn-id`s.
 
-The wire format value for "alpn" consists of at least one
-`alpn-id` prefixed by its length as a single octet, and these length-value
-pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
-fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
+The value for each list element consists of
+the wire format representation of the `alpn-id` character string
+prefixed by its length as a single octet.
+These length-value pairs are concatenated to form the wire format SvcParamValue.
+These pairs MUST exactly fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
 
 For "no-default-alpn", the presentation and wire format values MUST be
 empty.  When "no-default-alpn" is specified in an RR, 
@@ -855,10 +853,9 @@ that should be used to reach this alternative endpoint.
 If this key is not present, clients SHALL use the authority endpoint's port
 number.
 
-The presentation `value` of the SvcParamValue is a single decimal integer
-between 0 and 65535 in ASCII.  Any other `value` (e.g. an empty value)
-is a syntax error.  To enable simpler parsing, this SvcParam MUST NOT contain
-escape sequences.
+The presentation SvcParamValue is a single decimal integer between 0 and 65535.
+Any other value (e.g. an empty value) is a syntax error.
+To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
 The wire format of the SvcParamValue
 is the corresponding 2 octet numeric value in network byte order.
@@ -900,12 +897,12 @@ addresses in response to the TargetName query. Failure to use A and/or
 AAAA response addresses could negatively impact load balancing or other
 geo-aware features and thereby degrade client performance.
 
-The presentation `value` SHALL be a comma-separated list ({{value-list}})
+The presentation SvcParamValue SHALL be a comma-separated list
 of one or more IP addresses of the appropriate
-family in standard textual format {{!RFC5952}}.  To enable simpler parsing,
-this SvcParamValue MUST NOT contain escape sequences.
+family in standard textual format {{!RFC5952}}.
+To enable simpler parsing, this SvcParamValue MUST NOT contain escape sequences.
 
-The wire format for each parameter is a sequence of IP addresses in network
+The wire format SvcParamValue is a sequence of IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection, and clients SHOULD pick addresses to use in a random order.
 An empty list of addresses is invalid.
@@ -941,9 +938,9 @@ recognizes all the mandatory keys, and their values indicate that successful
 connection establishment is possible.  If the SVCB RRSet contains
 no compatible RRs, the client will generally act as if the RRSet is empty.
 
-The presentation `value` SHALL be a comma-separated list
-({{value-list}}) of one or more valid
-SvcParamKeys, either by their registered name or in the unknown-key format
+The presentation SvcParamValue SHALL be a comma-separated list
+of one or more valid SvcParamKeys,
+either by their registered name or in the generic unknown-key format
 ({{presentation}}).  Keys MAY appear in any order, but MUST NOT appear more
 than once.  For self-consistency ({{service-mode}}), listed keys MUST also
 appear in the SvcParams.
@@ -955,11 +952,11 @@ For example, the following is a valid list of SvcParams:
 
     ech=... key65333=ex1 key65444=ex2 mandatory=key65444,ech
 
-In wire format, the keys are represented by their numeric values in
-network byte order, concatenated in ascending order.
+The wire format SvcParamValue is the ascending sequence
+of 16-bit key numbers in network byte order.
 
 This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
-own value-list.  Other automatically mandatory keys SHOULD NOT appear in the
+own SvcParamValue.  Other automatically mandatory keys SHOULD NOT appear in the
 list either.  (Including them wastes space and otherwise has no effect.)
 
 # Using SVCB with HTTPS and HTTP {#https}
@@ -1157,11 +1154,14 @@ be defined to take precedence over HTTPS RRs.
 
 The SVCB "ech" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
-In wire format, the value of the parameter is an ECHConfigList
-{{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is a single ECHConfigList encoded in Base64 {{!base64=RFC4648}}.
+
+The presentation format SvcParamValue is a single ECHConfigList
+encoded in Base64 {{!base64=RFC4648}}.
 Base64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
+
+The wire format SvcParamValue is the ECHConfigList {{!ECH}},
+including the redundant length prefix.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
 and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
@@ -1598,60 +1598,6 @@ and suggestions on this draft.
 
 --- back
 
-# Decoding text in zone files {#decoding}
-
-DNS zone files are capable of representing arbitrary octet sequences in
-basic ASCII text, using various delimiters and encodings.  The algorithm
-for decoding these character-strings is defined in Section 5.1 of {{RFC1035}}.
-Here we summarize the allowed input to that algorithm, using ABNF:
-
-    ; non-special is VCHAR minus DQUOTE, ";", "(", ")", and "\".
-    non-special = %x21 / %x23-27 / %x2A-3A / %x3C-5B / %x5D-7E
-    ; non-digit is VCHAR minus DIGIT
-    non-digit   = %x21-2F / %x3A-7E
-    ; dec-octet is a number 0-255 as a three-digit decimal number.
-    dec-octet   = ( "0" / "1" ) 2DIGIT /
-                  "2" ( ( %x30-34 DIGIT ) / ( "5" %x30-35 ) )
-    escaped     = "\" ( non-digit / dec-octet )
-    contiguous  = 1*( non-special / escaped )
-    quoted      = DQUOTE *( contiguous / ( ["\"] WSP ) ) DQUOTE
-    char-string = contiguous / quoted
-
-The decoding algorithm allows `char-string` to represent any `*OCTET`.
-In this document, this algorithm is referred to as "character-string decoding".
-The algorithm is the same as used by `<character-string>` in RFC 1035,
-although the output length in this document is not limited to 255 octets.
-
-## Decoding a comma-separated list {#value-list}
-
-In order to represent lists of items in zone files, this specification uses
-comma-separated lists.  When "," is not escaped (by a preceding "\\"), it
-separates items in the list.  (For simplicity, empty items are not allowed.)
-
-    item            = 1*OCTET
-    ; item-allowed is OCTET minus "," and "\".
-    item-allowed    = %x00-2B / %x2D-5B / %x5D-FF
-    escaped-item    = 1*(item-allowed / "\," / "\\")
-    comma-separated = [escaped-item *("," escaped-item)]
-
-Decoding of value-lists happens after character-string decoding.  
-For example, consider these `char-string` SvcParamValues:
-
-    "part1,part2,part3\\,part4\\\\"
-    part1\,\p\a\r\t2\044part3\092,part4\092\\
-
-These inputs are equivalent: character-string decoding either of them would
-produce the same `value`:
-
-    part1,part2,part3\,part4\\
-
-Applying comma-separated list decoding to this `value` would produce a list
-of three `item`s:
-
-    part1
-    part2
-    part3,part4\
-
 # HTTP Mapping Summary
 
 This table serves as a non-normative summary of the HTTP mapping for SVCB
@@ -1916,8 +1862,8 @@ sorted in presentation format, but are correctly sorted in the wire-format.
 This last vector has an alpn value with an escaped comma and an escaped
 backslash in two presentation formats.
 
-    example.com.   SVCB   16 foo.example.org. alpn="f\\\\oo\\,bar,h2"
-    example.com.   SVCB   16 foo.example.org. alpn=f\\\092oo\092,bar,h2
+    example.com.   SVCB   16 foo.example.org. alpn="f\\oo\,bar,h2"
+    example.com.   SVCB   16 foo.example.org. alpn=f\092oo\,bar,h2
 
     \# 35 (
     00 10                                              ; priority
