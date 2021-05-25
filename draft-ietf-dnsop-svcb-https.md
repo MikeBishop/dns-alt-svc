@@ -1082,22 +1082,28 @@ single-client granularity.
 
 ## Interaction with Alt-Svc
 
-Clients that do not implement support for Encrypted ClientHello MAY
-skip the HTTPS RR query
+This specification does not alter the DNS records used when connecting
+to an Alt-Svc endpoint (typically A and/or AAAA only) or the data contained
+in Alt-Svc field values.  Origins can publish HTTPS records without any
+need to modify their existing Alt-Svc arrangements.  Future specifications
+may enable more integration of Alt-Svc and HTTPS records, such as querying
+HTTPS records based on an Alt-Svc field value.
+
+In general, clients MAY skip the HTTPS RR query
 if a usable Alt-Svc value is available in the local cache.
 If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPS RR
 client connection procedure ({{client-behavior}}).
 
-Clients that implement support for ECH MUST perform the HTTPS RR query first,
-and MUST only make use of Alt-Svc when operating in SVCB-optional mode (see
-{{ech-client-behavior}}).  This rule allows origins to send Alt-Svc
-advertisements (which do not currently support ECH) without compromising the
-privacy assurances of ECH configurations they have published in the DNS.
-
-This specification does not alter the DNS records used when connecting
-to an Alt-Svc hostname (typically A and/or AAAA only) or the data contained
-in Alt-Svc field values.  Future specifications may enable more use of
-Alt-Svc with HTTPS RR queries and/or ECH.
+Clients that support ECH are subject to additional requirements.  If all HTTPS
+records for the origin have the "ech" SvcParamKey, ECH-capable clients MUST
+use ECH on all connections for this origin (as mandated in
+{{ech-client-behavior}}).  To comply with this requirement, clients will
+typically have to retrieve any HTTPS records for the origin before making use
+of any cached Alt-Svc field values (which currently cannot provide an
+ECHConfigList), and ignore any Alt-Svc field value whose use would require
+disabling ECH.  (The "ech" SvcParamValue is only for connections consistent
+with its Service Binding, and does not automatically apply to all Alt-Svc
+field values for the origin.)
 
 ## Requiring Server Name Indication
 
