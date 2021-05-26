@@ -1082,28 +1082,28 @@ single-client granularity.
 
 ## Interaction with Alt-Svc
 
-This specification does not alter the DNS records used when connecting
-to an Alt-Svc endpoint (typically A and/or AAAA only) or the data contained
-in Alt-Svc field values.  Origins can publish HTTPS records without any
-need to modify their existing Alt-Svc arrangements.  Future specifications
-may enable more integration of Alt-Svc and HTTPS records, such as querying
-HTTPS records based on an Alt-Svc field value.
+Clients that implement support for both Alt-Svc and HTTPS records SHOULD
+retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
+their connection attempts are consistent with both the Alt-Svc parameters
+and any received HTTPS SvcParams.  For example, suppose
+"https://example.com" sends an Alt-Svc field value of:
 
-In general, clients MAY skip the HTTPS RR query
-if a usable Alt-Svc value is available in the local cache.
-If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPS RR
-client connection procedure ({{client-behavior}}).
+    Alt-Svc: h3="alt.example.com:8443"; ma=...
 
-Clients that support ECH are subject to additional requirements.  If all HTTPS
-records for the origin have the "ech" SvcParamKey, ECH-capable clients MUST
-use ECH on all connections for this origin (as mandated in
-{{ech-client-behavior}}).  To comply with this requirement, clients will
-typically have to retrieve any HTTPS records for the origin before making use
-of any cached Alt-Svc field values (which currently cannot provide an
-ECHConfigList), and ignore any Alt-Svc field value whose use would require
-disabling ECH.  (The "ech" SvcParamValue is only for connections consistent
-with its Service Binding, and does not automatically apply to all Alt-Svc
-field values for the origin.)
+The client would retrieve the following HTTPS record:
+
+    _8443._https.alt.example.com. ... 1 alt.example.com. alpn=h2,h3 ech=...
+
+The client could then attempt an HTTP/3 connection to `alt.example.com:8443`
+with ECH, as this is consistent with both the Alt-Svc field value and the
+HTTPS record.
+
+Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
+also publish an "ech" SvcParam for any Alt-Svc hostnames.  Otherwise,
+clients may reveal the unencrypted ClientHello during Alt-Svc connections.
+Similar consistency considerations may apply to future SvcParamKeys, so
+alt-authorities SHOULD carry the same SvcParams as the origin unless
+a deviation is specifically known to be safe.
 
 ## Requiring Server Name Indication
 
