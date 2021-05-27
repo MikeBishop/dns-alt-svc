@@ -1085,18 +1085,21 @@ single-client granularity.
 Clients that implement support for both Alt-Svc and HTTPS records SHOULD
 retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
 their connection attempts are consistent with both the Alt-Svc parameters
-and any received HTTPS SvcParams.  For example, suppose
+and any received HTTPS SvcParams.  If present, the HTTPS record's target
+and port override the alt-authority.  For example, suppose
 "https://example.com" sends an Alt-Svc field value of:
 
-    Alt-Svc: h3="alt.example.com:8443"; ma=...
+    Alt-Svc: h3="alt.example.com:8443"; ...
 
 The client would retrieve the following HTTPS record:
 
-    _8443._https.alt.example.com. ... 1 alt.example.com. alpn=h2,h3 ech=...
+    _8443._https.alt.example.com. ... 1 alt2.example.com. (
+        port=9443 alpn=h2,h3 ech=... )
 
-The client could then attempt an HTTP/3 connection to `alt.example.com:8443`
+The client could then attempt an HTTP/3 connection to `alt2.example.com:9443`
 with ECH, as this is consistent with both the Alt-Svc field value and the
-HTTPS record.
+HTTPS record.  This specification does not alter or clarify the
+interpretation of Alt-Svc's `protocol-id` field.
 
 Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
 also publish an "ech" SvcParam for any Alt-Svc hostnames.  Otherwise,
