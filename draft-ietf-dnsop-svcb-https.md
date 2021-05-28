@@ -1104,7 +1104,7 @@ interpretation of Alt-Svc's `protocol-id` field.
 Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
 also publish an "ech" SvcParam for any Alt-Svc hostnames.  Otherwise,
 clients may reveal the unencrypted ClientHello during Alt-Svc connections.
-Similar consistency considerations may apply to future SvcParamKeys, so
+Similar consistency considerations could apply to future SvcParamKeys, so
 alt-authorities SHOULD carry the same SvcParams as the origin unless
 a deviation is specifically known to be safe.
 
