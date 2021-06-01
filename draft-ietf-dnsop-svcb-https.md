@@ -657,7 +657,7 @@ SvcParams portion of the record as opaque.  No part of this specification requir
 recursive resolvers to alter their behavior based on its contents, even if the contents
 are invalid.  Recursive resolvers MAY validate the values of recognized
 SvcParamKeys and reject records containing values 
-which are invalid according to the SvsParam specification.
+which are invalid according to the SvcParam specification.
 For complex value types whose interpretation might differ 
 between implementations or have additional future
 allowed values added (e.g. URIs or "alpn"), resolvers 
