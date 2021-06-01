@@ -1086,7 +1086,7 @@ Clients that implement support for both Alt-Svc and HTTPS records SHOULD
 retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
 their connection attempts are consistent with both the Alt-Svc parameters
 and any received HTTPS SvcParams.  If present, the HTTPS record's target
-and port override the alt-authority.  For example, suppose
+and port override the alt-authority.  For example, suppose that
 "https://example.com" sends an Alt-Svc field value of:
 
     Alt-Svc: h3="alt.example.com:8443"; ...
@@ -1102,7 +1102,7 @@ HTTPS record.  This specification does not alter or clarify the
 interpretation of Alt-Svc's `protocol-id` field.
 
 Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
-also publish an "ech" SvcParam for any Alt-Svc hostnames.  Otherwise,
+also publish an "ech" SvcParam for any alt-authorities.  Otherwise,
 clients may reveal the unencrypted ClientHello during Alt-Svc connections.
 Similar consistency considerations could apply to future SvcParamKeys, so
 alt-authorities SHOULD carry the same SvcParams as the origin unless
