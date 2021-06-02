@@ -1630,7 +1630,11 @@ although the output length in this document is not limited to 255 octets.
 In order to represent lists of items in zone files, this specification uses
 comma-separated lists.  When the allowed items in the list cannot contain ","
 or "\\", this is trivial.  (For simplicity, empty items are not allowed.)
-Otherwise, the following escaping procedure is used.
+A value-list parser that splits on "," and prohibits items containing "\\"
+is sufficient to comply with all requirements in this document.
+
+For implementations that allow "," and "\\" in item values, the following
+escaping syntax applies:
 
     item            = 1*OCTET
     ; item-allowed is OCTET minus "," and "\".
