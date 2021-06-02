@@ -792,7 +792,10 @@ ALPNs are identified by their registered "Identification Sequence"
     alpn-id = 1*255OCTET
 
 The presentation `value` SHALL be a comma-separated list ({{value-list}})
-of one or more `alpn-id`s.
+of one or more `alpn-id`s.  Zone file implementations MAY disallow the
+"," and "\\" characters instead of implementing the `value-list` escaping
+procedure, relying on the opaque key format (e.g. `key1=\002h2`) in the
+event that these characters are needed.
 
 The wire format value for "alpn" consists of at least one
 `alpn-id` prefixed by its length as a single octet, and these length-value
@@ -1631,8 +1634,13 @@ although the output length in this document is not limited to 255 octets.
 ## Decoding a comma-separated list {#value-list}
 
 In order to represent lists of items in zone files, this specification uses
-comma-separated lists.  When "," is not escaped (by a preceding "\\"), it
-separates items in the list.  (For simplicity, empty items are not allowed.)
+comma-separated lists.  When the allowed items in the list cannot contain ","
+or "\\", this is trivial.  (For simplicity, empty items are not allowed.)
+A value-list parser that splits on "," and prohibits items containing "\\"
+is sufficient to comply with all requirements in this document.
+
+For implementations that allow "," and "\\" in item values, the following
+escaping syntax applies:
 
     item            = 1*OCTET
     ; item-allowed is OCTET minus "," and "\".
