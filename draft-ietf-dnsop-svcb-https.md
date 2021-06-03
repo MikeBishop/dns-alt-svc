@@ -1089,16 +1089,16 @@ and any received HTTPS SvcParams.  If present, the HTTPS record's target
 and port override the alt-authority.  For example, suppose that
 "https://example.com" sends an Alt-Svc field value of:
 
-    Alt-Svc: h3="alt.example.com:8443"; h2="alt.example.com:443"; ...
+    Alt-Svc: h2="alt.example.com:443", h3=":8443"
 
 The client would retrieve the following HTTPS records:
-    alt.example.com. ... 1 alt2.example.com. (
-            port=9443 alpn=h2,h3 ech=... )
-    _8443._https.alt.example.com. ... 1 alt2.example.com. (
+    alt.example.com. IN HTTPS 1 . alpn=h2,h3 ech=...
+    _8443._https.example.com. IN HTTPS 1 alt3.example.com. (
         port=9443 alpn=h2,h3 ech=... )
 
-The client could then attempt an HTTP/3 connection to `alt2.example.com:9443`
-with ECH, as this is consistent with both the Alt-Svc field value and the
+The client could then attempt an HTTP/3 connection to `alt3.example.com:9443`
+with ECH, or an HTTP over TLS connection to `alt.example.com:443` with ECH,
+as these options are consistent with both an Alt-Svc field value and its
 HTTPS record.  This specification does not alter or clarify the
 interpretation of Alt-Svc's `protocol-id` field.
 
