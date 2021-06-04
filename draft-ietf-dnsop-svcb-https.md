@@ -1089,7 +1089,9 @@ and any received HTTPS SvcParams.  If present, the HTTPS record's target
 and port override the alt-authority.  For example, suppose that
 "https://example.com" sends an Alt-Svc field value of:
 
-    Alt-Svc: h2="alt.example.com:443", h3=":8443"
+~~~ http-message
+Alt-Svc: h2="alt.example.com:443", h3=":8443"
+~~~
 
 The client would retrieve the following HTTPS records:
 
