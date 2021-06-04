@@ -1110,9 +1110,9 @@ also publish an "ech" SvcParam for any alt-authorities.  Otherwise,
 clients might reveal the name of the server in an unencrypted ClientHello.
 Similar consistency considerations could apply to future SvcParamKeys, so
 alt-authorities SHOULD carry the same SvcParams as the origin unless
-a deviation is specifically known to be safe.  Clients MAY impose additional
-conditions on Alt-Svc connections, e.g. requiring ECH if the origin's
-SvcParams offered ECH.
+a deviation is specifically known to be safe.  Clients MAY impose their
+own consistency conditions on Alt-Svc connections, e.g. requiring ECH if the
+origin's SvcParams offered ECH.
 
 ## Requiring Server Name Indication
 
