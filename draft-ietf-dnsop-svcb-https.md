@@ -1092,6 +1092,7 @@ and port override the alt-authority.  For example, suppose that
     Alt-Svc: h2="alt.example.com:443", h3=":8443"
 
 The client would retrieve the following HTTPS records:
+
     alt.example.com. IN HTTPS 1 . alpn=h2,h3 ech=...
     _8443._https.example.com. IN HTTPS 1 alt3.example.com. (
         port=9443 alpn=h2,h3 ech=... )
