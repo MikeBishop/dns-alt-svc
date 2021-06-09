@@ -1090,20 +1090,29 @@ and port override the alt-authority.  For example, suppose that
 "https://example.com" sends an Alt-Svc field value of:
 
 ~~~ HTTP
-Alt-Svc: h2="alt.example.com:443", h3=":8443"
+Alt-Svc: h2="alt.example:443", h2="alt2.example:443", h3=":8443"
 ~~~
 
 The client would retrieve the following HTTPS records:
 
-    alt.example.com. IN HTTPS 1 . alpn=h2,h3 ech=...
-    _8443._https.example.com. IN HTTPS 1 alt3.example.com. (
+    alt.example.              IN HTTPS 1 . alpn=h2,h3 ech=...
+    alt2.example.             IN HTTPS 1 . alpn=h3 ech=...
+    _8443._https.example.com. IN HTTPS 1 alt3.example. (
         port=9443 alpn=h2,h3 ech=... )
 
-The client could then attempt an HTTP/3 connection to `alt3.example.com:9443`
-with ECH, or an HTTP over TLS connection to `alt.example.com:443` with ECH,
+The client could then attempt an HTTP/3 connection to `alt3.example:9443`
+with ECH, or an HTTP over TLS connection to `alt.example:443` with ECH,
 as these options are consistent with both an Alt-Svc field value and its
-HTTPS record.  This specification does not alter or clarify the
-interpretation of Alt-Svc's `protocol-id` field.
+HTTPS record.  It would not connect to `alt2.example`, as there is no
+possible connection that is consistent with both ALPN values ("h2" from
+Alt-Svc, "h3" from SvcParams), and the "ech" SvcParam triggers SVCB-reliant
+client behavior ({{ech-client-behavior}}).  Operators SHOULD avoid
+such inconsistencies, and clients SHOULD treat them as Alt-Svc connection
+failures, falling back to non-Alt-Svc connection when appropriate as
+described in Section 2.4 of {{!RFC7838}}
+
+This specification does not alter the interpretation of Alt-Svc's
+`protocol-id` field.
 
 Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
 also publish an "ech" SvcParam for any alt-authorities.  Otherwise,
@@ -1112,7 +1121,7 @@ Similar consistency considerations could apply to future SvcParamKeys, so
 alt-authorities SHOULD carry the same SvcParams as the origin unless
 a deviation is specifically known to be safe.  Clients MAY impose their
 own consistency conditions on Alt-Svc connections, e.g. requiring ECH if the
-origin's SvcParams offered ECH.
+origin is known to support ECH.
 
 ## Requiring Server Name Indication
 
