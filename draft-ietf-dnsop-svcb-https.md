@@ -1103,13 +1103,13 @@ The client would retrieve the following HTTPS records:
 The client could then attempt an HTTP/3 connection to `alt3.example:9443`
 with ECH, or an HTTP over TLS connection to `alt.example:443` with ECH,
 as these options are consistent with both an Alt-Svc field value and its
-HTTPS record.  It would not connect to `alt2.example`, as there is no
-possible connection that is consistent with both ALPN values ("h2" from
-Alt-Svc, "h3" from SvcParams), and the "ech" SvcParam triggers SVCB-reliant
-client behavior ({{ech-client-behavior}}).  Operators SHOULD avoid
-such inconsistencies, and clients SHOULD treat them as Alt-Svc connection
-failures, falling back to non-Alt-Svc connection when appropriate as
-described in Section 2.4 of {{!RFC7838}}
+HTTPS record.  An ECH-capable client would not connect to `alt2.example`,
+as there is no possible connection that is consistent with both ALPN values
+("h2" from Alt-Svc, "h3" from SvcParams), and the "ech" SvcParam triggers
+SVCB-reliant client behavior ({{ech-client-behavior}}).  Operators SHOULD
+avoid such inconsistencies, and clients SHOULD treat them as Alt-Svc
+connection failures, falling back to non-Alt-Svc connection when appropriate
+as described in Section 2.4 of {{!RFC7838}}
 
 This specification does not alter the interpretation of Alt-Svc's
 `protocol-id` field.
