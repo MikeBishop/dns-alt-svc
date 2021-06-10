@@ -1109,7 +1109,7 @@ as there is no possible connection that is consistent with both ALPN values
 SVCB-reliant client behavior ({{ech-client-behavior}}).  Operators SHOULD
 avoid such inconsistencies, and clients SHOULD treat them as Alt-Svc
 connection failures, falling back to non-Alt-Svc connection when appropriate
-as described in Section 2.4 of {{!RFC7838}}
+as described in Section 2.4 of {{!AltSvc}}.
 
 This specification does not alter the interpretation of Alt-Svc's
 `protocol-id` field.
@@ -1119,9 +1119,10 @@ also publish an "ech" SvcParam for any alt-authorities.  Otherwise,
 clients might reveal the name of the server in an unencrypted ClientHello.
 Similar consistency considerations could apply to future SvcParamKeys, so
 alt-authorities SHOULD carry the same SvcParams as the origin unless
-a deviation is specifically known to be safe.  Clients MAY impose their
-own consistency conditions on Alt-Svc connections, e.g. requiring ECH if the
-origin is known to support ECH.
+a deviation is specifically known to be safe.  As noted in Section 2.4 of
+{{AltSvc}}, clients MAY disallow any Alt-Svc connection according to their
+own criteria, e.g. disallowing Alt-Svc connections that lack ECH support
+if ECH is supported on the origin.
 
 ## Requiring Server Name Indication
 
