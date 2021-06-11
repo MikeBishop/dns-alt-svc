@@ -1103,7 +1103,7 @@ The client would retrieve the following HTTPS records:
 Based on these inputs, the following connection attempts would always be
 allowed:
 
-* HTTPS over TLS to `alt.example:443` (Consistent with both Alt-Svc and
+* HTTPS over TCP to `alt.example:443` (Consistent with both Alt-Svc and
   its HTTPS record)
 * HTTP/3 to `alt3.example:9443` (Consistent with both Alt-Svc and its HTTPS
   record)
@@ -1116,13 +1116,13 @@ The following connection attempts would not be allowed:
 * HTTP/3 to `alt.example:443` (not consistent with Alt-Svc)
 * Any connection to `alt2b.example` (no ALPN consistent with both the HTTPS
   record and Alt-Svc)
-* HTTPS over TLS to any port on `alt3.example` (not consistent with Alt-Svc)
+* HTTPS over TCP to any port on `alt3.example` (not consistent with Alt-Svc)
 
 The following connection attempts would be allowed only if the client does
 not support ECH, as they rely on SVCB-optional fallback behavior that is
 disabled when the "ech" SvcParam is present ({{ech-client-behavior}}):
 
-* HTTPS over TLS to `alt2.example:443` (Alt-Svc only)
+* HTTPS over TCP to `alt2.example:443` (Alt-Svc only)
 * HTTP/3 to `example.com:8443` (Alt-Svc only)
 
 Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
