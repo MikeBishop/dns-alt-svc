@@ -1545,7 +1545,7 @@ The characters in the registered Name MUST be lower-case alphanumeric or "-"
 ({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
 Entries in this registry are subject to a First Come First Served registration
-policy ({{!RFC8126}}, Section 4.6).  The Format Reference MUST specify
+policy ({{!RFC8126}}, Section 4.4).  The Format Reference MUST specify
 how to convert the SvcParamValue's presentation format to wire format and MAY
 detail its intended meaning and use.  An entry MAY specify a Format Reference of
 the form "Same as (other key Name)" if it uses the same presentation and wire
