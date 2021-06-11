@@ -1103,8 +1103,10 @@ The client would retrieve the following HTTPS records:
 Based on these inputs, the following connection attempts would always be
 allowed:
 
-* HTTPS over TLS to `alt.example:443` (Alt-Svc and HTTPS record)
-* HTTP/3 to `alt3.example:9443` (Alt-Svc and HTTPS record)
+* HTTPS over TLS to `alt.example:443` (Consistent with both Alt-Svc and
+  its HTTPS record)
+* HTTP/3 to `alt3.example:9443` (Consistent with both Alt-Svc and its HTTPS
+  record)
 * Fallback to the the client's non-Alt-Svc connection behavior
 
 ECH-capable clients would use ECH when establishing any of these connections.
