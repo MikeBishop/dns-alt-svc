@@ -1085,7 +1085,7 @@ single-client granularity.
 Clients that implement support for both Alt-Svc and HTTPS records SHOULD
 retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
 their connection attempts are consistent with both the Alt-Svc parameters
-and any received HTTPS SvcParams.  If present, the HTTPS record's target
+and any received HTTPS SvcParams.  If present, the HTTPS record's TargetName
 and port override the alt-authority.  For example, suppose that
 "https://example.com" sends an Alt-Svc field value of:
 
