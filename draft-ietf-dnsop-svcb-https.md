@@ -1105,8 +1105,9 @@ with ECH, or an HTTP over TLS connection to `alt.example:443` with ECH,
 as these options are consistent with both an Alt-Svc field value and its
 HTTPS record.  An ECH-capable client would not connect to `alt2.example`,
 as there is no possible connection that is consistent with both ALPN values
-("h2" from Alt-Svc, "h3" from SvcParams), and the "ech" SvcParam triggers
-SVCB-reliant client behavior ({{ech-client-behavior}}).  Operators SHOULD
+("h2" from Alt-Svc, "h3" from SvcParams), and the "ech" SvcParam prevents
+the client from falling back to a plain A/AAAA-based connection (i.e. the
+client is SVCB-reliant, {{ech-client-behavior}}).  Operators SHOULD
 avoid such inconsistencies, and clients SHOULD treat them as Alt-Svc
 connection failures, falling back to non-Alt-Svc connection when appropriate
 as described in Section 2.4 of {{!AltSvc}}.
