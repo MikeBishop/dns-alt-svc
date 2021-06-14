@@ -1132,7 +1132,7 @@ Similar consistency considerations could apply to future SvcParamKeys, so
 alt-authorities SHOULD carry the same SvcParams as the origin unless
 a deviation is specifically known to be safe.
 
-As noted in Section 2.4 of {{AltSvc}}, clients MAY disallow any Alt-Svc
+As noted in {{Section 2.4 of AltSvc}}, clients MAY disallow any Alt-Svc
 connection according to their own criteria, e.g. disallowing Alt-Svc
 connections that lack ECH support when there is an active ECH-protected
 connection for this origin.
