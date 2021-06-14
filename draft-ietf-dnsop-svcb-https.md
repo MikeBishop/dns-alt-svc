@@ -250,7 +250,7 @@ The SVCB record is defined specifically within
 the Internet ("IN") Class ({{!RFC1035}}).
 
 SvcPriority is a number in the range 0-65535,
-TargetName is a `<domain-name>` ({{!RFC1035}} Section 5.1),
+TargetName is a `<domain-name>` ({{!RFC1035, Section 5.1}}),
 and the SvcParams are a whitespace-separated list, with each SvcParam
 consisting of a SvcParamKey=SvcParamValue pair or a standalone SvcParamKey.
 SvcParamKeys are subject to IANA control ({{svcparamregistry}}).
@@ -293,7 +293,7 @@ The RDATA for the SVCB RR consists of:
 * a 2 octet field for SvcPriority as an integer in network
   byte order.
 * the uncompressed, fully-qualified TargetName, represented as
-  a sequence of length-prefixed labels as in Section 3.1 of {{!RFC1035}}.
+  a sequence of length-prefixed labels as in {{Section 3.1 of !RFC1035}}.
 * the SvcParams, consuming the remainder of the record
   (so smaller than 65535 octets and constrained by the RDATA
   and DNS message sizes).
@@ -333,8 +333,8 @@ follows the Attrleaf naming pattern {{Attrleaf}}, so the scheme MUST be
 registered appropriately with IANA (see {{other-standards}}).
 
 Protocol mapping documents MAY specify additional underscore-prefixed labels
-to be prepended.  For schemes that specify a port (Section 3.2.3
-of {{?URI=RFC3986}}), one reasonable possibility is to prepend the indicated port
+to be prepended.  For schemes that specify a port ({{Section 3.2.3
+of ?URI=RFC3986}}), one reasonable possibility is to prepend the indicated port
 number if a non-default port number is specified.  We term this behavior
 "Port Prefix Naming", and use it in the examples throughout this document.
 
@@ -362,7 +362,7 @@ to indicate that these services are served on port number 8004,
 which supports the protocol "bar" and its associated transport in
 addition to the default transport protocol for "foo://".
 
-(Parentheses are used to ignore a line break ({{RFC1035}} Section 5.1).)
+(Parentheses are used to ignore a line break ({{RFC1035, Section 5.1}}).)
 
 ## Interpretation
 
@@ -566,7 +566,7 @@ origin's SVCB record did not exist.
 ## Clients using a Proxy
 
 Clients using a domain-oriented transport proxy like HTTP CONNECT
-({{!RFC7231}} Section 4.3.6) or SOCKS5 ({{!RFC1928}}) have the option to
+({{!RFC7231, Section 4.3.6}}) or SOCKS5 ({{!RFC1928}}) have the option to
 use named destinations, in which case the client does not perform
 any A or AAAA queries for destination domains.  If the client is using named
 destinations with a proxy that does not provide SVCB query capability
@@ -669,7 +669,7 @@ each RRSet in the Additional section with the same DNSSEC-related records
 that they would send when providing that RRSet as an Answer (e.g. RRSIG, NSEC,
 NSEC3).
 
-According to Section 5.4.1 of {{!RFC2181}}, "Unauthenticated RRs received
+According to {{Section 5.4.1 of !RFC2181}}, "Unauthenticated RRs received
 and cached from ... the additional data section ... should not be cached in
 such a way that they would ever be returned as answers to a received query.
 They may be returned as additional information where appropriate.".
@@ -685,7 +685,7 @@ IP range.  SVCB records may contain IP addresses (in ipv*hint SvcParams),
 or direct users to a subnet-specific TargetName, so recursive resolvers
 SHOULD include the same ECS option in SVCB queries as in A/AAAA queries.
 
-According to Section 7.3.1 of {{!RFC7871}}, "Any records from \[the
+According to {{Section 7.3.1 of !RFC7871}}, "Any records from \[the
 Additional section\] MUST NOT be tied to a network".  Accordingly,
 when processing a response whose QTYPE is SVCB-compatible,
 resolvers SHOULD treat any records in the Additional section as having
@@ -694,7 +694,7 @@ in the ECS option.  Authoritative servers MUST omit such records if they are
 not suitable for use by any stub resolvers that set SOURCE PREFIX-LENGTH to
 zero.  This will cause the resolver to perform a followup query that can
 receive properly tailored ECS.  (This is similar to the usage of CNAME with
-ECS discussed in {{!RFC7871}} Section 7.2.1.)
+ECS discussed in {{!RFC7871, Section 7.2.1}}.)
 
 Authoritative servers that omit Additional records can avoid the added
 latency of a followup query by following the advice in {{zone-performance}}.
@@ -886,7 +886,7 @@ protocols.
 When publishing a record containing an "ech" parameter, the publisher
 MUST ensure that all IP addresses of TargetName correspond to servers
 that have access to the corresponding private key or are authoritative
-for the public name. (See Section 7.2.2 of {{!ECH}} for more
+for the public name. (See {{Section 7.2.2 of !ECH}} for more
 details about the public name.) This yields an anonymity set of cardinality
 equal to the number of ECH-enabled server domains supported by a given
 client-facing server. Thus, even with an encrypted ClientHello, an attacker
@@ -1130,7 +1130,7 @@ the client SHOULD construct a corresponding "https" URL as follows:
 
 3. Do not alter any other aspect of the URL.
 
-This construction is equivalent to Section 8.3 of {{HSTS}}, point 5.
+This construction is equivalent to {{Section 8.3 of HSTS}}, point 5.
 
 If an HTTPS RR query for this "https" URL returns any AliasMode HTTPS RRs,
 or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
@@ -1148,8 +1148,8 @@ security error and connect anyway.
 When making an "https" scheme request to an origin with an HTTPS RR,
 either directly or via the above redirect, such a client MAY remove the user
 recourse option.  Origins that publish HTTPS RRs therefore MUST NOT rely
-on user recourse for access.  For more information, see Section 8.4 and
-Section 12.1 of {{HSTS}}.
+on user recourse for access.  For more information, see {{Section 8.4 and
+Section 12.1 of HSTS}}.
 
 ## HTTP-based protocols
 
@@ -1448,7 +1448,7 @@ with SVCB.
 
 SVCB/HTTPS RRs are intended for distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative endpoint
-is authoritative for the service (similar to Section 2.1 of {{AltSvc}}).
+is authoritative for the service (similar to {{Section 2.1 of AltSvc}}).
 Therefore, DNSSEC signing and validation are OPTIONAL for publishing
 and using SVCB and HTTPS RRs.
 
@@ -1545,7 +1545,7 @@ The characters in the registered Name MUST be lower-case alphanumeric or "-"
 ({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
 Entries in this registry are subject to a First Come First Served registration
-policy ({{!RFC8126}}, Section 4.4).  The Format Reference MUST specify
+policy ({{!RFC8126, Section 4.4}}).  The Format Reference MUST specify
 how to convert the SvcParamValue's presentation format to wire format and MAY
 detail its intended meaning and use.  An entry MAY specify a Format Reference of
 the form "Same as (other key Name)" if it uses the same presentation and wire
@@ -1614,7 +1614,7 @@ and suggestions on this draft.
 
 DNS zone files are capable of representing arbitrary octet sequences in
 basic ASCII text, using various delimiters and encodings.  The algorithm
-for decoding these character-strings is defined in Section 5.1 of {{RFC1035}}.
+for decoding these character-strings is defined in {{Section 5.1 of RFC1035}}.
 Here we summarize the allowed input to that algorithm, using ABNF:
 
     ; non-special is VCHAR minus DQUOTE, ";", "(", ")", and "\".
