@@ -1091,18 +1091,60 @@ single-client granularity.
 
 ## Interaction with Alt-Svc
 
-Clients that do not implement support for Encrypted ClientHello MAY
-skip the HTTPS RR query
-if a usable Alt-Svc value is available in the local cache.
-If Alt-Svc connection fails, these clients SHOULD fall back to the HTTPS RR
-client connection procedure ({{client-behavior}}).
+Clients that implement support for both Alt-Svc and HTTPS records SHOULD
+retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
+their connection attempts are consistent with both the Alt-Svc parameters
+and any received HTTPS SvcParams.  If present, the HTTPS record's TargetName
+and port override the alt-authority.  For example, suppose that
+"https://example.com" sends an Alt-Svc field value of:
 
-Clients that implement support for ECH MUST perform the HTTPS RR query first,
-and MUST only make use of Alt-Svc when operating in SVCB-optional mode (see
-{{ech-client-behavior}}).
+~~~ HTTP
+Alt-Svc: h2="alt.example:443", h2="alt2.example:443", h3=":8443"
+~~~
 
-This specification does not alter the DNS records used when connecting
-to an Alt-Svc hostname (typically A and/or AAAA only).
+The client would retrieve the following HTTPS records:
+
+    alt.example.              IN HTTPS 1 . alpn=h2,h3 ech=...
+    alt2.example.             IN HTTPS 1 alt2b.example. alpn=h3 ech=...
+    _8443._https.example.com. IN HTTPS 1 alt3.example. (
+        port=9443 alpn=h2,h3 ech=... )
+
+Based on these inputs, the following connection attempts would always be
+allowed:
+
+* HTTPS over TCP to `alt.example:443` (Consistent with both Alt-Svc and
+  its HTTPS record)
+* HTTP/3 to `alt3.example:9443` (Consistent with both Alt-Svc and its HTTPS
+  record)
+* Fallback to the the client's non-Alt-Svc connection behavior
+
+ECH-capable clients would use ECH when establishing any of these connections.
+
+The following connection attempts would not be allowed:
+
+* HTTP/3 to `alt.example:443` (not consistent with Alt-Svc)
+* Any connection to `alt2b.example` (no ALPN consistent with both the HTTPS
+  record and Alt-Svc)
+* HTTPS over TCP to any port on `alt3.example` (not consistent with Alt-Svc)
+
+The following connection attempts would be allowed only if the client does
+not support ECH, as they rely on SVCB-optional fallback behavior that is
+disabled when the "ech" SvcParam is present ({{ech-client-behavior}}):
+
+* HTTPS over TCP to `alt2.example:443` (Alt-Svc only)
+* HTTP/3 to `example.com:8443` (Alt-Svc only)
+
+Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
+also publish an "ech" SvcParam for any alt-authorities.  Otherwise,
+clients might reveal the name of the server in an unencrypted ClientHello.
+Similar consistency considerations could apply to future SvcParamKeys, so
+alt-authorities SHOULD carry the same SvcParams as the origin unless
+a deviation is specifically known to be safe.
+
+As noted in {{Section 2.4 of AltSvc}}, clients MAY disallow any Alt-Svc
+connection according to their own criteria, e.g. disallowing Alt-Svc
+connections that lack ECH support when there is an active ECH-protected
+connection for this origin.
 
 ## Requiring Server Name Indication
 
