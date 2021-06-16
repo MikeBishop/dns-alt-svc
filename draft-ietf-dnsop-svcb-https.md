@@ -2043,6 +2043,12 @@ the mandatory list ({{mandatory}}).
 
 # Change history
 
+* draft-ietf-dnsop-svcb-https-06
+    * Add requirements for HTTPS origins that also use Alt-Svc
+    * Remove requirement for comma-escaping related to unusual ALPN values
+    * Allow resolvers to reject invalid SvcParamValues, with additional
+      guidance
+
 * draft-ietf-dnsop-svcb-https-05
     * Specify interaction with EDNS Client Subnet and Additional section caching
     * Rename "echconfig" to "ech"
