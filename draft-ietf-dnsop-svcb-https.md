@@ -2045,7 +2045,7 @@ the mandatory list ({{mandatory}}).
 
 * draft-ietf-dnsop-svcb-https-06
     * Add requirements for HTTPS origins that also use Alt-Svc
-    * Remove requirement for comma-escaping related to exotic ALPN values
+    * Remove requirement for comma-escaping related to unusual ALPN values
     * Allow resolvers to reject invalid SvcParamValues, with additional
       guidance
 
