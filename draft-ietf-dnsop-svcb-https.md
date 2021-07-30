@@ -69,11 +69,10 @@ public keys.
 For example, when clients need to make a connection to fetch resources
 associated with an HTTPS URI, they currently resolve only A and/or AAAA
 records for the origin hostname.  This is adequate for services that use
-basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}).
-Going beyond basic HTTPS confers privacy, performance, and operational
-advantages, but it requires the client to learn additional
-information, and it is highly
-desirable to minimize the number of round-trips and lookups required to
+basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}), but
+clients learning additional information can gain privacy, performance, 
+and operational advantages.  It is highly desirable to minimize the 
+number of round-trips and lookups required to
 learn this additional information.
 
 The SVCB and HTTPS RRs also help when the operator of a service
@@ -102,8 +101,8 @@ and introductory examples, much of this document refers only to the SVCB RR,
 but those references should be taken to apply to SVCB, HTTPS,
 and any future SVCB-compatible RR types.
 
-The SVCB RR has two modes: 1) "AliasMode" simply delegates operational
-control for a resource; 2) "ServiceMode" binds together
+The SVCB RR has two modes: 1) "AliasMode", which simply delegates operational
+control for a resource; 2) "ServiceMode", which binds together
 configuration information for a service endpoint.
 ServiceMode provides additional key=value parameters
 within each RDATA set.
@@ -117,7 +116,7 @@ additional DNS RR in a way that:
   along with parameters associated with each of these endpoints.
 * Does not assume that all alternative endpoints have the same parameters
   or capabilities, or are even
-  operated by the same entity.  This is important as DNS does not
+  operated by the same entity.  This is important, as DNS does not
   provide any way to tie together multiple RRs for the same name.
   For example, if www.example.com is a CNAME alias that switches
   between one of three CDNs or hosting environments, successive queries
