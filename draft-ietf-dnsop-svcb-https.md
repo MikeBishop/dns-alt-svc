@@ -70,7 +70,7 @@ For example, when clients need to make a connection to fetch resources
 associated with an HTTPS URI, they currently resolve only A and/or AAAA
 records for the origin hostname.  This is adequate for services that use
 basic HTTPS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}), but
-clients learning additional information can gain privacy, performance, 
+clients that learn additional information can gain privacy, performance, 
 and operational advantages.  It is highly desirable to minimize the 
 number of round-trips and lookups required to
 learn this additional information.
