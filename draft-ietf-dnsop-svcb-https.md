@@ -2042,6 +2042,11 @@ the mandatory list ({{mandatory}}).
 
 # Change history
 
+(This section to be removed by the RFC editor.)
+
+* draft-ietf-dnsop-svcb-https-07
+    * Editorial improvements following AD review.
+
 * draft-ietf-dnsop-svcb-https-06
     * Add requirements for HTTPS origins that also use Alt-Svc
     * Remove requirement for comma-escaping related to unusual ALPN values
