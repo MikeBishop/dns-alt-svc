@@ -776,21 +776,33 @@ alter their presentation or wire formats.
 The "alpn" and "no-default-alpn" SvcParamKeys together
 indicate the set of Application Layer Protocol Negotiation (ALPN)
 protocol identifiers {{!ALPN=RFC7301}}
-and associated transport protocols supported by this service endpoint.
+and associated transport protocols supported by this service endpoint (the
+"SVCB ALPN set").
 
-As with Alt-Svc {{AltSvc}}, the ALPN protocol identifier is used to
+As with Alt-Svc {{AltSvc}}, each ALPN protocol identifier is used to
 identify the application protocol and associated suite
 of protocols supported by the endpoint (the "protocol suite").
+The presence of an ALPN protocol in the SVCB ALPN set indicates that this
+service endpoint, described by TargetName and the other parameters (e.g.
+"port") offers service with the protocol suite associated with this ALPN
+protocol.
+
 Clients filter the set of ALPN identifiers to match the protocol suites they
 support, and this informs the underlying transport protocol used (such
-as QUIC-over-UDP or TLS-over-TCP).
+as QUIC-over-UDP or TLS-over-TCP).  ALPN protocol names that do not uniquely
+identify a protocol suite (e.g. an Identification Sequence that
+can be used with both TLS and DTLS) are not compatible with this
+SvcParamKey and MUST NOT be included in the SVCB ALPN set.
+
+### Representation
 
 ALPNs are identified by their registered "Identification Sequence"
 (`alpn-id`), which is a sequence of 1-255 octets.
 
     alpn-id = 1*255OCTET
 
-The presentation `value` SHALL be a comma-separated list ({{value-list}})
+For "alpn", the presentation `value` SHALL be
+a comma-separated list ({{value-list}})
 of one or more `alpn-id`s.  Zone file implementations MAY disallow the
 "," and "\\" characters instead of implementing the `value-list` escaping
 procedure, relying on the opaque key format (e.g. `key1=\002h2`) in the
@@ -808,18 +820,11 @@ to be "self-consistent" ({{service-mode}}).
 
 Each scheme that uses this SvcParamKey defines a "default set" of ALPNs
 that are supported by nearly all clients and servers, which MAY
-be empty.  To determine the set of protocol suites supported by an
-endpoint (the "SVCB ALPN set"), the client adds the default set to
-the list of `alpn-id`s unless the
-"no-default-alpn" SvcParamKey is present.  The presence of an ALPN protocol in
-the SVCB ALPN set indicates that this service endpoint, described by
-TargetName and the other parameters (e.g. "port") offers service with
-the protocol suite associated with this ALPN protocol.
+be empty.  To determine the SVCB ALPN set, the client starts with the list of
+`alpn-id`s from the "alpn" SvcParamKey, and adds the default set unless the
+"no-default-alpn" SvcParamKey is present.
 
-ALPN protocol names that do not uniquely identify a protocol suite (e.g. an
-Identification Sequence that
-can be used with both TLS and DTLS) are not compatible with this
-SvcParamKey and MUST NOT be included in the SVCB ALPN set.
+### Use
 
 To establish a connection to the endpoint, clients MUST
 
@@ -973,7 +978,7 @@ list either.  (Including them wastes space and otherwise has no effect.)
 # Using SVCB with HTTPS and HTTP {#https}
 
 Use of any protocol with SVCB requires a protocol-specific mapping
-specification.  This section specifies the mapping for HTTPS and HTTP.
+specification.  This section specifies the mapping for HTTPS and HTTP {{!I-D.draft-ietf-httpbis-semantics}}.
 
 To enable special handling for the HTTPS and HTTP use-cases,
 the HTTPS RR type is defined as a SVCB-compatible RR type,
@@ -1037,7 +1042,7 @@ Note that none of these forms alter the HTTPS origin or authority.
 For example, clients MUST continue to validate TLS certificate
 hostnames based on the origin.
 
-## Relationship to Alt-Svc
+## Comparison with Alt-Svc
 
 Publishing a ServiceMode HTTPS RR in DNS is intended
 to be similar to transmitting an Alt-Svc field value over
@@ -1053,12 +1058,10 @@ support.
 
 ### Untrusted channel
 
-SVCB does not require or provide any assurance of authenticity.  (DNSSEC
+HTTPS records do not require or provide any assurance of authenticity.  (DNSSEC
 signing and verification, which would provide such assurance, are OPTIONAL.)
-The DNS resolution process is treated as an untrusted channel that learns
-only the QNAME, and is prevented from mounting any attack beyond denial of
-service.
-
+The DNS resolution process is modeled as an untrusted channel that might be
+controlled by an attacker, so
 Alt-Svc parameters that cannot be safely received in this model MUST NOT
 have a corresponding defined SvcParamKey.  For example, there is no
 SvcParamKey corresponding to the Alt-Svc "persist" parameter, because
@@ -1094,7 +1097,8 @@ Clients that implement support for both Alt-Svc and HTTPS records SHOULD
 retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
 their connection attempts are consistent with both the Alt-Svc parameters
 and any received HTTPS SvcParams.  If present, the HTTPS record's TargetName
-and port override the alt-authority.  For example, suppose that
+and port are used for connection establishment (as in {{client-behavior}}).
+For example, suppose that
 "https://example.com" sends an Alt-Svc field value of:
 
 ~~~ HTTP
@@ -1111,10 +1115,8 @@ The client would retrieve the following HTTPS records:
 Based on these inputs, the following connection attempts would always be
 allowed:
 
-* HTTPS over TCP to `alt.example:443` (Consistent with both Alt-Svc and
-  its HTTPS record)
-* HTTP/3 to `alt3.example:9443` (Consistent with both Alt-Svc and its HTTPS
-  record)
+* HTTP/2 to `alt.example:443`
+* HTTP/3 to `alt3.example:9443`
 * Fallback to the the client's non-Alt-Svc connection behavior
 
 ECH-capable clients would use ECH when establishing any of these connections.
@@ -1126,12 +1128,13 @@ The following connection attempts would not be allowed:
   record and Alt-Svc)
 * HTTPS over TCP to any port on `alt3.example` (not consistent with Alt-Svc)
 
-The following connection attempts would be allowed only if the client does
-not support ECH, as they rely on SVCB-optional fallback behavior that is
-disabled when the "ech" SvcParam is present ({{ech-client-behavior}}):
+The following Alt-Svc-only connection attempts would be allowed only if
+the client does not support ECH, as they rely on SVCB-optional fallback
+behavior that the client will disable if it implements support for ECH and
+the "ech" SvcParam is present ({{ech-client-behavior}}):
 
-* HTTPS over TCP to `alt2.example:443` (Alt-Svc only)
-* HTTP/3 to `example.com:8443` (Alt-Svc only)
+* HTTP/2 to `alt2.example:443`
+* HTTP/3 to `example.com:8443`
 
 Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
 also publish an "ech" SvcParam for any alt-authorities.  Otherwise,
@@ -1158,8 +1161,10 @@ the origin, not the TargetName.
 ## HTTP Strict Transport Security {#hsts}
 
 By publishing a usable HTTPS RR, the server operator indicates that all
-useful HTTP resources on that origin are reachable over HTTPS, similar to
-HTTP Strict Transport Security {{HSTS}}.
+useful HTTP resources on this Host ({{!I-D.draft-ietf-httpbis-semantics,
+Section 7.2}}) are reachable over HTTPS, similar to HTTP Strict Transport
+Security {{HSTS}}.  If this is not true, the operator MUST NOT publish an
+HTTPS RR.
 
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
 to determine if any HTTPS RRs exist for that origin.  To do so,
@@ -1192,7 +1197,7 @@ recourse option.  Origins that publish HTTPS RRs therefore MUST NOT rely
 on user recourse for access.  For more information, see {{Section 8.4 and
 Section 12.1 of HSTS}}.
 
-## HTTP-based protocols
+## Use of HTTPS RRs in other protocols
 
 All protocols employing "http://" or "https://" URLs SHOULD respect HTTPS RRs.
 For example, clients that
@@ -1200,7 +1205,7 @@ support HTTPS RRs and implement the altered WebSocket {{!WebSocket=RFC6455}}
 opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RRs
 for the `requestURL`.
 
-An HTTP-based protocol MAY define its own SVCB mapping.  Such mappings MAY
+Such protocols MAY define their own SVCB mappings, which MAY
 be defined to take precedence over HTTPS RRs.
 
 # SVCB/HTTPS RR parameter for ECH configuration {#ech-param}
