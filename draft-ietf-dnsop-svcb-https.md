@@ -782,14 +782,13 @@ and associated transport protocols supported by this service endpoint (the
 As with Alt-Svc {{AltSvc}}, each ALPN protocol identifier is used to
 identify the application protocol and associated suite
 of protocols supported by the endpoint (the "protocol suite").
-The presence of an ALPN protocol in the SVCB ALPN set indicates that this
+The presence of an ALPN protocol identifier in the SVCB ALPN set indicates that this
 service endpoint, described by TargetName and the other parameters (e.g.
-"port") offers service with the protocol suite associated with this ALPN
-protocol.
+"port") offers service with the protocol suite associated with this ALPN identifier.
 
 Clients filter the set of ALPN identifiers to match the protocol suites they
 support, and this informs the underlying transport protocol used (such
-as QUIC-over-UDP or TLS-over-TCP).  ALPN protocol names that do not uniquely
+as QUIC-over-UDP or TLS-over-TCP).  ALPN protocol identifiers that do not uniquely
 identify a protocol suite (e.g. an Identification Sequence that
 can be used with both TLS and DTLS) are not compatible with this
 SvcParamKey and MUST NOT be included in the SVCB ALPN set.
