@@ -582,7 +582,7 @@ proxy, which will perform any required A and AAAA lookups.
 This arrangement has several benefits:
 
 * Compared to disabling SVCB:
-  - It allows the client to use the SvcParams, if present, which is
+  - It allows the client to use the SvcParams, if present, which are
     only usable with a specific TargetName.  The SvcParams may
     include information that enhances performance (e.g. alpn) and privacy
     (e.g. ech).
