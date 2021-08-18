@@ -1542,13 +1542,10 @@ This document defines a new DNS RR type, SVCB, whose value 64 has
 been allocated by IANA from the "Resource Record (RR) TYPEs"
 subregistry of the "Domain Name System (DNS) Parameters" registry:
 
-Type: SVCB
-
-Value: 64
-
-Meaning: General Purpose Service Endpoints
-
-Reference: This document
+* Type: SVCB
+* Value: 64
+* Meaning: General Purpose Service Binding
+* Reference: This document
 
 ## HTTPS RRType
 
@@ -1556,22 +1553,22 @@ This document defines a new DNS RR type, HTTPS, whose value 65 has
 been allocated by IANA from the "Resource Record (RR) TYPEs"
 subregistry of the "Domain Name System (DNS) Parameters" registry:
 
-Type: HTTPS
-
-Value: 65
-
-Meaning: HTTPS Specific Service Endpoints
-
-Reference: This document
+* Type: HTTPS
+* Value: 65
+* Meaning: Service Binding for HTTPS
+* Reference: This document
 
 ## New registry for Service Parameters {#svcparamregistry}
 
-The "Service Binding (SVCB) Parameter Registry" defines the namespace
+IANA is requested to create a new registry, entitled
+"Service Parameter Keys (SvcParamKeys)".  This registry defines the namespace
 for parameters, including string representations and numeric
 SvcParamKey values.  This registry is shared with other SVCB-compatible
 RR types, such as the HTTPS RR.
 
-ACTION: create and include a reference to this registry.
+ACTION: create this registry, on a new page entitled
+"DNS Service Bindings (SVCB)" under the "Domain Name System (DNS) Parameters"
+category.
 
 ### Procedure
 
@@ -1612,16 +1609,7 @@ be populated with the registrations below:
 | 65280-65534 | N/A             | Private Use                     | (This document)                          |
 | 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          |
 
-## Registry updates {#registry-updates}
-
-Per {{?RFC6895}}, please add the following entries to the data type
-range of the Resource Record (RR) TYPEs registry:
-
-| TYPE     | Meaning                                      | Reference       |
-| ------   | ----------------------                       | --------------- |
-| SVCB     | Service Location and Parameter Binding       | (This document) |
-| HTTPS    | HTTPS Service Location and Parameter Binding | (This document) |
-
+## Other registry updates
 
 Per {{?Attrleaf}}, please add the following entry to the DNS Underscore
 Global Scoped Entry Registry:
