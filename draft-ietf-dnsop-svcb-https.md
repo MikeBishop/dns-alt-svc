@@ -1830,9 +1830,9 @@ long, it is broken into several lines.
 
     \x00\x00                                           # priority
     \x03foo\x07example\x03com\x00                      # target
+{: title="AliasMode"}
 
 ## ServiceMode
-The first form is the simple "use the ownername".
 
     example.com.   SVCB   1 .
 
@@ -1843,8 +1843,7 @@ The first form is the simple "use the ownername".
 
     \x00\x01   # priority
     \x00       # target, root label
-
-This test vector only has a port.
+{: title="TargetName is \".\""}
 
     example.com.   SVCB   16 foo.example.com. port=53
 
@@ -1861,8 +1860,7 @@ This test vector only has a port.
     \x00\x03                                           # key 3
     \x00\x02                                           # length: 2 bytes
     \x00\x35                                           # value
-
-This example has a key that is not registered, its value is unquoted.
+{: title="Specifies a port"}
 
     example.com.   SVCB   1 foo.example.com. key667=hello
 
@@ -1879,9 +1877,7 @@ This example has a key that is not registered, its value is unquoted.
     \x02\x9b                                           # key 667
     \x00\x05                                           # length 5
     hello                                              # value
-
-This example has a key that is not registered, its value is quoted and contains
-a decimal-escaped character.
+{: title="A generic key and unquoted value"}
 
     example.com.   SVCB   1 foo.example.com. key667="hello\210qoo"
 
@@ -1898,8 +1894,7 @@ a decimal-escaped character.
     \x02\x9b                                           # key 667
     \x00\x09                                           # length 9
     hello\xd2qoo                                       # value
-
-Here, two IPv6 hints are quoted in the presentation format.
+{: title="A generic key and quoted value with a decimal escape"}
 
     example.com.   SVCB   1 foo.example.com. (
                           ipv6hint="2001:db8::1,2001:db8::53:1"
@@ -1922,10 +1917,7 @@ Here, two IPv6 hints are quoted in the presentation format.
          \x00\x00\x00\x00\x00\x00\x00\x01              # first address
     \x20\x01\x0d\xb8\x00\x00\x00\x00
          \x00\x00\x00\x00\x00\x53\x00\x01              # second address
-
-
-This example shows a single IPv6 hint in IPv4-mapped IPv6 presentation
-format({{?RFC3513}}).
+{: title="Two quoted IPv6 hints"}
 
     example.com.   SVCB   1 example.com. ipv6hint="::ffff:198.51.100.100"
 
@@ -1943,9 +1935,7 @@ format({{?RFC3513}}).
     \x00\x10                                           # length 16
     \x00\x00\x00\x00\x00\x00\x00\x00
          \x00\x00\xff\xff\xc6\x33\x64\x64              # address
-
-In the next vector, neither the SvcParamValues nor the mandatory keys are 
-sorted in presentation format, but are correctly sorted in the wire-format.
+{: title="An IPv6 hint in IPv4-mapped format "}
 
     example.com.   SVCB   16 foo.example.org. (
                           alpn=h2,h3-19 mandatory=ipv4hint,alpn
@@ -1985,9 +1975,8 @@ sorted in presentation format, but are correctly sorted in the wire-format.
     \x00\x04                                           # key 4
     \x00\x04                                           # param length 4
     \xc0\x00\x02\x01                                   # param value
-
-This last vector has an alpn value with an escaped comma and an escaped
-backslash in two presentation formats.
+{: title="SvcParamKey ordering is arbitrary in presentation format but
+sorted in wire format"}
 
     example.com.   SVCB   16 foo.example.org. alpn="f\\\\oo\\,bar,h2"
     example.com.   SVCB   16 foo.example.org. alpn=f\\\092oo\092,bar,h2
@@ -2011,49 +2000,43 @@ backslash in two presentation formats.
     f\oo,bar                                           # alpn value
     \x02                                               # alpn length 2
     h2                                                 # alpn value
+{: title="An alpn value with an escaped comma and an escaped
+backslash in two presentation formats"}
 
 
 ## Failure cases
 
-In this subsection, example resource records are shown which are not
+This subsection contains test vectors which are not
 compliant with this document. The various reasons for non-compliance
 are explained with each example.
-
-
-This example has multiple instances of the same
-SvcParamKey {{presentation}}.
 
     example.com.   SVCB   1 foo.example.com. (
                            key123=abc key123=def
                            )
-
-In the next examples the SvcParamKeys are missing their values.
+{: title="Multiple instances of the same SvcParamKey"}
 
     example.com.   SVCB   1 foo.example.com. mandatory
     example.com.   SVCB   1 foo.example.com. alpn
     example.com.   SVCB   1 foo.example.com. port
     example.com.   SVCB   1 foo.example.com. ipv4hint
     example.com.   SVCB   1 foo.example.com. ipv6hint
-
-The "no-default-alpn" SvcParamKey value MUST be empty ({{alpn-key}}).
+{: title="Missing SvcParamValues that must be nonempty"}
 
     example.com.   SVCB   1 foo.example.com. no-default-alpn=abc
-
-In this record a mandatory SvcParam is missing ({{mandatory}}).
+{: title="The \"no-default-alpn\" SvcParamKey value must be empty"}
 
     example.com.   SVCB   1 foo.example.com. mandatory=key123
-
-The "mandatory" SvcParamKey MUST not be included in mandatory
-list ({{mandatory}}).
+{: title="A mandatory SvcParam is missing"}
 
     example.com.   SVCB   1 foo.example.com. mandatory=mandatory
-
-Here there are multiple instances of the same SvcParamKey in
-the mandatory list ({{mandatory}}).
+{: title="The \"mandatory\" SvcParamKey must not be included in the
+mandatory list"}
 
     example.com.   SVCB   1 foo.example.com. ( 
                           mandatory=key123,key123 key123=abc
                           )
+{: title="Multiple instances of the same SvcParamKey in
+the mandatory list"}
 
 # Change history
 
