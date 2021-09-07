@@ -1159,12 +1159,8 @@ the origin, not the TargetName.
 
 ## HTTP Strict Transport Security {#hsts}
 
-By publishing a usable HTTPS RR, the server operator indicates that all
-useful HTTP resources on this Host ({{!I-D.draft-ietf-httpbis-semantics,
-Section 7.2}}) are reachable over HTTPS, similar to HTTP Strict Transport
-Security {{HSTS}}.  If this is not true, the operator MUST NOT publish an
-HTTPS RR.
-
+An HTTPS RR directs the client to communicate with this host only over a
+secure transport, similar to HTTP Strict Transport Security {{HSTS}}.
 Prior to making an "http" scheme request, the client SHOULD perform a lookup
 to determine if any HTTPS RRs exist for that origin.  To do so,
 the client SHOULD construct a corresponding "https" URL as follows:
@@ -1176,6 +1172,9 @@ the client SHOULD construct a corresponding "https" URL as follows:
 3. Do not alter any other aspect of the URL.
 
 This construction is equivalent to {{Section 8.3 of HSTS}}, point 5.
+
+If the "http" origin exists and contains important resources that have no
+equivalent at the "https" origin, the operator MUST NOT publish an HTTPS RR.
 
 If an HTTPS RR query for this "https" URL returns any AliasMode HTTPS RRs,
 or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
