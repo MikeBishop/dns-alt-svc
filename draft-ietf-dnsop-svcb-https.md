@@ -1173,9 +1173,6 @@ the client SHOULD construct a corresponding "https" URL as follows:
 
 This construction is equivalent to {{Section 8.3 of HSTS}}, point 5.
 
-If the "http" origin exists and contains important resources that have no
-equivalent at the "https" origin, the operator MUST NOT publish an HTTPS RR.
-
 If an HTTPS RR query for this "https" URL returns any AliasMode HTTPS RRs,
 or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
 SHOULD act as if it has received an HTTP "307 Temporary Redirect" redirect
@@ -1184,6 +1181,9 @@ trigger the redirect behavior.)
 Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
+If this redirection would result in a loss of functionality (e.g. important
+resources that are only available on the "http" origin), the operator MUST
+NOT publish an HTTPS RR.
 
 When an HTTPS connection fails due to an error in the underlying secure
 transport, such as an error in certificate validation, some clients
