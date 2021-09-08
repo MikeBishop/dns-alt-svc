@@ -272,7 +272,7 @@ specific to each key.
 
 When the "=" is omitted, the `value` is interpreted as empty.
 
-Arbitrary keys can be represented using the unknown-key format
+Arbitrary keys can be represented using the unknown-key presentation format
 "keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
 A SvcParam in this form SHALL be parsed as specified above, and
