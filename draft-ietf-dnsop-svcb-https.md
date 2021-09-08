@@ -180,7 +180,7 @@ intended destination to all entities along the network path.
 This document also defines a parameter for Encrypted ClientHello {{!ECH}}
 keys. See {{ech-param}}.
 
-# Terminology
+## Terminology
 
 Our terminology is based on the common case where the SVCB record is used to
 access a resource identified by a URI whose `authority` field contains a DNS
