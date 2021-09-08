@@ -1437,7 +1437,7 @@ introduces a number of complexities highlighted by this example:
 
 * The A, AAAA, HTTPS resolutions are independent lookups so clients may
   observe and follow different CNAMEs to different CDNs.
-  Clients may thus find a SvcDomainName pointing to a name
+  Clients may thus find a TargetName pointing to a name
   other than the one which returned along with the A and AAAA lookups
   and will need to do an additional resolution for them.
   Including ipv6hint and ipv4hint will reduce the performance
