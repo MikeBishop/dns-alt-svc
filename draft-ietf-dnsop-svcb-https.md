@@ -388,7 +388,8 @@ resolvers SHOULD pick one at random.
 The primary purpose of AliasMode is to allow aliasing at the zone
 apex, where CNAME is not allowed.  In AliasMode, the TargetName will
 be the name of a domain that resolves to SVCB,
-AAAA, and/or A records.  The TargetName SHOULD NOT be equal
+AAAA, and/or A records.  (See {{svcb-compatible}} for aliasing of SVCB-compatible RR types.) 
+ The TargetName SHOULD NOT be equal
 to the owner name, as this would result in a loop.
 
 In AliasMode, records SHOULD NOT include any SvcParams, and recipients MUST
