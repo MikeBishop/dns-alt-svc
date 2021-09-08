@@ -264,8 +264,8 @@ specific to each key.
 
 When the "=" is omitted, the `value` is interpreted as empty.
 
-Unrecognized keys are represented in presentation
-format as "keyNNNNN" where NNNNN is the numeric
+Arbitrary keys can be represented using the unknown-key presentation format
+"keyNNNNN" where NNNNN is the numeric
 value of the key type without leading zeros.
 A SvcParam in this form SHALL be parsed as specified above, and
 the decoded `value` SHALL be used as its wire format encoding.
@@ -538,11 +538,10 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 
 ## Handling resolution failures {#client-failures}
 
-If the client encounters a SERVFAIL error, transport error, or timeout
-during SVCB resolution,
-and DNS exchanges between the client and the recursive resolver are
-cryptographically protected (e.g. using TLS {{!DoT=RFC7858}} or HTTPS
-{{!DoH=RFC8484}}), the client SHOULD abandon the connection even if the client
+If DNS responses are cryptographically protected (e.g. using DNSSEC,
+TLS {{!DoT=RFC7858}}, or HTTPS {{!DoH=RFC8484}}), and SVCB resolution fails
+due to an authentication error, SERVFAIL response, transport error, or
+timeout, the client SHOULD abandon the connection attempt even if the client
 is SVCB-optional.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
@@ -553,8 +552,8 @@ occur if an active attacker between the client and the recursive resolver is
 selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
-Similarly, if the client enforces DNSSEC validation on A/AAAA responses,
-it SHOULD terminate the connection if a SVCB response fails to validate.
+If the client enforces DNSSEC validation on A/AAAA responses, it SHOULD
+apply the same validation policy to SVCB.
 
 If the client is unable to complete SVCB resolution due to its chain length
 limit, the client SHOULD fall back to the authority endpoint, as if the
@@ -862,6 +861,11 @@ attempt a connection using QUIC, with a ProtocolNameList of \["h3"\].
 Once the client has constructed a ClientHello, protocol negotiation in that
 handshake proceeds as specified in {{!ALPN}}, without regard to the SVCB ALPN
 set.
+
+Clients MAY implement a fallback procedure, using a less-preferred transport
+if more-preferred transports fail to connect.  This fallback behavior is
+vulnerable to manipulation by a network attacker who blocks the more-preferred
+transports, but it may be necessary for compatibility with existing networks.
 
 With this procedure in place, an attacker who can modify DNS and network
 traffic can prevent a successful transport connection, but cannot otherwise
@@ -1451,7 +1455,7 @@ introduces a number of complexities highlighted by this example:
 
 * The A, AAAA, HTTPS resolutions are independent lookups so clients may
   observe and follow different CNAMEs to different CDNs.
-  Clients may thus find a SvcDomainName pointing to a name
+  Clients may thus find a TargetName pointing to a name
   other than the one which returned along with the A and AAAA lookups
   and will need to do an additional resolution for them.
   Including ipv6hint and ipv4hint will reduce the performance
@@ -1764,8 +1768,6 @@ However, there are several differences:
   HTTP/2).
 * SRV records are not extensible, whereas SVCB and HTTPS RRs
   can be extended with new parameters.
-* SVCB records use 16 bit for SvcPriority for consistency
-  with SRV and other RR types that also use 16 bit priorities.
 * SRV records specify a "weight" for unbalanced randomized load-balancing.
   SVCB only supports balanced randomized load-balancing, although weights
   could be added via a future SvcParam.
