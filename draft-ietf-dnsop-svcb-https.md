@@ -651,8 +651,8 @@ See {{incomplete-response}} for possible optimizations of this procedure.
 Recursive resolvers MUST be able to convey SVCB records with unrecognized
 SvcParamKeys, and MAY treat the entire SvcParams portion of the record as
 opaque, even if the contents are invalid.  Alternatively, recursive
-resolvers MAY report SERVFAIL to avoid returning a SvcParamValue that is
-invalid according to the SvcParam's specification.
+resolvers MAY report an error such as SERVFAIL to avoid returning a
+SvcParamValue that is invalid according to the SvcParam's specification.
 For complex value types whose interpretation might differ 
 between implementations or have additional future
 allowed values added (e.g. URIs or "alpn"), resolvers 
@@ -1743,7 +1743,6 @@ This table serves as a non-normative summary of the HTTP mapping for SVCB
 | **Automatically Mandatory Keys**         | `port`, `no-default-alpn`               |
 | **SvcParam defaults**                    | `alpn`: \["http/1.1"\]                  |
 | **Special behaviors**                    | HTTP to HTTPS upgrade                   |
-| **Keys that clients must implement**     | None (if HTTP/1.1, default port only)   |
 | **Keys that records must include**       | None                                    |
 
 # Comparison with alternatives
