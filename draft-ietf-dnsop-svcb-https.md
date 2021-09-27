@@ -70,8 +70,8 @@ For example, when clients need to make a connection to fetch resources
 associated with an "https" URI, they currently resolve only A and/or AAAA
 records for the origin hostname.  This is adequate for services that use
 basic HTTP/TLS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}), but
-clients that learn additional information can gain privacy, performance, 
-and operational advantages.  It is highly desirable to minimize the 
+clients that learn additional information can gain privacy, performance,
+and operational advantages.  It is highly desirable to minimize the
 number of round-trips and lookups required to
 learn this additional information.
 
@@ -531,7 +531,7 @@ noted in {{client-failures}} and {{ech-client-behavior}}).
 SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
 be needed for connection establishment.  SVCB-optional clients SHALL append an
 alternative endpoint consisting of the final value of $QNAME, the authority
-endpoint's port number, and no SvcParams, to the list of alternative endpoints, which is 
+endpoint's port number, and no SvcParams, to the list of alternative endpoints, which is
 attempted before falling back to non-SVCB connection modes.  This ensures that
 SVCB-optional clients will make use of an AliasMode record whose TargetName has
 A and/or AAAA records but no SVCB records.
@@ -655,11 +655,11 @@ SvcParamKeys, and MAY treat the entire
 SvcParams portion of the record as opaque.  No part of this specification requires
 recursive resolvers to alter their behavior based on its contents, even if the contents
 are invalid.  Recursive resolvers MAY validate the values of recognized
-SvcParamKeys and reject records containing values 
+SvcParamKeys and reject records containing values
 which are invalid according to the SvcParam specification.
-For complex value types whose interpretation might differ 
+For complex value types whose interpretation might differ
 between implementations or have additional future
-allowed values added (e.g. URIs or "alpn"), resolvers 
+allowed values added (e.g. URIs or "alpn"), resolvers
 SHOULD limit validation to specified constraints.
 
 When responding to a query that includes the DNSSEC OK bit ({{!RFC3225}}),
@@ -815,8 +815,8 @@ pairs are concatenated to form the SvcParamValue.  These pairs MUST exactly
 fill the SvcParamValue; otherwise, the SvcParamValue is malformed.
 
 For "no-default-alpn", the presentation and wire format values MUST be
-empty.  When "no-default-alpn" is specified in an RR, 
-"alpn" must also be specified in order for the RR 
+empty.  When "no-default-alpn" is specified in an RR,
+"alpn" must also be specified in order for the RR
 to be "self-consistent" ({{service-mode}}).
 
 Each scheme that uses this SvcParamKey defines a "default set" of ALPNs
@@ -1415,7 +1415,7 @@ or due to logic within the authoritative DNS server:
      ; Resolutions following the customer.svc2.example
      ; path use these records.
      ; Note that this CDN only supports HTTP/2.
-     $ORIGIN svc2.example. ; domain operated by CDN 2     
+     $ORIGIN svc2.example. ; domain operated by CDN 2
      customer 300 IN HTTPS 1 . alpn=h2 ech="xyz..."
                60 IN A    198.51.100.2
                      A    198.51.100.3
@@ -1427,7 +1427,7 @@ or due to logic within the authoritative DNS server:
      ; path use these records.
      ; Note that this CDN has no HTTPS records
      ; and thus no ECH support.
-     $ORIGIN svc3.example. ; domain operated by CDN 3 
+     $ORIGIN svc3.example. ; domain operated by CDN 3
      cdn3      60 IN A    203.0.113.8
                      AAAA 2001:db8:113::8
 
@@ -1691,7 +1691,7 @@ escaping syntax applies:
     escaped-item    = 1*(item-allowed / "\," / "\\")
     comma-separated = [escaped-item *("," escaped-item)]
 
-Decoding of value-lists happens after character-string decoding.  
+Decoding of value-lists happens after character-string decoding.
 For example, consider these `char-string` SvcParamValues:
 
     "part1,part2,part3\\,part4\\\\"
@@ -1926,7 +1926,7 @@ format({{?RFC3513}}).
     \x00\x00\x00\x00\x00\x00\x00\x00
          \x00\x00\xff\xff\xc6\x33\x64\x64              # address
 
-In the next vector, neither the SvcParamValues nor the mandatory keys are 
+In the next vector, neither the SvcParamValues nor the mandatory keys are
 sorted in presentation format, but are correctly sorted in the wire-format.
 
     example.com.   SVCB   16 foo.example.org. (
@@ -2033,7 +2033,7 @@ list ({{mandatory}}).
 Here there are multiple instances of the same SvcParamKey in
 the mandatory list ({{mandatory}}).
 
-    example.com.   SVCB   1 foo.example.com. ( 
+    example.com.   SVCB   1 foo.example.com. (
                           mandatory=key123,key123 key123=abc
                           )
 
