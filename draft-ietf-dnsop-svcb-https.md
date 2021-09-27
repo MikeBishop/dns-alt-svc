@@ -128,8 +128,8 @@ additional DNS RR in a way that:
 
 Additional goals specific to HTTPS RRs and the HTTPS use-case include:
 
-* Connect directly to HTTP3 (QUIC transport)
-  alternative endpoints {{!HTTP3=I-D.ietf-quic-http}}
+* Connect directly to HTTP/3 (QUIC transport)
+  alternative endpoints {{?HTTP3=I-D.ietf-quic-http}}
 * Obtain the Encrypted ClientHello {{!ECH}} keys associated with an
   alternative endpoint
 * Support non-default TCP and UDP ports
