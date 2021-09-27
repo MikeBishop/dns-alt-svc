@@ -41,12 +41,12 @@ informative:
 
 This document specifies the "SVCB" and "HTTPS" DNS resource record (RR)
 types to facilitate the lookup of information needed to make connections
-to network services, such as for "https" origins.  SVCB records
+to network services, such as for HTTP origins.  SVCB records
 allow a service to be provided from multiple alternative endpoints,
 each with associated parameters (such as transport protocol
 configuration and keys for encrypting the TLS ClientHello).  They also
 enable aliasing of apex domains, which is not possible with CNAME.
-The HTTPS RR is a variation of SVCB for "https" and "http" origins.
+The HTTPS RR is a variation of SVCB for use with HTTP {{!HTTP=I-D.ietf-httpbis-semantics}}.
 By providing more information to the client before it attempts to
 establish a connection, these records offer potential benefits to
 both performance and privacy.
@@ -1183,8 +1183,8 @@ This construction is equivalent to {{Section 8.3 of HSTS}}, point 5.
 
 If an HTTPS RR query for this "https" URL returns any AliasMode HTTPS RRs,
 or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
-SHOULD act as if it has received an HTTP 307 "Temporary Redirect"
-to this "https" URL.  (Receipt of an incompatible ServiceMode RR does not
+SHOULD behave as if it has received an HTTP 307 (Temporary Redirect) status code
+with this "https" URL in the "Location" field.  (Receipt of an incompatible ServiceMode RR does not
 trigger the redirect behavior.)
 Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
