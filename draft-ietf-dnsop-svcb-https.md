@@ -944,6 +944,10 @@ or the owner name (which can be written as "."), server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
+## "mandatory" {#svcparamkey-mandatory}
+
+See {{mandatory}}.
+
 # ServiceMode RR compatibility and mandatory keys {#mandatory}
 
 In a ServiceMode RR, a SvcParamKey is considered "mandatory" if the RR will not
