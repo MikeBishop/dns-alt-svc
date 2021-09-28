@@ -66,12 +66,11 @@ performance and privacy by avoiding transient connections to a sub-optimal
 default server, negotiating a preferred protocol, and providing relevant
 public keys.
 
-For example, when clients need to make a connection to fetch resources
-associated with an "https" URI, they currently resolve only A and/or AAAA
-records for the origin hostname.  This is adequate for services that use
-basic HTTP/TLS (fixed port, no QUIC, no {{!ECH=I-D.ietf-tls-esni}}), but
-clients that learn additional information can gain privacy, performance,
-and operational advantages.  It is highly desirable to minimize the
+For example, HTTP clients currently resolve only A and/or AAAA records for
+the origin hostname, learning only its IP addresses.  If an HTTP client learns
+more about the origin before connecting, it may be able to upgrade "http" URLs
+to "https", enable HTTP/3 or Encrypted ClientHello, or switch to an
+operationally preferable endpoint.  It is highly desirable to minimize the
 number of round-trips and lookups required to
 learn this additional information.
 
