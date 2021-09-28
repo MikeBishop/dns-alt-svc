@@ -1565,7 +1565,7 @@ subregistry of the "Domain Name System (DNS) Parameters" registry:
 
 * Type: HTTPS
 * Value: 65
-* Meaning: Service Binding for "https"
+* Meaning: Service Binding type for use with HTTP
 * Reference: This document
 
 ## New registry for Service Parameters {#svcparamregistry}
