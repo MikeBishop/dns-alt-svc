@@ -981,7 +981,7 @@ This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
 own value-list.  Other automatically mandatory keys SHOULD NOT appear in the
 list either.  (Including them wastes space and otherwise has no effect.)
 
-# Service Bindings for "https" {#https}
+# Using Service Bindings with HTTP {#https}
 
 Use of any protocol with SVCB requires a protocol-specific mapping
 specification.  This section specifies the mapping for the "http" and "https"
