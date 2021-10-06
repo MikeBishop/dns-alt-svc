@@ -1056,10 +1056,8 @@ differences in the intended client and server behavior.
 
 ### ALPN usage
 
-Unlike Alt-Svc Field Values, HTTPS RRs can contain multiple ALPN IDs.  Clients
-might choose to remove less-preferred ALPN IDs they offer when using HTTPS RRs,
-but they are not required to abort a connection attempt if a chosen ALPN ID is
-not negotiated by the server.
+Unlike Alt-Svc Field Values, HTTPS RRs can contain multiple ALPN IDs.  The
+meaning and use of these IDs is discussed in {{use}}.
 
 ### Untrusted channel
 
