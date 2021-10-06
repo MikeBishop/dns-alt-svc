@@ -1015,7 +1015,7 @@ The presence of an HTTPS RR for an origin also indicates
 that clients should connect securely and use the "https" scheme, as
 discussed in {{hsts}}.  This allows HTTPS RRs to apply to
 pre-existing "http" scheme URLs, while ensuring that the client uses a
-secure and authenticated HTTPS connection.
+secure and authenticated connection.
 
 The HTTPS RR parallels the concepts
 introduced in the HTTP Alternative Services proposed standard
