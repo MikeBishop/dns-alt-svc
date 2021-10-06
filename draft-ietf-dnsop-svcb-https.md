@@ -150,7 +150,7 @@ and ServiceMode, which provides connection information bound to a service
 endpoint domain.  Placing both forms in a single RR type allows clients to
 fetch the relevant information with a single query.
 
-The SVCB RR has two mandatory fields and one optional.  The fields are:
+The SVCB RR has two required fields and one optional.  The fields are:
 
 1. SvcPriority: The priority of this record (relative to others,
    with lower values preferred).  A value of 0 indicates AliasMode.
