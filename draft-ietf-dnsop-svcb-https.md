@@ -89,7 +89,7 @@ record that can be applied directly and efficiently to a wide range
 of services ({{svcb}}).  It also describes the rules for defining other
 SVCB-compatible RR types ({{svcb-compatible}}), starting with the HTTPS
 RR type ({{https}}), which provides improved efficiency and convenience
-with HTTPS by avoiding the need for an Attrleaf label {{?Attrleaf=RFC8552}}
+with HTTP by avoiding the need for an Attrleaf label {{?Attrleaf=RFC8552}}
 ({{httpsnames}}).
 
 The SVCB RR has two modes: 1) "AliasMode", which simply delegates operational
