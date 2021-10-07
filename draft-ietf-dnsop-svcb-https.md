@@ -1013,6 +1013,10 @@ specific to the https and http schemes.  Clients MUST NOT
 perform SVCB queries or accept SVCB responses for "https"
 or "http" schemes.
 
+The presentation format of the record is:
+
+    Name TTL IN HTTPS SvcPriority TargetName SvcParams
+
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
 The "automatically mandatory" keys ({{mandatory}}) are "port"
