@@ -515,7 +515,8 @@ protocols (e.g. HTTPS) SHALL implement SVCB-optional behavior (except as
 noted in {{client-failures}} and {{ech-client-behavior}}).
 
 SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
-be needed for connection establishment if the SVCB record is absent.
+be needed for connection establishment if the SVCB record is absent, in order to minimize delay
+in that case and enable the optimizations discussed in {{optimizations}}.
 
 Once SVCB resolution has concluded, whether successful or not,
 SVCB-optional clients SHALL append to the priority list an
@@ -527,8 +528,8 @@ A and/or AAAA records but no SVCB records.)
 
 The client proceeds with connection establishment using the resolved list of
 endpoints.  Clients SHOULD try higher-priority alternatives first, with
-fallback to lower-priority alternatives.  Clients issue AAAA and/or A
-queries for the selected TargetName, and MAY choose between them using an
+fallback to lower-priority alternatives.  Clients resolve AAAA and/or A
+records for the selected TargetName, and MAY choose between them using an
 approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 
 If the client is SVCB-optional, and connecting using this list of endpoints has
@@ -776,8 +777,8 @@ processing to all SVCB-compatible RR types.
 
 All other behaviors described as applying to the SVCB RR also apply
 to all SVCB-compatible RR types unless explicitly stated otherwise.
-When following an AliasMode record of RR type `T` ({{alias-mode}}), the
-followup query to the TargetName MUST also be for type `T`.
+When following an AliasMode record ({{alias-mode}}) of RR type $T , the
+followup query to the TargetName MUST also be for type $T.
 
 This document defines one SVCB-compatible RR type (other than SVCB itself):
 the HTTPS RR type ({{https}}), which avoids Attrleaf label prefixes {{?Attrleaf=RFC8552}} in order to improve
