@@ -69,7 +69,8 @@ public keys.
 For example, HTTP clients currently resolve only A and/or AAAA records for
 the origin hostname, learning only its IP addresses.  If an HTTP client learns
 more about the origin before connecting, it may be able to upgrade "http" URLs
-to "https", enable HTTP/3 or Encrypted ClientHello, or switch to an
+to "https", enable HTTP/3 or Encrypted ClientHello {{!ECH=I-D.ietf-tls-esni}},
+or switch to an
 operationally preferable endpoint.  It is highly desirable to minimize the
 number of round-trips and lookups required to
 learn this additional information.
