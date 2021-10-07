@@ -780,8 +780,9 @@ When following an AliasMode record of RR type `T` ({{alias-mode}}), the
 followup query to the TargetName MUST also be for type `T`.
 
 This document defines one SVCB-compatible RR type (other than SVCB itself):
-the HTTPS RR type ({{https}}), which avoids prefixes in order to improve
-compatibility with wildcards and CNAMEs, which are widely used with HTTPS.
+the HTTPS RR type ({{https}}), which avoids Attrleaf label prefixes {{?Attrleaf=RFC8552}} in order to improve
+compatibility with wildcards and CNAMEs, which are widely used with HTTP.
+
 Standards authors should consider carefully whether to use SVCB or define a
 new SVCB-compatible RR type, as this choice cannot easily be reversed after
 deployment.
