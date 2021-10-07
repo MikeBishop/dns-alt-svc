@@ -86,20 +86,11 @@ collection of consistent configuration parameters through the DNS
 
 This document first describes the SVCB RR as a general-purpose resource
 record that can be applied directly and efficiently to a wide range
-of services ({{svcb}}).  The HTTPS RR is then defined as a special
-case of SVCB that improves efficiency and convenience for use with HTTP
-({{https}}) by avoiding the need for an Attrleaf label {{!Attrleaf=RFC8552}}
-({{httpsnames}}).  Other protocols with similar needs may
-follow the pattern of HTTPS and assign their own
-SVCB-compatible RR types.
-
-All behaviors described as applying to the SVCB RR also apply
-to the HTTPS RR unless explicitly stated otherwise.
-{{https}} describes additional behaviors
-specific to the HTTPS RR.  Apart from {{https}}
-and introductory examples, much of this document refers only to the SVCB RR,
-but those references should be taken to apply to SVCB, HTTPS,
-and any future SVCB-compatible RR types.
+of services ({{svcb}}).  It also describes the rules for defining other
+SVCB-compatible RR types ({{svcb-compatible}}), starting with the HTTPS
+RR type ({{https}}), which provides improved efficiency and convenience
+with HTTP by avoiding the need for an Attrleaf label {{!Attrleaf=RFC8552}}
+({{httpsnames}}).
 
 The SVCB RR has two modes: 1) "AliasMode", which simply delegates operational
 control for a resource; 2) "ServiceMode", which binds together
@@ -117,7 +108,7 @@ additional DNS RR in a way that:
 * Does not assume that all alternative endpoints have the same parameters
   or capabilities, or are even
   operated by the same entity.  This is important, as DNS does not
-  provide any way to tie together multiple RRs for the same name.
+  provide any way to tie together multiple RRSets for the same name.
   For example, if www.example.com is a CNAME alias that switches
   between one of three CDNs or hosting environments, successive queries
   for that name may return records that correspond to different environments.
@@ -208,8 +199,9 @@ Additional DNS terminology intends to be consistent
 with {{?DNSTerm=RFC8499}}.
 
 SVCB is a contraction of "service binding".  The SVCB RR, HTTPS RR,
-and future RR types that share SVCB's format and registry are
-collectively known as SVCB-compatible RR types.
+and future RR types that share SVCB's formats and registry are
+collectively known as SVCB-compatible RR types.  The contraction "SVCB" is also
+used to refer to this system as a whole.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
 NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
@@ -228,7 +220,7 @@ The algorithm for resolving SVCB records and associated
 address records is specified in {{client-behavior}}.
 
 Other SVCB-compatible resource record types
-can also be defined as-needed.  In particular, the
+can also be defined as-needed (see {{svcb-compatible}}).  In particular, the
 HTTPS RR (RR type 65) provides special handling
 for the case of "https" origins as described in {{https}}.
 
@@ -297,16 +289,15 @@ The RDATA for the SVCB RR consists of:
   (so smaller than 65535 octets and constrained by the RDATA
   and DNS message sizes).
 
-When the list of SvcParams is non-empty (ServiceMode), it contains a series of
+When the list of SvcParams is non-empty, it contains a series of
 SvcParamKey=SvcParamValue pairs, represented as:
 
 * a 2 octet field containing the SvcParamKey as an
   integer in network byte order.  (See {{iana-keys}} for the defined values.)
 * a 2 octet field containing the length of the SvcParamValue
-  as an integer between 0 and 65535 in network byte order
-  (but constrained by the RDATA and DNS message sizes).
-* an octet string of this length whose contents are in a format determined
-  by the SvcParamKey.
+  as an integer between 0 and 65535 in network byte order.
+* an octet string of this length whose contents are the SvcParamValue in a 
+  format determined by the SvcParamKey.
 
 SvcParamKeys SHALL appear in increasing numeric order.
 
@@ -361,7 +352,8 @@ to indicate that these services are served on port number 8004,
 which supports the protocol "bar" and its associated transport in
 addition to the default transport protocol for "foo://".
 
-(Parentheses are used to ignore a line break ({{RFC1035, Section 5.1}}).)
+(Parentheses are used to ignore a line break in DNS zone file presentation
+format ({{RFC1035, Section 5.1}}).)
 
 ## Interpretation
 
@@ -395,9 +387,9 @@ resolvers SHOULD pick one at random.
 
 The primary purpose of AliasMode is to allow aliasing at the zone
 apex, where CNAME is not allowed.  In AliasMode, the TargetName will
-be the name of a domain that resolves to SVCB
-(or other SVCB-compatible record such as HTTPS),
-AAAA, and/or A records.  The TargetName SHOULD NOT be equal
+be the name of a domain that resolves to SVCB,
+AAAA, and/or A records.  (See {{svcb-compatible}} for aliasing of SVCB-compatible RR types.) 
+ The TargetName SHOULD NOT be equal
 to the owner name, as this would result in a loop.
 
 In AliasMode, records SHOULD NOT include any SvcParams, and recipients MUST
@@ -517,24 +509,31 @@ for a service, as performed by the client.  SVCB resolution is implemented as fo
 This procedure does not rely on any recursive or authoritative DNS server to
 comply with this specification or have any awareness of SVCB.
 
-Once SVCB resolution has concluded, the client proceeds with connection
-establishment.  Clients SHOULD try higher-priority alternatives first, with
-fallback to lower-priority alternatives.  Clients issue AAAA and/or A
-queries for the selected TargetName, and MAY choose between them using an
-approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
-
 A client is called "SVCB-optional" if it can connect without the use of
 ServiceMode records, and "SVCB-reliant" otherwise.  Clients for pre-existing
 protocols (e.g. HTTP) SHALL implement SVCB-optional behavior (except as
 noted in {{client-failures}} and {{ech-client-behavior}}).
 
 SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
-be needed for connection establishment.  SVCB-optional clients SHALL append an
-alternative endpoint consisting of the final value of $QNAME, the authority
-endpoint's port number, and no SvcParams, to the list of alternative endpoints, which is
+be needed for connection establishment if the SVCB record is absent, in order to minimize delay
+in that case and enable the optimizations discussed in {{optimizations}}.
+
+Once SVCB resolution has concluded, whether successful or not,
+SVCB-optional clients SHALL append to the priority list an
+endpoint consisting of the final value of $QNAME, the authority
+endpoint's port number, and no SvcParams.  (This endpoint will be
 attempted before falling back to non-SVCB connection modes.  This ensures that
 SVCB-optional clients will make use of an AliasMode record whose TargetName has
-A and/or AAAA records but no SVCB records.
+A and/or AAAA records but no SVCB records.)
+
+The client proceeds with connection establishment using the resolved list of
+endpoints.  Clients SHOULD try higher-priority alternatives first, with
+fallback to lower-priority alternatives.  Clients resolve AAAA and/or A
+records for the selected TargetName, and MAY choose between them using an
+approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
+
+If the client is SVCB-optional, and connecting using this list of endpoints has
+failed, the client SHOULD attempt non-SVCB connection modes.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
@@ -544,8 +543,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If DNS responses are cryptographically protected (e.g. using DNSSEC or
 TLS {{!DoT=RFC7858}}{{!DoH=RFC8484}}), and SVCB resolution fails
 due to an authentication error, SERVFAIL response, transport error, or
-timeout, a SVCB-optional client SHOULD abandon the connection
-attempt like a SVCB-reliant client would.  Otherwise, an active attacker
+timeout, the client SHOULD abandon the connection attempt even if the client
+is SVCB-optional.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -581,18 +580,22 @@ option that is compatible with the client and the proxy.  When connecting
 using a SVCB record, clients MUST provide the final TargetName and port to the
 proxy, which will perform any required A and AAAA lookups.
 
-Providing the proxy with the final TargetName has several benefits:
+This arrangement has several benefits:
 
-* It allows the client to use the SvcParams, if present, which is
-  only usable with a specific TargetName.  The SvcParams may
-  include information that enhances performance (e.g. alpn) and privacy
-  (e.g. ech).
+* Compared to disabling SVCB:
+  - It allows the client to use the SvcParams, if present, which are
+    only usable with a specific TargetName.  The SvcParams may
+    include information that enhances performance (e.g. alpn) and privacy
+    (e.g. ech).
+  - It allows the service to delegate the apex domain.
 
-* It allows the service to delegate the apex domain.
-
-* It allows the proxy to select between IPv4 and IPv6 addresses for the
-  server according to its configuration, and receive addresses based on
-  its network geolocation.
+* Compared to providing the proxy with an IP address:
+  - It allows the proxy to select between IPv4 and IPv6 addresses for the
+    server according to its configuration.
+  - It ensures that the proxy receives addresses based on its network
+    geolocation, not the client's.
+  - It enables faster fallback for TCP destinations with multiple addresses
+    of the same family.
 
 # DNS Server Behavior {#server-behavior}
 
@@ -608,22 +611,16 @@ See {{ecs}} for exceptions.
 
 ## Recursive resolvers {#recursive-behavior}
 
+Whether or not the recursive resolver is aware of SVCB, the normal response
+construction process (i.e. unknown RR type resolution under {{!RFC3597}})
+generates the Answer section of the response.
 Recursive resolvers that are aware of SVCB SHOULD help the client to
 execute the procedure in {{client-behavior}} with minimum overall
-latency, by incorporating additional useful information into the
-response.  For the initial SVCB record query, this is just the normal
-response construction process (i.e. unknown RR type resolution under
-{{!RFC3597}}).  For followup resolutions performed during this procedure,
-we define incorporation as adding all useful RRs from the response to the
-Additional section
-without altering the response code.
-
-Upon receiving a SVCB query, recursive resolvers SHOULD start with the
-standard resolution procedure, and then follow this procedure to
-construct the full response to the stub resolver:
+latency by incorporating additional useful information into the
+Additional section of the response as follows:
 
 1. Incorporate the results of SVCB resolution.  If the chain length limit has
-   been reached, terminate successfully (i.e. a NOERROR response).
+   been reached, terminate.
 
 2. If any of the resolved SVCB records are in AliasMode, choose one of them
    at random, and resolve SVCB, A, and AAAA records for its
@@ -641,7 +638,9 @@ construct the full response to the stub resolver:
 In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
-follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).
+follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).  Errors or anomalies in
+obtaining additional records MAY cause this process to terminate, but
+MUST NOT themselves cause the resolver to send a failure response.
 
 See {{alias-mode}} for additional safeguards for recursive resolvers
 to implement to mitigate loops.
@@ -651,13 +650,11 @@ See {{incomplete-response}} for possible optimizations of this procedure.
 ## General requirements
 
 Recursive resolvers MUST be able to convey SVCB records with unrecognized
-SvcParamKeys, and MAY treat the entire
-SvcParams portion of the record as opaque.  No part of this specification requires
-recursive resolvers to alter their behavior based on its contents, even if the contents
-are invalid.  Recursive resolvers MAY validate the values of recognized
-SvcParamKeys and reject records containing values
-which are invalid according to the SvcParam specification.
-For complex value types whose interpretation might differ
+SvcParamKeys, and MAY treat the entire SvcParams portion of the record as
+opaque, even if the contents are invalid.  Alternatively, recursive
+resolvers MAY report an error such as SERVFAIL to avoid returning a
+SvcParamValue that is invalid according to the SvcParam's specification.
+For complex value types whose interpretation might differ 
 between implementations or have additional future
 allowed values added (e.g. URIs or "alpn"), resolvers
 SHOULD limit validation to specified constraints.
@@ -762,6 +759,34 @@ information that is required to use a SVCB record, if it is not included
 in the initial response.  As a performance optimization, if some of the SVCB
 records in the response can be used without requiring additional DNS queries,
 the client MAY prefer those records, regardless of their priorities.
+
+# SVCB-compatible 
+
+An RR type is called "SVCB-compatible" if it permits an implementation that is
+identical to SVCB in its:
+
+* RDATA presentation format
+* RDATA wire format
+* IANA registry used for SvcParamKeys
+* Authoritative server Additional Section processing
+* Recursive resolution process
+* Relevant Class (i.e. Internet ("IN") {{!RFC1035}})
+
+This allows authoritative and recursive DNS servers to apply identical
+processing to all SVCB-compatible RR types.
+
+All other behaviors described as applying to the SVCB RR also apply
+to all SVCB-compatible RR types unless explicitly stated otherwise.
+When following an AliasMode record ({{alias-mode}}) of RR type $T , the
+followup query to the TargetName MUST also be for type $T.
+
+This document defines one SVCB-compatible RR type (other than SVCB itself):
+the HTTPS RR type ({{https}}), which avoids Attrleaf label prefixes {{?Attrleaf=RFC8552}} in order to improve
+compatibility with wildcards and CNAMEs, which are widely used with HTTP.
+
+Standards authors should consider carefully whether to use SVCB or define a
+new SVCB-compatible RR type, as this choice cannot easily be reversed after
+deployment.
 
 # Initial SvcParamKeys {#keys}
 
@@ -997,15 +1022,9 @@ specific to the "https" and "http" schemes.  Clients MUST NOT
 perform SVCB queries or accept SVCB responses for "https"
 or "http" schemes.
 
-The HTTPS RR wire format and presentation format are
-identical to SVCB, and both share the SvcParamKey registry.  SVCB
-semantics apply equally to HTTPS RRs unless specified otherwise.
 The presentation format of the record is:
 
     Name TTL IN HTTPS SvcPriority TargetName SvcParams
-
-As with SVCB, the record is defined specifically within
-the Internet ("IN") Class {{!RFC1035}}.
 
 All the SvcParamKeys defined in {{keys}} are permitted for use in
 HTTPS RRs.  The default set of ALPN IDs is the single value "http/1.1".
@@ -1037,8 +1056,9 @@ without any prefix labels.
 
 By removing the Attrleaf labels {{Attrleaf}}
 used in SVCB, this construction enables offline DNSSEC signing of
-wildcard domains, which are commonly used with HTTP.  Reusing the
-service name also allows the targets of existing CNAME chains
+wildcard domains, which are commonly used with HTTP.  Using the
+service name as the owner name of the HTTPS record, without prefixes,
+also allows the targets of existing CNAME chains
 (e.g. CDN hosts) to start returning HTTPS RR responses without
 requiring origin domains to configure and maintain an additional
 delegation.
@@ -1262,7 +1282,7 @@ absence of an active adversary.
 
 ## Structuring zones for flexibility
 
-Each ServiceForm RRSet can only serve a single scheme.  The scheme is indicated
+Each ServiceMode RRSet can only serve a single scheme.  The scheme is indicated
 by the owner name and the RR type.  For the generic SVCB RR type, this means that
 each owner name can only be used for a single scheme.  The underscore prefixing
 requirement ({{svcb-names}}) ensures that this is true for the initial query,
@@ -1523,11 +1543,11 @@ SvcParamKey ({{ech-param}}).  To prevent downgrades, {{client-failures}}
 recommends that clients abandon the connection attempt when such an attack is
 detected.
 
-A hostile DNS intermediary might forge AliasForm "." records ({{aliasdot}}) as
+A hostile DNS intermediary might forge AliasMode "." records ({{aliasdot}}) as
 a way to block clients from accessing particular services.  Such an adversary
 could already block entire domains by forging erroneous responses, but this
 mechanism allows them to target particular protocols or ports within a domain.
-Clients that might be subject to such attacks SHOULD ignore AliasForm "."
+Clients that might be subject to such attacks SHOULD ignore AliasMode "."
 records.
 
 A hostile DNS intermediary or origin can return SVCB records indicating any IP
@@ -1718,19 +1738,16 @@ of three `item`s:
 This table serves as a non-normative summary of the HTTP mapping for SVCB
 ({{https}}).  Future protocol mappings may provide a similar summary table.
 
-|                                  |                                          |
-| -------------------------------- | ---------------------------------------- |
-| **Mapped scheme**                | "https"                                  |
-| **Other affected schemes**       | "http", "wss", "ws", (other HTTP-based)  |
-| **RR type**                      | HTTPS (65)                               |
-| **Name prefix**                  | None for port 443, else `_$PORT._https`  |
-| **Automatically Mandatory Keys** | `port`, `no-default-alpn`                |
-| **SvcParam defaults**            | `alpn`: \["http/1.1"\]                   |
-| **Special behaviors**            | "http" to "https" upgrade                |
-
-This table does not indicate any SvcParamKeys that servers are required to
-publish, or that clients are required to implement, because there are none
-in this mapping.
+|                                          |                                          |
+| ---------------------------------------- | ---------------------------------------- |
+| **Mapped scheme**                        | "https"                                  |
+| **Other affected schemes**               | "http", "wss", "ws", (other HTTP-based)  |
+| **RR type**                              | HTTPS (65)                               |
+| **Name prefix**                          | None for port 443, else `_$PORT._https`  |
+| **Automatically Mandatory Keys**         | `port`, `no-default-alpn`                |
+| **SvcParam defaults**                    | `alpn`: \["http/1.1"\]                   |
+| **Special behaviors**                    | HTTP to HTTPS upgrade                    |
+| **Keys that records must include**       | None                                     |
 
 # Comparison with alternatives
 
@@ -1748,13 +1765,16 @@ An SRV record {{SRV}} can perform a similar function to the SVCB record,
 informing a client to look in a different location for a service.
 However, there are several differences:
 
-* SRV records are typically mandatory, whereas clients will always
-  continue to function correctly without making use of SVCB.
+* SRV records are typically mandatory, whereas SVCB is intended to be optional
+  when used with pre-existing protocols.
 * SRV records cannot instruct the client to switch or upgrade
   protocols, whereas SVCB can signal such an upgrade (e.g. to
   HTTP/2).
 * SRV records are not extensible, whereas SVCB and HTTPS RRs
   can be extended with new parameters.
+* SRV records specify a "weight" for unbalanced randomized load-balancing.
+  SVCB only supports balanced randomized load-balancing, although weights
+  could be added via a future SvcParam.
 
 ## Differences from the proposed HTTP record
 
@@ -1805,7 +1825,7 @@ presentation format, generic format ({{!RFC3597}}) and wire format. The wire
 format uses hexadecimal (\xNN) for each non-ascii byte. As the wireformat is
 long, it is broken into several lines.
 
-## AliasForm
+## AliasMode
 
     example.com.   HTTPS   0 foo.example.com.
 
@@ -1816,9 +1836,9 @@ long, it is broken into several lines.
 
     \x00\x00                                           # priority
     \x03foo\x07example\x03com\x00                      # target
+{: title="AliasMode"}
 
-## ServiceForm
-The first form is the simple "use the ownername".
+## ServiceMode
 
     example.com.   SVCB   1 .
 
@@ -1829,8 +1849,7 @@ The first form is the simple "use the ownername".
 
     \x00\x01   # priority
     \x00       # target, root label
-
-This vector only has a port.
+{: title="TargetName is \".\""}
 
     example.com.   SVCB   16 foo.example.com. port=53
 
@@ -1847,8 +1866,7 @@ This vector only has a port.
     \x00\x03                                           # key 3
     \x00\x02                                           # length: 2 bytes
     \x00\x35                                           # value
-
-This example has a key that is not registered, its value is unquoted.
+{: title="Specifies a port"}
 
     example.com.   SVCB   1 foo.example.com. key667=hello
 
@@ -1865,9 +1883,7 @@ This example has a key that is not registered, its value is unquoted.
     \x02\x9b                                           # key 667
     \x00\x05                                           # length 5
     hello                                              # value
-
-This example has a key that is not registered, its value is quoted and contains
-a decimal-escaped character.
+{: title="A generic key and unquoted value"}
 
     example.com.   SVCB   1 foo.example.com. key667="hello\210qoo"
 
@@ -1884,8 +1900,7 @@ a decimal-escaped character.
     \x02\x9b                                           # key 667
     \x00\x09                                           # length 9
     hello\xd2qoo                                       # value
-
-Here, two IPv6 hints are quoted in the presentation format.
+{: title="A generic key and quoted value with a decimal escape"}
 
     example.com.   SVCB   1 foo.example.com. (
                           ipv6hint="2001:db8::1,2001:db8::53:1"
@@ -1908,10 +1923,7 @@ Here, two IPv6 hints are quoted in the presentation format.
          \x00\x00\x00\x00\x00\x00\x00\x01              # first address
     \x20\x01\x0d\xb8\x00\x00\x00\x00
          \x00\x00\x00\x00\x00\x53\x00\x01              # second address
-
-
-This example shows a single IPv6 hint in IPv4-mapped IPv6 presentation
-format({{?RFC3513}}).
+{: title="Two quoted IPv6 hints"}
 
     example.com.   SVCB   1 example.com. ipv6hint="::ffff:198.51.100.100"
 
@@ -1929,9 +1941,7 @@ format({{?RFC3513}}).
     \x00\x10                                           # length 16
     \x00\x00\x00\x00\x00\x00\x00\x00
          \x00\x00\xff\xff\xc6\x33\x64\x64              # address
-
-In the next vector, neither the SvcParamValues nor the mandatory keys are
-sorted in presentation format, but are correctly sorted in the wire-format.
+{: title="An IPv6 hint in IPv4-mapped format "}
 
     example.com.   SVCB   16 foo.example.org. (
                           alpn=h2,h3-19 mandatory=ipv4hint,alpn
@@ -1971,9 +1981,8 @@ sorted in presentation format, but are correctly sorted in the wire-format.
     \x00\x04                                           # key 4
     \x00\x04                                           # param length 4
     \xc0\x00\x02\x01                                   # param value
-
-This last vector has an alpn value with an escaped comma and an escaped
-backslash in two presentation formats.
+{: title="SvcParamKey ordering is arbitrary in presentation format but
+sorted in wire format"}
 
     example.com.   SVCB   16 foo.example.org. alpn="f\\\\oo\\,bar,h2"
     example.com.   SVCB   16 foo.example.org. alpn=f\\\092oo\092,bar,h2
@@ -1997,49 +2006,43 @@ backslash in two presentation formats.
     f\oo,bar                                           # alpn value
     \x02                                               # alpn length 2
     h2                                                 # alpn value
+{: title="An alpn value with an escaped comma and an escaped
+backslash in two presentation formats"}
 
 
 ## Failure cases
 
-In this subsection, example resource records are shown which are not
+This subsection contains test vectors which are not
 compliant with this document. The various reasons for non-compliance
 are explained with each example.
-
-
-This example has multiple instances of the same
-SvcParamKey {{presentation}}.
 
     example.com.   SVCB   1 foo.example.com. (
                            key123=abc key123=def
                            )
-
-In the next examples the SvcParamKeys are missing their values.
+{: title="Multiple instances of the same SvcParamKey"}
 
     example.com.   SVCB   1 foo.example.com. mandatory
     example.com.   SVCB   1 foo.example.com. alpn
     example.com.   SVCB   1 foo.example.com. port
     example.com.   SVCB   1 foo.example.com. ipv4hint
     example.com.   SVCB   1 foo.example.com. ipv6hint
-
-The "no-default-alpn" SvcParamKey value MUST be empty ({{alpn-key}}).
+{: title="Missing SvcParamValues that must be nonempty"}
 
     example.com.   SVCB   1 foo.example.com. no-default-alpn=abc
-
-In this record a mandatory SvcParam is missing ({{mandatory}}).
+{: title="The \"no-default-alpn\" SvcParamKey value must be empty"}
 
     example.com.   SVCB   1 foo.example.com. mandatory=key123
-
-The "mandatory" SvcParamKey MUST not be included in mandatory
-list ({{mandatory}}).
+{: title="A mandatory SvcParam is missing"}
 
     example.com.   SVCB   1 foo.example.com. mandatory=mandatory
-
-Here there are multiple instances of the same SvcParamKey in
-the mandatory list ({{mandatory}}).
+{: title="The \"mandatory\" SvcParamKey must not be included in the
+mandatory list"}
 
     example.com.   SVCB   1 foo.example.com. (
                           mandatory=key123,key123 key123=abc
                           )
+{: title="Multiple instances of the same SvcParamKey in
+the mandatory list"}
 
 # Change history
 
