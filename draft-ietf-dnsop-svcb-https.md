@@ -87,7 +87,7 @@ This document first describes the SVCB RR as a general-purpose resource
 record that can be applied directly and efficiently to a wide range
 of services ({{svcb}}).  The HTTPS RR is then defined as a special
 case of SVCB that improves efficiency and convenience for use with HTTP
-({{https}}) by avoiding the need for an Attrleaf label {{?Attrleaf=RFC8552}}
+({{https}}) by avoiding the need for an Attrleaf label {{!Attrleaf=RFC8552}}
 ({{httpsnames}}).  Other protocols with similar needs may
 follow the pattern of HTTPS and assign their own
 SVCB-compatible RR types.
@@ -149,7 +149,7 @@ and ServiceMode, which provides connection information bound to a service
 endpoint domain.  Placing both forms in a single RR type allows clients to
 fetch the relevant information with a single query.
 
-The SVCB RR has two mandatory fields and one optional.  The fields are:
+The SVCB RR has two required fields and one optional.  The fields are:
 
 1. SvcPriority: The priority of this record (relative to others,
    with lower values preferred).  A value of 0 indicates AliasMode.
@@ -945,6 +945,10 @@ or the owner name (which can be written as "."), server operators
 SHOULD NOT include these hints, because they are unlikely to convey any
 performance benefit.
 
+## "mandatory" {#svcparamkey-mandatory}
+
+See {{mandatory}}.
+
 # ServiceMode RR compatibility and mandatory keys {#mandatory}
 
 In a ServiceMode RR, a SvcParamKey is considered "mandatory" if the RR will not
@@ -1030,7 +1034,7 @@ then the client's original QNAME is
 equal to the service name (i.e. the origin's hostname),
 without any prefix labels.
 
-By removing the Attrleaf labels {{?Attrleaf}}
+By removing the Attrleaf labels {{Attrleaf}}
 used in SVCB, this construction enables offline DNSSEC signing of
 wildcard domains, which are commonly used with HTTP.  Reusing the
 service name also allows the targets of existing CNAME chains
@@ -1461,7 +1465,7 @@ introduces a number of complexities highlighted by this example:
 
 ### Non-HTTP uses
 
-For protocols other than HTTP, the SVCB RR and an Attrleaf label {{?Attrleaf}}
+For protocols other than HTTP, the SVCB RR and an Attrleaf label {{Attrleaf}}
 will be used.  For example, to reach an example resource of
 "baz://api.example.com:8765", the following SVCB
 record would be used to alias it to "svc4-baz.example.net."
@@ -1489,7 +1493,7 @@ are possible without the use of those standards.
 
 Any specification for use of SVCB with a protocol MUST have an entry for its
 scheme under the SVCB RR type in the IANA DNS Underscore Global Scoped Entry
-Registry {{!Attrleaf}}.  The scheme SHOULD have an entry in the IANA URI Schemes
+Registry {{Attrleaf}}.  The scheme SHOULD have an entry in the IANA URI Schemes
 Registry {{!RFC7595}}.  The scheme SHOULD have a defined specification for use
 with SVCB.
 
@@ -1621,7 +1625,7 @@ be populated with the registrations below:
 
 ## Other registry updates
 
-Per {{?Attrleaf}}, please add the following entry to the DNS Underscore
+Per {{Attrleaf}}, please add the following entry to the DNS Underscore
 Global Scoped Entry Registry:
 
 | RR TYPE   | _NODE NAME | Meaning           | Reference       |
