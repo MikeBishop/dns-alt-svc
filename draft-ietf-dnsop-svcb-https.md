@@ -296,7 +296,7 @@ SvcParamKey=SvcParamValue pairs, represented as:
   integer in network byte order.  (See {{iana-keys}} for the defined values.)
 * a 2 octet field containing the length of the SvcParamValue
   as an integer between 0 and 65535 in network byte order.
-* an octet string of this length whose contents are the SvcParamValue in a 
+* an octet string of this length whose contents are the SvcParamValue in a
   format determined by the SvcParamKey.
 
 SvcParamKeys SHALL appear in increasing numeric order.
@@ -388,7 +388,7 @@ resolvers SHOULD pick one at random.
 The primary purpose of AliasMode is to allow aliasing at the zone
 apex, where CNAME is not allowed.  In AliasMode, the TargetName will
 be the name of a domain that resolves to SVCB,
-AAAA, and/or A records.  (See {{svcb-compatible}} for aliasing of SVCB-compatible RR types.) 
+AAAA, and/or A records.  (See {{svcb-compatible}} for aliasing of SVCB-compatible RR types.)
  The TargetName SHOULD NOT be equal
 to the owner name, as this would result in a loop.
 
@@ -654,7 +654,7 @@ SvcParamKeys, and MAY treat the entire SvcParams portion of the record as
 opaque, even if the contents are invalid.  Alternatively, recursive
 resolvers MAY report an error such as SERVFAIL to avoid returning a
 SvcParamValue that is invalid according to the SvcParam's specification.
-For complex value types whose interpretation might differ 
+For complex value types whose interpretation might differ
 between implementations or have additional future
 allowed values added (e.g. URIs or "alpn"), resolvers
 SHOULD limit validation to specified constraints.
@@ -760,7 +760,7 @@ in the initial response.  As a performance optimization, if some of the SVCB
 records in the response can be used without requiring additional DNS queries,
 the client MAY prefer those records, regardless of their priorities.
 
-# SVCB-compatible 
+# SVCB-compatible
 
 An RR type is called "SVCB-compatible" if it permits an implementation that is
 identical to SVCB in its:
@@ -2046,6 +2046,20 @@ the mandatory list"}
 # Change history
 
 (This section to be removed by the RFC editor.)
+
+* draft-ietf-dnsop-svcb-https-08
+    * Extensive structural and editorial adjustments based on area reviews,
+      including:
+        * A new section on SVCB-compatible record types
+        * Reorganized description of client behavior
+        * Test vectors are now in titled figures
+        * Adjusted mapping summary
+        * Improve description of rules for resolver handling of invalid
+          SvcParamValues.
+    * New text on cross-transport fallback (e.g. QUIC vs. TCP)
+    * Improved explanation of use with domain-oriented transport proxies
+    * HTTP terminology adjusted to match draft-ietf-httpbis-semantics
+    * Improved and corrected IANA instructions
 
 * draft-ietf-dnsop-svcb-https-07
     * Editorial improvements following AD review.
