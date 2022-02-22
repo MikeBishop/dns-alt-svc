@@ -963,9 +963,6 @@ perform DNS64 ({{!RFC6147}}) on parameters within a SVCB record.
 For best performance, server operators SHOULD include an "ipv6hint" parameter
 whenever they include an "ipv4hint" parameter.
 
-For security reasons, clients MUST reject the RRSet if "ipv6hint" signifies
-an IPv4 mapped IPv6 address, such as "::ffff:198.51.100.100".
-
 These parameters are intended to minimize additional connection latency
 when a recursive resolver is not compliant with the requirements in
 {{server-behavior}}, and SHOULD NOT be included if most clients are using
@@ -2045,9 +2042,6 @@ mandatory list"}
                           )
 {: title="Multiple instances of the same SvcParamKey in
 the mandatory list"}
-
-    example.com.   SVCB   1 example.com. ipv6hint="::ffff:198.51.100.100"
-{: title="\"ipv6hint\" forbids IPv4-mapped addresses"}
 
 # Change history
 
