@@ -1940,7 +1940,7 @@ long, it is broken into several lines.
     \x00\x10                                           # length 16
     \x20\x01\x0d\xb8\x01\x22\x03\x44
          \x00\x00\x00\x00\xc0\x00\x02\x21              # address
-{: title="An IPv6 hint signifying IPv4 embedded IPv6 address"}
+{: title="An IPv6 hint using the embedded IPv4 syntax"}
 
     example.com.   SVCB   16 foo.example.org. (
                           alpn=h2,h3-19 mandatory=ipv4hint,alpn
