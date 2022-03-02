@@ -1291,7 +1291,9 @@ constraint when using aliases, including CNAME and AliasMode records.
 When using the generic SVCB RR type with aliasing, zone owners SHOULD choose alias
 target names that indicate the scheme in use (e.g. `foosvc.example.net` for
 `foo://` schemes).  This will help to avoid confusion when another scheme needs to
-be added to the configuration.
+be added to the configuration.  When multiple port numbers are in use, it may be
+helpful to repeat the prefix labels in the alias target name (e.g.
+`_1234._foo.svc.example.net`).
 
 ## Structuring zones for performance {#zone-performance}
 
