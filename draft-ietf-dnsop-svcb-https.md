@@ -127,7 +127,8 @@ Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP,
   where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling that the "https"
-  scheme should be used instead of "http" for this request (see {{hsts}}).
+  scheme should be used instead of "http" for all requests to this origin (see
+  {{hsts}}).
 
 ## Overview of the SVCB RR
 
@@ -1036,7 +1037,7 @@ Clients that restrict the destination port in "https" URIs
 same restriction to the "port" SvcParam.
 
 The presence of an HTTPS RR for an origin also indicates
-that clients should connect securely and use the "https" scheme, as
+that clients should always connect securely and use the "https" scheme, as
 discussed in {{hsts}}.  This allows HTTPS RRs to apply to
 pre-existing "http" scheme URLs, while ensuring that the client uses a
 secure and authenticated connection.
@@ -1213,8 +1214,8 @@ Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
 If this redirection would result in a loss of functionality (e.g. important
-resources that are only available on the "http" origin), the operator MUST
-NOT publish an HTTPS RR.
+resources or behaviors that are only available when using the "http" origin),
+the operator MUST NOT publish an HTTPS RR.
 
 When an "https" connection fails due to an error in the underlying secure
 transport, such as an error in certificate validation, some clients
