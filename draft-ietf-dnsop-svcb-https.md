@@ -141,7 +141,7 @@ and ServiceMode, which provides connection information bound to a service
 endpoint domain.  Placing both forms in a single RR type allows clients to
 fetch the relevant information with a single query.
 
-The SVCB RR has two required fields and one optional.  The fields are:
+The SVCB RR has two required fields and one optional field.  The fields are:
 
 1. SvcPriority: The priority of this record (relative to others,
    with lower values preferred).  A value of 0 indicates AliasMode.
@@ -370,7 +370,8 @@ any ServiceMode records in the set.
 RRSets are explicitly unordered collections, so the
 SvcPriority field is used to impose an ordering on SVCB RRs.
 SVCB RRs with a smaller SvcPriority value SHOULD be given
-preference over RRs with a larger SvcPriority value.
+preference over RRs with a larger SvcPriority value (the previous paragraph
+notwithstanding).
 
 When receiving an RRSet containing multiple SVCB records with the
 same SvcPriority value, clients SHOULD apply a random shuffle within a
@@ -569,7 +570,7 @@ use named destinations, in which case the client does not perform
 any A or AAAA queries for destination domains.  If the client is using named
 destinations with a proxy that does not provide SVCB query capability
 (e.g. through an affiliated DNS resolver), the client would have to perform
-SVCB resolution separately, likely disclosing the destinations to additional parties.
+SVCB resolution separately, likely disclosing the destinations to additional parties than just the proxy.
 Clients that support such proxies SHOULD arrange for a separate SVCB resolution
 procedure with appropriate privacy properties, or disable SVCB resolution entirely if
 SVCB-optional.
@@ -619,7 +620,8 @@ execute the procedure in {{client-behavior}} with minimum overall
 latency by incorporating additional useful information into the
 Additional section of the response as follows:
 
-1. Incorporate the results of SVCB resolution.  If the chain length limit has
+1. Incorporate the results of SVCB resolution.  If the recursive resolver's
+   local chain length limit (which may be different from the client's limit) has
    been reached, terminate.
 
 2. If any of the resolved SVCB records are in AliasMode, choose one of them
@@ -791,7 +793,8 @@ deployment.
 # Initial SvcParamKeys {#keys}
 
 A few initial SvcParamKeys are defined here.  These keys are useful for the
-"https" scheme, and most are applicable to other schemes as well.
+"https" scheme, and most are expected to be generally applicable to other
+schemes as well.
 
 Each new protocol
 mapping document MUST specify which keys are applicable and safe to use.
@@ -946,10 +949,11 @@ geo-aware features and thereby degrade client performance.
 
 The presentation `value` SHALL be a comma-separated list ({{value-list}})
 of one or more IP addresses of the appropriate
-family in standard textual format {{!RFC5952}}.  To enable simpler parsing,
+family in standard textual format {{!RFC5952}}, {{!RFC4001}}.  To enable simpler parsing,
 this SvcParamValue MUST NOT contain escape sequences.
 
-The wire format for each parameter is a sequence of IP addresses in network
+The wire format for each parameter is a sequence of (the respective
+address-family) IP addresses in network
 byte order.  Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection, and clients SHOULD pick addresses to use in a random order.
 An empty list of addresses is invalid.
@@ -984,7 +988,7 @@ mandatory", i.e. mandatory if they are present in an RR.  The SvcParamKey
 "mandatory" is used to indicate any mandatory keys for this RR, in addition to
 any automatically mandatory keys that are present.
 
-A ServiceMode RR is considered "compatible" with a client if the client
+A ServiceMode RR is considered "compatible" by a client if the client
 recognizes all the mandatory keys, and their values indicate that successful
 connection establishment is possible.  If the SVCB RRSet contains
 no compatible RRs, the client will generally act as if the RRSet is empty.
@@ -1004,7 +1008,7 @@ For example, the following is a valid list of SvcParams:
     ech=... key65333=ex1 key65444=ex2 mandatory=key65444,ech
 
 In wire format, the keys are represented by their numeric values in
-network byte order, concatenated in ascending order.
+network byte order, concatenated in strictly increasing numeric order.
 
 This SvcParamKey is always automatically mandatory, and MUST NOT appear in its
 own value-list.  Other automatically mandatory keys SHOULD NOT appear in the
@@ -1014,7 +1018,7 @@ list either.  (Including them wastes space and otherwise has no effect.)
 
 Use of any protocol with SVCB requires a protocol-specific mapping
 specification.  This section specifies the mapping for the "http" and "https"
-URI schemes {{!I-D.draft-ietf-httpbis-semantics}}.
+URI schemes {{!HTTP}}.
 
 To enable special handling for HTTP use-cases,
 the HTTPS RR type is defined as a SVCB-compatible RR type,
@@ -1123,7 +1127,8 @@ single-client granularity.
 
 ## Interaction with Alt-Svc
 
-Clients that implement support for both Alt-Svc and HTTPS records SHOULD
+Clients that implement support for both Alt-Svc and HTTPS records and
+receive an Alt-Svc header field in a response SHOULD
 retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
 their connection attempts are consistent with both the Alt-Svc parameters
 and any received HTTPS SvcParams.  If present, the HTTPS record's TargetName
@@ -1243,7 +1248,7 @@ The SVCB "ech" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigList
 {{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is a single ECHConfigList encoded in Base64 {{!base64=RFC4648}}.
+the value is the ECHConfigList encoded in Base64 {{!base64=RFC4648}}.
 Base64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
@@ -1332,7 +1337,7 @@ The domain owner could add this record:
     @ 7200 IN HTTPS 1 . alpn=h3
 
 to indicate that https://simple.example supports QUIC
-in addition to TLS over TCP (the implicit default).
+in addition to HTTP/1.1 over TLS over TCP (the implicit default).
 The record could also include other information (e.g. non-standard port,
 ECH configuration).  For https://simple.example:8443, the record would be:
 
@@ -1521,7 +1526,7 @@ with SVCB.
 
 # Security Considerations
 
-SVCB/HTTPS RRs are intended for distribution over untrusted
+SVCB/HTTPS RRs permit distribution over untrusted
 channels, and clients are REQUIRED to verify that the alternative endpoint
 is authoritative for the service (similar to {{Section 2.1 of AltSvc}}).
 Therefore, DNSSEC signing and validation are OPTIONAL for publishing
@@ -1692,7 +1697,9 @@ Here we summarize the allowed input to that algorithm, using ABNF:
     quoted      = DQUOTE *( contiguous / ( ["\"] WSP ) ) DQUOTE
     char-string = contiguous / quoted
 
-The decoding algorithm allows `char-string` to represent any `*OCTET`.
+The decoding algorithm allows `char-string` to represent any `*OCTET`,
+using quoting to group values (e.g., those with internal whitespace), and
+escaping to represent each non-printable octet as a single `escaped` sequence.
 In this document, this algorithm is referred to as "character-string decoding".
 The algorithm is the same as used by `<character-string>` in RFC 1035,
 although the output length in this document is not limited to 255 octets.
@@ -1899,7 +1906,7 @@ long, it is broken into several lines.
     \x02\x9b                                           # key 667
     \x00\x09                                           # length 9
     hello\xd2qoo                                       # value
-{: title="A generic key and quoted value with a decimal escape"}
+{: title="A generic key and quoted value with an octal escape"}
 
     example.com.   SVCB   1 foo.example.com. (
                           ipv6hint="2001:db8::1,2001:db8::53:1"
