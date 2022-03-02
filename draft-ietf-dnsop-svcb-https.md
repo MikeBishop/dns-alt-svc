@@ -1906,7 +1906,7 @@ long, it is broken into several lines.
     \x02\x9b                                           # key 667
     \x00\x09                                           # length 9
     hello\xd2qoo                                       # value
-{: title="A generic key and quoted value with an octal escape"}
+{: title="A generic key and quoted value with a decimal escape"}
 
     example.com.   SVCB   1 foo.example.com. (
                           ipv6hint="2001:db8::1,2001:db8::53:1"
