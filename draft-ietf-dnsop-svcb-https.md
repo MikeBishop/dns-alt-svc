@@ -127,7 +127,9 @@ Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP,
   where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling that the "https"
-  scheme should be used instead of "http" for this request (see {{hsts}}).
+  scheme should be used instead of "http" for requests to this origin
+  server. See {{hsts}}) for details, including rare cases where this renders
+  the HTTPS RR unusable for a given origin server.
 
 ## Overview of the SVCB RR
 
@@ -1212,9 +1214,23 @@ trigger the redirect behavior.)
 Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.
-If this redirection would result in a loss of functionality (e.g. important
-resources that are only available on the "http" origin), the operator MUST
-NOT publish an HTTPS RR.
+
+As discussed in {{!HTTP}}, the "http" and "https" schemes are a given origin
+server are formally different URI origins and at the HTTP layer, there is no
+assumption of any relationship between resources accessed via "http:" and
+those accessed via "https:".  In practice, however, a preponderence of web
+sites either only provide "https" access or offer equivalent content across
+the two schemes, and the benefits of providing a signal to always use TLS in
+the common case outweigh the cost of some rare incompatibilities.
+Accordingly, if the redirection from http to https would result in a loss of
+functionality (e.g., there are important resources or behaviorsthat are only
+available on the "http" origin), the operator MUST NOT publish an HTTPS RR.
+
+Note that in contrast to {{HSTS}}, the signal from the HTTPS RR is not
+always received in-band from the authoritative origin, and when DNSSEC is
+not used may be tampered with in transit.  So the "strict transport
+security" property of the HTTPS RR should only apply to the current https
+request unless it is authenticated in some other way.
 
 When an "https" connection fails due to an error in the underlying secure
 transport, such as an error in certificate validation, some clients
