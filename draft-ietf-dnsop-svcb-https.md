@@ -1223,7 +1223,7 @@ sites either only provide "https" access or offer equivalent content across
 the two schemes, and the benefits of providing a signal to always use TLS in
 the common case outweigh the cost of some rare incompatibilities.
 Accordingly, if the redirection from http to https would result in a loss of
-functionality (e.g., there are important resources or behaviorsthat are only
+functionality (e.g., there are important resources or behaviors that are only
 available on the "http" origin), the operator MUST NOT publish an HTTPS RR.
 
 Note that in contrast to {{HSTS}}, the signal from the HTTPS RR is not
