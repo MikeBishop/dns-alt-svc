@@ -1228,11 +1228,17 @@ Section 12.1 of HSTS}}.
 
 ## Use of HTTPS RRs in other protocols
 
-All protocols employing "http://" or "https://" URLs SHOULD respect HTTPS RRs.
-For example, clients that
+All HTTP connections to named origins are eligible to use HTTPS RRs, even
+when HTTP is used as part of another protocol or without an explicit HTTP
+URL.  For example, clients that
 support HTTPS RRs and implement the altered WebSocket {{!WebSocket=RFC6455}}
 opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RRs
 for the `requestURL`.
+
+When HTTP is used in a context where URLs or redirects are not applicable
+(e.g. Proxy Auto-Configuration), clients MUST implement transport security
+equivalent to the HSTS behavior specified in {{hsts}} or forego the use of
+HTTPS records.
 
 Such protocols MAY define their own SVCB mappings, which MAY
 be defined to take precedence over HTTPS RRs.
