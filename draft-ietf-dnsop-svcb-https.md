@@ -884,7 +884,7 @@ each ProtocolNameList includes at least one protocol from the SVCB ALPN set.
 Clients SHOULD NOT attempt connection to a service endpoint whose SVCB
 ALPN set does not contain any supported protocols.  To ensure
 consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
-back to basic connection establishment if all of the RRs indicate
+back to basic connection establishment if all of the compatible RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
 non-default alpn.
 
