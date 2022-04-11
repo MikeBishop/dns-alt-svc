@@ -126,7 +126,7 @@ Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 * Support non-default TCP and UDP ports
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP,
   where SRV {{?SRV=RFC2782}} has not been widely adopted
-* Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling that the "https"
+* Provide an HSTS-like indication {{?HSTS=RFC6797}} signaling that the "https"
   scheme should be used instead of "http" for this request (see {{hsts}}).
 
 ## Overview of the SVCB RR
@@ -163,7 +163,7 @@ records in the Additional Section to responses for a SVCB query.
 
 In ServiceMode, the SvcParams of the SVCB RR
 provide an extensible data model for describing alternative
-endpoints that are authoritative for the origin, along with
+endpoints that are authoritative for a service, along with
 parameters associated with each of these alternative endpoints.
 
 For HTTP use-cases, the HTTPS RR enables many of the benefits of Alt-Svc
@@ -233,12 +233,13 @@ and formats are defined in {{keys}}.
 
 ## Zone file presentation format {#presentation}
 
-The presentation format of the record is:
+The presentation format `<RDATA>` of the record ({{!RFC1035, Section 5.1}}) has
+the form:
 
-    Name TTL IN SVCB SvcPriority TargetName SvcParams
+    SvcPriority TargetName SvcParams
 
 The SVCB record is defined specifically within
-the Internet ("IN") Class ({{!RFC1035}}).
+the Internet ("IN") Class ({{!RFC1035, Section 3.2.4}}).
 
 SvcPriority is a number in the range 0-65535,
 TargetName is a `<domain-name>` ({{!RFC1035, Section 5.1}}),
@@ -255,7 +256,7 @@ In ABNF {{!RFC5234}},
     SvcParamKey   = 1*63(alpha-lc / DIGIT / "-")
     SvcParam      = SvcParamKey ["=" SvcParamValue]
     SvcParamValue = char-string
-    value         = *OCTET
+    value         = *OCTET ; Value before key-specific parsing
 
 The SvcParamValue is parsed using the
 character-string decoding algorithm ({{decoding}}), producing a `value`.
@@ -405,7 +406,8 @@ Using AliasMode maintains a separation of concerns: the owner of
 foosvc.example.net can add or remove ServiceMode SVCB records without
 requiring a corresponding change to example.com.  Note that if
 foosvc.example.net promises to always publish a SVCB record, this AliasMode
-record can be replaced by a CNAME, which would likely improve performance.
+record can be replaced by a CNAME at the same owner name, which would likely
+improve performance.
 
 AliasMode is especially useful for SVCB-compatible RR types that do not
 require an underscore prefix, such as the HTTPS RR type.  For example,
@@ -638,7 +640,7 @@ Additional section of the response as follows:
 In this procedure, "resolve" means the resolver's ordinary recursive
 resolution procedure, as if processing a query for that RRSet.
 This includes following any aliases that the resolver would ordinarily
-follow (e.g. CNAME, DNAME {{!DNAME=RFC6672}}).  Errors or anomalies in
+follow (e.g. CNAME, DNAME {{?DNAME=RFC6672}}).  Errors or anomalies in
 obtaining additional records MAY cause this process to terminate, but
 MUST NOT themselves cause the resolver to send a failure response.
 
@@ -882,7 +884,9 @@ interfere with ALPN protocol selection.  This procedure also ensures that
 each ProtocolNameList includes at least one protocol from the SVCB ALPN set.
 
 Clients SHOULD NOT attempt connection to a service endpoint whose SVCB
-ALPN set does not contain any supported protocols.  To ensure
+ALPN set does not contain any supported protocols.
+
+To ensure
 consistency of behavior, clients MAY reject the entire SVCB RRSet and fall
 back to basic connection establishment if all of the RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
@@ -959,7 +963,7 @@ approach such as Happy Eyeballs {{!HappyEyeballsV2}}.
 When only "ipv4hint" is present, IPv6-only clients may synthesize
 IPv6 addresses as specified in {{!RFC7050}} or ignore the "ipv4hint" key and
 wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
-perform DNS64 ({{!RFC6147}}) on parameters within a SVCB record.
+perform DNS64 ({{?RFC6147}}) on parameters within a SVCB record.
 For best performance, server operators SHOULD include an "ipv6hint" parameter
 whenever they include an "ipv4hint" parameter.
 
@@ -1167,7 +1171,8 @@ the "ech" SvcParam is present ({{ech-client-behavior}}):
 * HTTP/3 to `example.com:8443`
 
 Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
-also publish an "ech" SvcParam for any alt-authorities.  Otherwise,
+also publish an HTTPS record with the "ech" SvcParam for every
+alt-authority offered in its Alt-Svc Field Values.  Otherwise,
 clients might reveal the name of the server in an unencrypted ClientHello.
 Similar consistency considerations could apply to future SvcParamKeys, so
 alt-authorities SHOULD carry the same SvcParams as the origin unless
@@ -1182,7 +1187,7 @@ connection for this origin.
 
 Clients MUST NOT use an HTTPS RR response unless the
 client supports TLS Server Name Indication (SNI) and
-indicates the origin name when negotiating TLS.
+indicates the origin name in the TLS ClientHello (which may be encrypted).
 This supports the conservation of IP addresses.
 
 Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate
@@ -1303,16 +1308,18 @@ choose TargetName according to a predictable convention that is known
 to the client, so that clients can issue A and/or AAAA queries for TargetName
 in advance (see {{optimizations}}).  Unless otherwise specified, the
 convention is to set TargetName to the service name for an initial
-ServiceMode record, or to "." if it is reached via an alias.  For
-foo://foo.example.com:8080, this might look like:
+ServiceMode record, or to "." if it is reached via an alias.
 
     $ORIGIN example.com. ; Origin
     foo                  3600 IN CNAME foosvc.example.net.
     _8080._foo.foo       3600 IN CNAME foosvc.example.net.
+    bar                   300 IN AAAA 2001:db8::2
+    _9090._bar.bar       3600 IN SVCB 1 bar key65444=...
 
     $ORIGIN example.net. ; Service provider zone
     foosvc               3600 IN SVCB 1 . key65333=...
     foosvc                300 IN AAAA 2001:db8::1
+{: title="foo://foo.example.com:8080 is delegated to a example.net, but bar://bar.example.com:9090 is served locally.}
 
 Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
 this is likely unnecessary and makes responses slower and larger.
@@ -1371,16 +1378,15 @@ respectively, and will validate TLS server certificates accordingly.
 
 ### Parameter binding
 
-Suppose that svc.example's default server pool supports HTTP/2, and
-it has deployed HTTP/3 on a new server pool with a different
-configuration.  This can be expressed in the following form:
+Suppose that svc.example's primary server pool supports HTTP/3, but its
+backup server pool does not.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPS 1 h3pool alpn=h2,h3 ech="123..."
-                  HTTPS 2 .      alpn=h2 ech="abc..."
+    pool  7200 IN HTTPS 1 . alpn=h2,h3 ech="123..."
+                  HTTPS 2 backup alpn=h2 ech="abc..."
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
-    h3pool 300 IN A        192.0.2.3
+    backup 300 IN A        192.0.2.3
                   AAAA     2001:db8::3
 
 This configuration is entirely compatible with the "Apex aliasing" example,
@@ -1471,11 +1477,11 @@ introduces a number of complexities highlighted by this example:
   recursive resolver.  An alternative would be to alias the zone
   apex directly to a name managed by a CDN.
 
-* The A, AAAA, and HTTPS resolutions are independent lookups, so clients may
+* The A, AAAA, and HTTPS resolutions are independent lookups, so resolvers may
   observe and follow different CNAMEs to different CDNs.
-  Clients may thus find a TargetName pointing to a name
-  other than the one which returned along with the A and AAAA lookups
-  and will need to do an additional resolution for them.
+  Clients may thus find that the A and AAAA responses do not correspond to the
+  TargetName in the HTTPS response, and will need to perform additional
+  queries to retrieve its IP addresses.
   Including ipv6hint and ipv4hint will reduce the performance
   impact of this case.
 
