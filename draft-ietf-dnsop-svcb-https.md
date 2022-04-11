@@ -1621,7 +1621,7 @@ A registration MUST include the following fields:
 The characters in the registered Name MUST be lower-case alphanumeric or "-"
 ({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
-Entries in this registry are subject to a First Come First Served registration
+New entries in this registry are subject to a First Come First Served registration
 policy ({{!RFC8126, Section 4.4}}).  The Format Reference MUST specify how to
 validate and convert the SvcParamValue's presentation format to wire format and MAY
 detail its intended meaning and use.  An entry MAY specify a Format Reference of
