@@ -951,9 +951,9 @@ of one or more IP addresses of the appropriate
 family in standard textual format {{!RFC5952}}, {{!RFC4001}}.  To enable simpler parsing,
 this SvcParamValue MUST NOT contain escape sequences.
 
-The wire format for each parameter is a sequence of (the respective
-address-family) IP addresses in network
-byte order.  Like an A or AAAA RRSet, the list of addresses represents an
+The wire format for each parameter is a sequence of IP addresses in network
+byte order (for the respective address-family).  
+Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection, and clients SHOULD pick addresses to use in a random order.
 An empty list of addresses is invalid.
 
