@@ -1926,23 +1926,23 @@ long, it is broken into several lines.
          \x00\x00\x00\x00\x00\x53\x00\x01              # second address
 {: title="Two quoted IPv6 hints"}
 
-    example.com.   SVCB   1 example.com. ipv6hint="::ffff:198.51.100.100"
+    example.com.   SVCB   1 example.com. ipv6hint="2001:db8:122:344::192.0.2.33"
 
     \# 35 (
     00 01                                              ; priority
     07 65 78 61 6d 70 6c 65 03 63 6f 6d 00             ; target
     00 06                                              ; key 6
     00 10                                              ; length 16
-    00 00 00 00 00 00 00 00 00 00 ff ff c6 33 64 64    ; address
+    20 01 0d b8 01 22 03 44 00 00 00 00 c0 00 02 21    ; address
     )
 
     \x00\x01                                           # priority
     \x07example\x03com\x00                             # target
     \x00\x06                                           # key 6
     \x00\x10                                           # length 16
-    \x00\x00\x00\x00\x00\x00\x00\x00
-         \x00\x00\xff\xff\xc6\x33\x64\x64              # address
-{: title="An IPv6 hint in IPv4-mapped format "}
+    \x20\x01\x0d\xb8\x01\x22\x03\x44
+         \x00\x00\x00\x00\xc0\x00\x02\x21              # address
+{: title="An IPv6 hint using the embedded IPv4 syntax"}
 
     example.com.   SVCB   16 foo.example.org. (
                           alpn=h2,h3-19 mandatory=ipv4hint,alpn
