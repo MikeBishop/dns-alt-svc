@@ -557,6 +557,9 @@ other observable patterns.
 If the client enforces DNSSEC validation on A/AAAA responses, it SHOULD
 apply the same validation policy to SVCB.
 
+If DNS responses are not cryptographically protected, clients MAY treat
+SVCB resolution failure as fatal or nonfatal.
+
 If the client is unable to complete SVCB resolution due to its chain length
 limit, the client SHOULD fall back to the authority endpoint, as if the
 origin's SVCB record did not exist.
