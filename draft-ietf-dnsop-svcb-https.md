@@ -1127,7 +1127,7 @@ single-client granularity.
 ## Interaction with Alt-Svc
 
 Clients that implement support for both Alt-Svc and HTTPS records and
-receive an Alt-Svc header field in a response SHOULD
+are making a connection based on a cached Alt-Svc response SHOULD
 retrieve any HTTPS records for the Alt-Svc alt-authority, and ensure that
 their connection attempts are consistent with both the Alt-Svc parameters
 and any received HTTPS SvcParams.  If present, the HTTPS record's TargetName
