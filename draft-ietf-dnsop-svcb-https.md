@@ -1618,10 +1618,13 @@ A registration MUST include the following fields:
 The characters in the registered Name MUST be lower-case alphanumeric or "-"
 ({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
-Entries in this registry are subject to a First Come First Served registration
-policy ({{!RFC8126, Section 4.4}}).  The Format Reference MUST specify
-how to convert the SvcParamValue's presentation format to wire format and MAY
-detail its intended meaning and use.  An entry MAY specify a Format Reference of
+Entries in this registry are subject to an Expert Review registration
+policy ({{!RFC8126, Section 4.5}}).  The designated expert MUST ensure that
+the Format Reference is stable and publicly available, and that it specifies
+how to convert the SvcParamValue's presentation format to wire format.  The
+Format Reference MAY be any individual's Internet-Draft, or a document from
+any other source with similar assurances of stability and availability.
+An entry MAY specify a Format Reference of
 the form "Same as (other key Name)" if it uses the same presentation and wire
 formats as an existing key.
 
