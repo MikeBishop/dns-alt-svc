@@ -386,12 +386,15 @@ record in AliasMode.  If multiple are present, clients or recursive
 resolvers SHOULD pick one at random.
 
 The primary purpose of AliasMode is to allow aliasing at the zone
-apex, where CNAME is not allowed.  In AliasMode, the TargetName will
+apex, where CNAME is not allowed (see e.g. {{?RFC1912, Section 2.4}}).
+In AliasMode, the TargetName will
 be the name of a domain that resolves to SVCB,
 AAAA, and/or A records.  (See {{svcb-compatible}} for aliasing of SVCB-compatible RR types.)
- The TargetName SHOULD NOT be equal
-to the owner name, as this would result in a loop.
+Unlike CNAME, AliasMode records do not affect the resolution of other RR
+types, and apply only to a specific service, not an entire domain name.
 
+The AliasMode TargetName SHOULD NOT be equal
+to the owner name, as this would result in a loop.
 In AliasMode, records SHOULD NOT include any SvcParams, and recipients MUST
 ignore any SvcParams that are present.
 
