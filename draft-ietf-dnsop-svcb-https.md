@@ -370,8 +370,7 @@ any ServiceMode records in the set.
 RRSets are explicitly unordered collections, so the
 SvcPriority field is used to impose an ordering on SVCB RRs.
 ServiceMode RRs with a smaller SvcPriority value SHOULD be given
-preference over RRs with a larger SvcPriority value (the previous paragraph
-notwithstanding).
+preference over RRs with a larger SvcPriority value.
 
 When receiving an RRSet containing multiple SVCB records with the
 same SvcPriority value, clients SHOULD apply a random shuffle within a
