@@ -1236,9 +1236,9 @@ opening handshake from the W3C Fetch specification {{FETCH}} SHOULD use HTTPS RR
 for the `requestURL`.
 
 When HTTP is used in a context where URLs or redirects are not applicable
-(e.g. Proxy Auto-Configuration), clients MUST implement transport security
-equivalent to the HSTS behavior specified in {{hsts}} or forego the use of
-HTTPS records.
+(e.g. connections to an HTTP proxy), clients that find a corresponding HTTPS RR
+SHOULD implement a security upgrade behavior equivalent to the one specified in
+{{hsts}}.
 
 Such protocols MAY define their own SVCB mappings, which MAY
 be defined to take precedence over HTTPS RRs.
