@@ -1454,7 +1454,7 @@ or due to logic within the authoritative DNS server:
                      AAAA 2001:db8:198::7
                      AAAA 2001:db8:198::12
 
-     ; Resolutions following the customer.svc2.example
+     ; Resolutions following the cdn3.svc3.example
      ; path use these records.
      ; Note that this CDN has no HTTPS records
      ; and thus no ECH support.
