@@ -1212,10 +1212,11 @@ with this "https" URL in the "Location" field.  (Receipt of an incompatible Serv
 trigger the redirect behavior.)
 Because HTTPS RRs are received over an often insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
-had received a 307 redirect over cleartext HTTP.  Where the "http" resource does
-not redirect to the "https" resource or reference the same underlying resource,
-as is commonplace, requests directed to the "http" resource will be processed by
-the "https" resource with potentially unexpected results.
+had received a 307 redirect over cleartext HTTP.  
+
+Publishing an HTTPS RR has the potential to have unexpected results 
+or a loss in functionality in cases where the "http" resource neither
+redirects to the "https" resource nor references the same underlying resource.
 
 When an "https" connection fails due to an error in the underlying secure
 transport, such as an error in certificate validation, some clients
