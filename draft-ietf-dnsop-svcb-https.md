@@ -131,21 +131,21 @@ Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 
 ## Overview of the SVCB RR
 
-This subsection briefly describes the SVCB RR in
-a non-normative manner.  (As mentioned above, this all
+This subsection briefly describes the SVCB RR with forward references to
+the full exposition of each component.  (As mentioned above, this all
 applies equally to the HTTPS RR which shares
 the same encoding, format, and high-level semantics.)
 
-The SVCB RR has two modes: AliasMode, which aliases a name to another name,
-and ServiceMode, which provides connection information bound to a service
-endpoint domain.  Placing both forms in a single RR type allows clients to
-fetch the relevant information with a single query.
+The SVCB RR has two modes: AliasMode ({{alias-mode}}), which aliases a name
+to another name, and ServiceMode ({{service-mode}}), which provides connection
+information bound to a service endpoint domain.  Placing both forms in a single
+RR type allows clients to
+fetch the relevant information with a single query ({{svcb-names}}).
 
 The SVCB RR has two required fields and one optional field.  The fields are:
 
-1. SvcPriority: The priority of this record (relative to others,
+1. SvcPriority ({{pri}}): The priority of this record (relative to others,
    with lower values preferred).  A value of 0 indicates AliasMode.
-   (Described in {{pri}}.)
 2. TargetName: The domain name of either the alias target (for
    AliasMode) or the alternative endpoint (for ServiceMode).
 3. SvcParams (optional): A list of key=value pairs
@@ -155,18 +155,18 @@ The SVCB RR has two required fields and one optional field.  The fields are:
 
 Cooperating DNS recursive resolvers will perform subsequent record
 resolution (for SVCB, A, and AAAA records) and return them in the
-Additional Section of the response.  Clients either use responses
+Additional Section of the response ({{recursive-behavior}}).  Clients either use responses
 included in the additional section returned by the recursive resolver
-or perform necessary SVCB, A, and AAAA record resolutions.  DNS
+or perform necessary SVCB, A, and AAAA record resolutions ({{client-behavior}}).  DNS
 authoritative servers can attach in-bailiwick SVCB, A, AAAA, and CNAME
-records in the Additional Section to responses for a SVCB query.
+records in the Additional Section to responses for a SVCB query ({{authoritative-behavior}}).
 
 In ServiceMode, the SvcParams of the SVCB RR
 provide an extensible data model for describing alternative
 endpoints that are authoritative for the origin, along with
-parameters associated with each of these alternative endpoints.
+parameters associated with each of these alternative endpoints ({{keys}}).
 
-For HTTP use-cases, the HTTPS RR enables many of the benefits of Alt-Svc
+For HTTP use-cases, the HTTPS RR ({{https}}) enables many of the benefits of Alt-Svc
 {{?AltSvc=RFC7838}}
 without waiting for a full HTTP connection initiation (multiple roundtrips)
 before learning of the preferred alternative,
