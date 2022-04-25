@@ -62,7 +62,7 @@ available there.  The authors (gratefully) accept pull requests.
 
 The SVCB ("Service Binding") and HTTPS RRs provide clients with complete instructions
 for access to a service.  This information enables improved
-performance and privacy by avoiding transient connections to a sub-optimal
+performance and privacy by avoiding transient connections to a suboptimal
 default server, negotiating a preferred protocol, and providing relevant
 public keys.
 
@@ -455,7 +455,7 @@ not recognize.
 
 Some SvcParams impose requirements on other SvcParams in the RR.  A
 ServiceMode RR is called "self-consistent" if its SvcParams all comply with
-each others' requirements.  Zone-file implementations SHOULD enforce
+each other's requirements.  Zone-file implementations SHOULD enforce
 self-consistency.  Clients MUST reject any RR whose recognized SvcParams
 are not self-consistent, and MAY reject the entire RRSet.
 
@@ -617,7 +617,7 @@ See {{ecs}} for exceptions.
 
 ## Recursive resolvers {#recursive-behavior}
 
-Whether or not the recursive resolver is aware of SVCB, the normal response
+Whether the recursive resolver is aware of SVCB or not, the normal response
 construction process (i.e. unknown RR type resolution under {{!RFC3597}})
 generates the Answer section of the response.
 Recursive resolvers that are aware of SVCB SHOULD help the client to
@@ -1157,7 +1157,7 @@ allowed:
 
 * HTTP/2 to `alt.example:443`
 * HTTP/3 to `alt3.example:9443`
-* Fallback to the the client's non-Alt-Svc connection behavior
+* Fallback to the client's non-Alt-Svc connection behavior
 
 ECH-capable clients would use ECH when establishing any of these connections.
 
