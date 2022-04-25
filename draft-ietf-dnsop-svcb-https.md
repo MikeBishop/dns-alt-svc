@@ -331,7 +331,10 @@ number if a non-default port number is specified.  We term this behavior
 See {{httpsnames}} for the HTTPS RR behavior.
 
 When a prior CNAME or SVCB record has aliased to
-a SVCB record, each RR shall be returned under its own owner name.
+a SVCB record, each RR SHALL be returned under its own owner name, as in
+ordinary CNAME processing ({{!RFC1034, Section 3.6.2}}).  For details, see
+the recommendations regarding aliases for clients ({{client-behavior}}),
+servers ({{server-behavior}}), and zones ({{zone-structures}}).
 
 Note that none of these forms alter the origin or authority for validation
 purposes.
