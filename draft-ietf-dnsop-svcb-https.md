@@ -227,7 +227,8 @@ for the case of "https" origins as described in {{https}}.
 SVCB RRs are extensible by a list of SvcParams, which are pairs consisting of a
 SvcParamKey and a SvcParamValue. Each SvcParamKey has a presentation name and a
 registered number. Values are in a format specific to the SvcParamKey. Their
-definition must specify both their presentation format and wire encoding
+definition must specify both their presentation format (used in zone files) and
+wire encoding
 (e.g., domain names, binary data, or numeric values). The initial SvcParamKeys
 and formats are defined in {{keys}}.
 
@@ -254,7 +255,7 @@ In ABNF {{!RFC5234}},
     alpha-lc      = %x61-7A   ;  a-z
     SvcParamKey   = 1*63(alpha-lc / DIGIT / "-")
     SvcParam      = SvcParamKey ["=" SvcParamValue]
-    SvcParamValue = char-string
+    SvcParamValue = char-string ; See Appendix A
     value         = *OCTET
 
 The SvcParamValue is parsed using the
@@ -262,7 +263,8 @@ character-string decoding algorithm ({{decoding}}), producing a `value`.
 The `value` is then validated and converted into wire-format in a manner
 specific to each key.
 
-When the "=" is omitted, the `value` is interpreted as empty.
+When the optional "=" and SvcParamValue are omitted, the `value` is
+interpreted as empty.
 
 Arbitrary keys can be represented using the unknown-key presentation format
 "keyNNNNN" where NNNNN is the numeric
@@ -281,7 +283,7 @@ repeated.
 
 The RDATA for the SVCB RR consists of:
 
-* a 2 octet field for SvcPriority as an integer in network
+* a 2-octet field for SvcPriority as an integer in network
   byte order.
 * the uncompressed, fully-qualified TargetName, represented as
   a sequence of length-prefixed labels as in {{Section 3.1 of !RFC1035}}.
@@ -292,9 +294,9 @@ The RDATA for the SVCB RR consists of:
 When the list of SvcParams is non-empty, it contains a series of
 SvcParamKey=SvcParamValue pairs, represented as:
 
-* a 2 octet field containing the SvcParamKey as an
+* a 2-octet field containing the SvcParamKey as an
   integer in network byte order.  (See {{iana-keys}} for the defined values.)
-* a 2 octet field containing the length of the SvcParamValue
+* a 2-octet field containing the length of the SvcParamValue
   as an integer between 0 and 65535 in network byte order.
 * an octet string of this length whose contents are the SvcParamValue in a
   format determined by the SvcParamKey.
@@ -551,8 +553,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If DNS responses are cryptographically protected (e.g. using DNSSEC or
 TLS {{!DoT=RFC7858}}{{!DoH=RFC8484}}), and SVCB resolution fails
 due to an authentication error, SERVFAIL response, transport error, or
-timeout, the client SHOULD abandon the connection attempt even if the client
-is SVCB-optional.  Otherwise, an active attacker
+timeout, the client SHOULD abandon its attempt to reach the service, even
+if the client is SVCB-optional.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -702,19 +704,19 @@ resolvers SHOULD treat any records in the Additional section as having
 SOURCE PREFIX-LENGTH zero and SCOPE PREFIX-LENGTH as specified
 in the ECS option.  Authoritative servers MUST omit such records if they are
 not suitable for use by any stub resolvers that set SOURCE PREFIX-LENGTH to
-zero.  This will cause the resolver to perform a followup query that can
+zero.  This will cause the resolver to perform a follow-up query that can
 receive properly tailored ECS.  (This is similar to the usage of CNAME with
 ECS discussed in {{!RFC7871, Section 7.2.1}}.)
 
 Authoritative servers that omit Additional records can avoid the added
-latency of a followup query by following the advice in {{zone-performance}}.
+latency of a follow-up query by following the advice in {{zone-performance}}.
 
 # Performance optimizations {#optimizations}
 
 For optimal performance (i.e. minimum connection setup time), clients
 SHOULD implement a client-side DNS cache.
 Responses in the Additional section of a SVCB response SHOULD be placed
-in cache before performing any followup queries.
+in cache before performing any follow-up queries.
 With this behavior, and conforming DNS servers,
 using SVCB does not add network latency to connection setup.
 
@@ -965,7 +967,7 @@ family in standard textual format {{!RFC5952}}, {{!RFC4001}}.  To enable simpler
 this SvcParamValue MUST NOT contain escape sequences.
 
 The wire format for each parameter is a sequence of IP addresses in network
-byte order (for the respective address-family).  
+byte order (for the respective address-family).
 Like an A or AAAA RRSet, the list of addresses represents an
 unordered collection, and clients SHOULD pick addresses to use in a random order.
 An empty list of addresses is invalid.
@@ -1265,9 +1267,9 @@ be defined to take precedence over HTTPS RRs.
 The SVCB "ech" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigList
-{{!ECH}}, including the redundant length prefix.  In presentation format,
-the value is the ECHConfigList encoded in Base64 {{!base64=RFC4648}}.
-Base64 is used here to simplify integration with TLS server software.
+{{Section 4 of !ECH}}, including the redundant length prefix.  In presentation format,
+the value is the ECHConfigList in Base 64 Encoding ({{Section 4 of !RFC4648}}).
+Base 64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
@@ -1275,7 +1277,7 @@ and an encrypted "inner" ClientHello.  The outer ClientHello is an implementatio
 detail of ECH, and its contents are controlled by the ECHConfig in accordance
 with {{ECH}}.  The inner ClientHello is used for establishing a connection to the
 service, so its contents may be influenced by other SVCB parameters.  For example,
-the requirements on the ProtocolNameList in {{alpn-key}} apply only to the inner
+the requirements on the ALPN protocol identifiers in {{alpn-key}} apply only to the inner
 ClientHello.  Similarly, it is the inner ClientHello whose Server Name Indication
 identifies the desired service.
 
@@ -1296,7 +1298,7 @@ in SVCB-optional mode.
 An HTTPS RRSet containing some RRs with "ech" and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-"ech" as more preferred (i.e. smaller SvcPriority) than those
+"ech" as more preferred (i.e. lower SvcPriority value) than those
 without, in order to maximize the likelihood that ECH will be used in the
 absence of an active adversary.
 
@@ -1599,7 +1601,7 @@ SVCB support in a new context.
 
 This document defines a new DNS RR type, SVCB, whose value 64 has
 been allocated by IANA from the "Resource Record (RR) TYPEs"
-subregistry of the "Domain Name System (DNS) Parameters" registry:
+registry on the "Domain Name System (DNS) Parameters" page:
 
 * Type: SVCB
 * Value: 64
@@ -1610,7 +1612,7 @@ subregistry of the "Domain Name System (DNS) Parameters" registry:
 
 This document defines a new DNS RR type, "HTTPS", whose value 65 has
 been allocated by IANA from the "Resource Record (RR) TYPEs"
-subregistry of the "Domain Name System (DNS) Parameters" registry:
+registry on the "Domain Name System (DNS) Parameters" page:
 
 * Type: HTTPS
 * Value: 65
@@ -1637,11 +1639,12 @@ A registration MUST include the following fields:
 * Name: unique presentation name
 * Meaning: a short description
 * Format Reference: pointer to specification text
+* Change Controller: Person or entity, with contact information if appropriate.
 
 The characters in the registered Name MUST be lower-case alphanumeric or "-"
 ({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
-Entries in this registry are subject to an Expert Review registration
+New entries in this registry are subject to an Expert Review registration
 policy ({{!RFC8126, Section 4.5}}).  The designated expert MUST ensure that
 the Format Reference is stable and publicly available, and that it specifies
 how to convert the SvcParamValue's presentation format to wire format.  The
@@ -1659,17 +1662,17 @@ zone files can be made interoperable.
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| Number      | Name            | Meaning                         | Format Reference                         |
-| ----------- | ------          | ----------------------          | ---------------------------------------- |
-| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}            |
-| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}             |
-| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             |
-| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    |
-| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} |
-| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     |
-| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} |
-| 65280-65534 | N/A             | Private Use                     | (This document)                          |
-| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          |
+| Number      | Name            | Meaning                         | Format Reference                         | Change Controller |
+| ----------- | ------          | ----------------------          | ---------------------------------------- | ----------------- |
+| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}            | IETF              |
+| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}             | IETF              |
+| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             | IETF              |
+| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    | IETF              |
+| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} | IETF              |
+| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     | IETF              |
+| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} | IETF              |
+| 65280-65534 | N/A             | Private Use                     | (This document)                          | IETF              |
+| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          | IETF              |
 
 ## Other registry updates
 
@@ -1733,14 +1736,18 @@ In order to represent lists of items in zone files, this specification uses
 comma-separated lists.  When the allowed items in the list cannot contain ","
 or "\\", this is trivial.  (For simplicity, empty items are not allowed.)
 A value-list parser that splits on "," and prohibits items containing "\\"
-is sufficient to comply with all requirements in this document.
+is sufficient to comply with all requirements in this document.  This
+corresponds to the `simple-comma-separated` syntax:
+
+    ; item-allowed is OCTET minus "," and "\".
+    item-allowed           = %x00-2B / %x2D-5B / %x5D-FF
+    simple-item            = 1*item-allowed
+    simple-comma-separated = [simple-item *("," simple-item)]
 
 For implementations that allow "," and "\\" in item values, the following
 escaping syntax applies:
 
     item            = 1*OCTET
-    ; item-allowed is OCTET minus "," and "\".
-    item-allowed    = %x00-2B / %x2D-5B / %x5D-FF
     escaped-item    = 1*(item-allowed / "\," / "\\")
     comma-separated = [escaped-item *("," escaped-item)]
 
