@@ -254,7 +254,7 @@ In ABNF {{!RFC5234}},
     alpha-lc      = %x61-7A   ;  a-z
     SvcParamKey   = 1*63(alpha-lc / DIGIT / "-")
     SvcParam      = SvcParamKey ["=" SvcParamValue]
-    SvcParamValue = char-string
+    SvcParamValue = char-string ; See Appendix A
     value         = *OCTET
 
 The SvcParamValue is parsed using the
@@ -549,8 +549,8 @@ to avoid additional latency in comparison to ordinary AAAA/A lookups.
 If DNS responses are cryptographically protected (e.g. using DNSSEC or
 TLS {{!DoT=RFC7858}}{{!DoH=RFC8484}}), and SVCB resolution fails
 due to an authentication error, SERVFAIL response, transport error, or
-timeout, the client SHOULD abandon the connection attempt even if the client
-is SVCB-optional.  Otherwise, an active attacker
+timeout, the client SHOULD abandon its attempt to reach the service, even
+if the client is SVCB-optional.  Otherwise, an active attacker
 could mount a downgrade attack by denying the user access to the SvcParams.
 
 A SERVFAIL error can occur if the domain is DNSSEC-signed, the recursive
@@ -1261,7 +1261,7 @@ be defined to take precedence over HTTPS RRs.
 The SVCB "ech" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigList
-{{!ECH}}, including the redundant length prefix.  In presentation format,
+{{Section 4 of !ECH}}, including the redundant length prefix.  In presentation format,
 the value is the ECHConfigList encoded in Base64 {{!base64=RFC4648}}.
 Base64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
@@ -1271,7 +1271,7 @@ and an encrypted "inner" ClientHello.  The outer ClientHello is an implementatio
 detail of ECH, and its contents are controlled by the ECHConfig in accordance
 with {{ECH}}.  The inner ClientHello is used for establishing a connection to the
 service, so its contents may be influenced by other SVCB parameters.  For example,
-the requirements on the ProtocolNameList in {{alpn-key}} apply only to the inner
+the requirements on the ALPN protocol identifiers in {{alpn-key}} apply only to the inner
 ClientHello.  Similarly, it is the inner ClientHello whose Server Name Indication
 identifies the desired service.
 
@@ -1292,7 +1292,7 @@ in SVCB-optional mode.
 An HTTPS RRSet containing some RRs with "ech" and some without is
 vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
 Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-"ech" as more preferred (i.e. smaller SvcPriority) than those
+"ech" as more preferred (i.e. lower SvcPriority value) than those
 without, in order to maximize the likelihood that ECH will be used in the
 absence of an active adversary.
 
@@ -1729,14 +1729,18 @@ In order to represent lists of items in zone files, this specification uses
 comma-separated lists.  When the allowed items in the list cannot contain ","
 or "\\", this is trivial.  (For simplicity, empty items are not allowed.)
 A value-list parser that splits on "," and prohibits items containing "\\"
-is sufficient to comply with all requirements in this document.
+is sufficient to comply with all requirements in this document.  This
+corresponds to the `simple-comma-separated` syntax:
+
+    ; item-allowed is OCTET minus "," and "\".
+    item-allowed           = %x00-2B / %x2D-5B / %x5D-FF
+    simple-item            = 1*item-allowed
+    simple-comma-separated = [simple-item *("," simple-item)]
 
 For implementations that allow "," and "\\" in item values, the following
 escaping syntax applies:
 
     item            = 1*OCTET
-    ; item-allowed is OCTET minus "," and "\".
-    item-allowed    = %x00-2B / %x2D-5B / %x5D-FF
     escaped-item    = 1*(item-allowed / "\," / "\\")
     comma-separated = [escaped-item *("," escaped-item)]
 
