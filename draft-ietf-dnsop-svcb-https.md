@@ -1187,7 +1187,7 @@ connection for this origin.
 
 Clients MUST NOT use an HTTPS RR response unless the
 client supports TLS Server Name Indication (SNI) and
-indicates the origin name in the TLS ClientHello (which may be encrypted).
+indicates the origin name in the TLS ClientHello (which might be encrypted).
 This supports the conservation of IP addresses.
 
 Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate
