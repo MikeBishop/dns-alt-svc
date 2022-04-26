@@ -226,11 +226,11 @@ for the case of "https" origins as described in {{https}}.
 
 SVCB RRs are extensible by a list of SvcParams, which are pairs consisting of a
 SvcParamKey and a SvcParamValue. Each SvcParamKey has a presentation name and a
-registered number. Values are in a format specific to the SvcParamKey. Their
-definition must specify both their presentation format (used in zone files) and
+registered number. Values are in a format specific to the SvcParamKey.  Each
+SvcParam has a specified presentation format (used in zone files) and
 wire encoding
 (e.g., domain names, binary data, or numeric values). The initial SvcParamKeys
-and formats are defined in {{keys}}.
+and their formats are defined in {{keys}}.
 
 ## Zone file presentation format {#presentation}
 
@@ -434,8 +434,8 @@ request.  This limit MUST NOT be zero, i.e. implementations MUST be able to
 follow at least one AliasMode record.  The exact value of this limit
 is left to implementations.
 
-For compatibility and performance, zone owners should not configure their zones
-to require following multiple AliasMode records.
+Zones that require following multiple AliasMode records could encounter
+compatibility and performance issues.
 
 As legacy clients will not know to use this record, service
 operators will likely need to retain fallback AAAA and A records
