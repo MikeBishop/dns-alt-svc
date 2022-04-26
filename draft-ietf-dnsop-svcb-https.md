@@ -1212,9 +1212,9 @@ with this "https" URL in the "Location" field.  (Receipt of an incompatible Serv
 trigger the redirect behavior.)
 Because HTTPS RRs are received over an often-insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
-had received a 307 (Temporary Redirect) over cleartext HTTP.
+had received a 307 (Temporary Redirect) response over cleartext HTTP.
 
-Publishing an HTTPS RR has the potential to have unexpected results 
+Publishing an HTTPS RR has the potential to have unexpected results
 or a loss in functionality in cases where the "http" resource neither
 redirects to the "https" resource nor references the same underlying resource.
 
