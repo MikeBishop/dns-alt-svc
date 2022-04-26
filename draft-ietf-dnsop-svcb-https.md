@@ -1210,7 +1210,7 @@ or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
 SHOULD behave as if it has received an HTTP 307 (Temporary Redirect) status code
 with this "https" URL in the "Location" field.  (Receipt of an incompatible ServiceMode RR does not
 trigger the redirect behavior.)
-Because HTTPS RRs are received over an often insecure channel (DNS),
+Because HTTPS RRs are received over an often-insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
 had received a 307 redirect over cleartext HTTP.  
 
