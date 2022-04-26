@@ -227,7 +227,8 @@ for the case of "https" origins as described in {{https}}.
 SVCB RRs are extensible by a list of SvcParams, which are pairs consisting of a
 SvcParamKey and a SvcParamValue. Each SvcParamKey has a presentation name and a
 registered number. Values are in a format specific to the SvcParamKey. Their
-definition should specify both their presentation format and wire encoding
+definition must specify both their presentation format (use in zone files) and
+wire encoding
 (e.g., domain names, binary data, or numeric values). The initial SvcParamKeys
 and formats are defined in {{keys}}.
 
@@ -262,7 +263,8 @@ character-string decoding algorithm ({{decoding}}), producing a `value`.
 The `value` is then validated and converted into wire-format in a manner
 specific to each key.
 
-When the "=" is omitted, the `value` is interpreted as empty.
+When the optional "=" and SvcParamValue are omitted, the `value` is
+interpreted as empty.
 
 Arbitrary keys can be represented using the unknown-key presentation format
 "keyNNNNN" where NNNNN is the numeric
@@ -1262,8 +1264,8 @@ The SVCB "ech" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigList
 {{Section 4 of !ECH}}, including the redundant length prefix.  In presentation format,
-the value is the ECHConfigList encoded in Base64 {{!base64=RFC4648}}.
-Base64 is used here to simplify integration with TLS server software.
+the value is the ECHConfigList in Base 64 Encoding ({{Section 4 of !RFC4648}}).
+Base 64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
 
 When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
@@ -1633,11 +1635,12 @@ A registration MUST include the following fields:
 * Name: unique presentation name
 * Meaning: a short description
 * Format Reference: pointer to specification text
+* Change Controller: Person or entity, with contact information if appropriate.
 
 The characters in the registered Name MUST be lower-case alphanumeric or "-"
 ({{presentation}}).  The name MUST NOT start with "key" or "invalid".
 
-Entries in this registry are subject to an Expert Review registration
+New entries in this registry are subject to an Expert Review registration
 policy ({{!RFC8126, Section 4.5}}).  The designated expert MUST ensure that
 the Format Reference is stable and publicly available, and that it specifies
 how to convert the SvcParamValue's presentation format to wire format.  The
@@ -1655,17 +1658,17 @@ zone files can be made interoperable.
 The "Service Binding (SVCB) Parameter Registry" shall initially
 be populated with the registrations below:
 
-| Number      | Name            | Meaning                         | Format Reference                         |
-| ----------- | ------          | ----------------------          | ---------------------------------------- |
-| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}            |
-| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}             |
-| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             |
-| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    |
-| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} |
-| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     |
-| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} |
-| 65280-65534 | N/A             | Private Use                     | (This document)                          |
-| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          |
+| Number      | Name            | Meaning                         | Format Reference                         | Change Controller |
+| ----------- | ------          | ----------------------          | ---------------------------------------- | ----------------- |
+| 0           | mandatory       | Mandatory keys in this RR       | (This document) {{mandatory}}            | IETF              |
+| 1           | alpn            | Additional supported protocols  | (This document) {{alpn-key}}             | IETF              |
+| 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             | IETF              |
+| 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    | IETF              |
+| 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} | IETF              |
+| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     | IETF              |
+| 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} | IETF              |
+| 65280-65534 | N/A             | Private Use                     | (This document)                          | IETF              |
+| 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          | IETF              |
 
 ## Other registry updates
 
