@@ -127,7 +127,8 @@ Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP,
   where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication {{!HSTS=RFC6797}} signaling that the "https"
-  scheme should be used instead of "http" for this request (see {{hsts}}).
+  scheme should be used instead of "http" for all HTTP requests to this host and port (see
+  {{hsts}}).
 
 ## Overview of the SVCB RR
 
@@ -1228,12 +1229,13 @@ or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
 SHOULD behave as if it has received an HTTP 307 (Temporary Redirect) status code
 with this "https" URL in the "Location" field.  (Receipt of an incompatible ServiceMode RR does not
 trigger the redirect behavior.)
-Because HTTPS RRs are received over an often insecure channel (DNS),
+Because HTTPS RRs are received over an often-insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
-had received a 307 redirect over cleartext HTTP.
-If this redirection would result in a loss of functionality (e.g. important
-resources that are only available on the "http" origin), the operator MUST
-NOT publish an HTTPS RR.
+had received a 307 (Temporary Redirect) response over cleartext HTTP.
+
+Publishing an HTTPS RR has the potential to have unexpected results
+or a loss in functionality in cases where the "http" resource neither
+redirects to the "https" resource nor references the same underlying resource.
 
 When an "https" connection fails due to an error in the underlying secure
 transport, such as an error in certificate validation, some clients
