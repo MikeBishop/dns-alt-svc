@@ -1346,7 +1346,7 @@ ServiceMode record, or to "." if it is reached via an alias.
     $ORIGIN example.net. ; Service provider zone
     foosvc               3600 IN SVCB 1 . key65333=...
     foosvc                300 IN AAAA 2001:db8::1
-{: title="foo://foo.example.com:8080 is delegated to a example.net, but bar://bar.example.com:9090 is served locally.}
+{: title="foo://foo.example.com:8080 is delegated to foosvc.example.net, but bar://bar.example.com:9090 is served locally.}
 
 Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
 this is likely unnecessary and makes responses slower and larger.
@@ -1508,7 +1508,7 @@ introduces a number of complexities highlighted by this example:
   observe and follow different CNAMEs to different CDNs.
   Clients may thus find that the A and AAAA responses do not correspond to the
   TargetName in the HTTPS response, and will need to perform additional
-  queries to retrieve its IP addresses.
+  queries to retrieve the correct IP addresses.
   Including ipv6hint and ipv4hint will reduce the performance
   impact of this case.
 
