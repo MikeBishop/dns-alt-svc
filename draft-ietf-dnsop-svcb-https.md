@@ -127,7 +127,8 @@ Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP,
   where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication {{?HSTS=RFC6797}} signaling that the "https"
-  scheme should be used instead of "http" for this request (see {{hsts}}).
+  scheme should be used instead of "http" for all HTTP requests to this host and port (see
+  {{hsts}}).
 
 ## Overview of the SVCB RR
 
@@ -226,11 +227,11 @@ for the case of "https" origins as described in {{https}}.
 
 SVCB RRs are extensible by a list of SvcParams, which are pairs consisting of a
 SvcParamKey and a SvcParamValue. Each SvcParamKey has a presentation name and a
-registered number. Values are in a format specific to the SvcParamKey. Their
-definition must specify both their presentation format (use in zone files) and
+registered number. Values are in a format specific to the SvcParamKey.  Each
+SvcParam has a specified presentation format (used in zone files) and
 wire encoding
 (e.g., domain names, binary data, or numeric values). The initial SvcParamKeys
-and formats are defined in {{keys}}.
+and their formats are defined in {{keys}}.
 
 ## Zone file presentation format {#presentation}
 
@@ -250,7 +251,7 @@ SvcParamKeys are subject to IANA control ({{svcparamregistry}}).
 
 Each SvcParamKey SHALL appear at most once in the SvcParams.
 In presentation format, SvcParamKeys are lower-case alphanumeric strings.
-Key names should contain 1-63 characters from the ranges "a"-"z", "0"-"9", and "-".
+Key names contain 1-63 characters from the ranges "a"-"z", "0"-"9", and "-".
 In ABNF {{!RFC5234}},
 
     alpha-lc      = %x61-7A   ;  a-z
@@ -375,8 +376,8 @@ any ServiceMode records in the set.
 
 RRSets are explicitly unordered collections, so the
 SvcPriority field is used to impose an ordering on SVCB RRs.
-ServiceMode RRs with a smaller SvcPriority value SHOULD be given
-preference over RRs with a larger SvcPriority value.
+A smaller SvcPriority indicates that the domain owner recommends use of this
+record over ServiceMode RRs with a larger SvcPriority value.
 
 When receiving an RRSet containing multiple SVCB records with the
 same SvcPriority value, clients SHOULD apply a random shuffle within a
@@ -401,8 +402,10 @@ types, and apply only to a specific service, not an entire domain name.
 
 The AliasMode TargetName SHOULD NOT be equal
 to the owner name, as this would result in a loop.
-In AliasMode, records SHOULD NOT include any SvcParams, and recipients MUST
-ignore any SvcParams that are present.
+In AliasMode, recipients MUST ignore any SvcParams that are present.
+Zone-file parsers MAY emit a warning if an AliasMode record has SvcParams.
+The use of SvcParams in AliasMode records is currently not defined, but a
+future specification could extend AliasMode records to include SvcParams.
 
 For example, the operator of foo://example.com:8080 could
 point requests to a service operating at foosvc.example.net
@@ -434,8 +437,8 @@ request.  This limit MUST NOT be zero, i.e. implementations MUST be able to
 follow at least one AliasMode record.  The exact value of this limit
 is left to implementations.
 
-For compatibility and performance, zone owners SHOULD NOT configure their zones
-to require following multiple AliasMode records.
+Zones that require following multiple AliasMode records could encounter
+compatibility and performance issues.
 
 As legacy clients will not know to use this record, service
 operators will likely need to retain fallback AAAA and A records
@@ -543,7 +546,7 @@ records for the selected TargetName, and MAY choose between them using an
 approach such as Happy Eyeballs {{!HappyEyeballsV2=RFC8305}}.
 
 If the client is SVCB-optional, and connecting using this list of endpoints has
-failed, the client SHOULD attempt non-SVCB connection modes.
+failed, the client now attempts to use non-SVCB connection modes.
 
 Some important optimizations are discussed in {{optimizations}}
 to avoid additional latency in comparison to ordinary AAAA/A lookups.
@@ -571,7 +574,7 @@ If DNS responses are not cryptographically protected, clients MAY treat
 SVCB resolution failure as fatal or nonfatal.
 
 If the client is unable to complete SVCB resolution due to its chain length
-limit, the client SHOULD fall back to the authority endpoint, as if the
+limit, the client MUST fall back to the authority endpoint, as if the
 origin's SVCB record did not exist.
 
 ## Clients using a Proxy
@@ -579,13 +582,15 @@ origin's SVCB record did not exist.
 Clients using a domain-oriented transport proxy like HTTP CONNECT
 ({{!RFC7231, Section 4.3.6}}) or SOCKS5 ({{!RFC1928}}) have the option to
 use named destinations, in which case the client does not perform
-any A or AAAA queries for destination domains.  If the client is using named
+any A or AAAA queries for destination domains.  If the client is configured
+to use named
 destinations with a proxy that does not provide SVCB query capability
 (e.g. through an affiliated DNS resolver), the client would have to perform
 SVCB resolution separately, likely disclosing the destinations to additional parties than just the proxy.
-Clients that support such proxies SHOULD arrange for a separate SVCB resolution
-procedure with appropriate privacy properties, or disable SVCB resolution entirely if
-SVCB-optional.
+Clients in this configuration SHOULD arrange for a separate SVCB resolution
+procedure with appropriate privacy properties.  If this is not possible,
+SVCB-optional clients MUST disable SVCB resolution entirely, and SVCB-required
+clients MUST treat the configuration as invalid.
 
 If the client does use SVCB and named destinations, the client SHOULD follow
 the standard SVCB resolution process, selecting the smallest-SvcPriority
@@ -905,9 +910,9 @@ back to basic connection establishment if all of the compatible RRs indicate
 "no-default-alpn", even if connection could have succeeded using a
 non-default alpn.
 
-For compatibility with clients that require default transports,
-zone operators SHOULD ensure that at least one RR in each RRSet supports the
-default transports.
+Zone operators SHOULD ensure that at least one RR in each RRSet supports the
+default transports.  This enables compatibility with the greatest number of
+clients.
 
 ## "port" {#svcparamkeys-port}
 
@@ -1229,12 +1234,13 @@ or any compatible ServiceMode HTTPS RRs (see {{mandatory}}), the client
 SHOULD behave as if it has received an HTTP 307 (Temporary Redirect) status code
 with this "https" URL in the "Location" field.  (Receipt of an incompatible ServiceMode RR does not
 trigger the redirect behavior.)
-Because HTTPS RRs are received over an often insecure channel (DNS),
+Because HTTPS RRs are received over an often-insecure channel (DNS),
 clients MUST NOT place any more trust in this signal than if they
-had received a 307 redirect over cleartext HTTP.
-If this redirection would result in a loss of functionality (e.g. important
-resources that are only available on the "http" origin), the operator MUST
-NOT publish an HTTPS RR.
+had received a 307 (Temporary Redirect) response over cleartext HTTP.
+
+Publishing an HTTPS RR has the potential to have unexpected results
+or a loss in functionality in cases where the "http" resource neither
+redirects to the "https" resource nor references the same underlying resource.
 
 When an "https" connection fails due to an error in the underlying secure
 transport, such as an error in certificate validation, some clients
@@ -1542,8 +1548,8 @@ are possible without the use of those standards.
 
 Any specification for use of SVCB with a protocol MUST have an entry for its
 scheme under the SVCB RR type in the IANA DNS Underscore Global Scoped Entry
-Registry {{Attrleaf}}.  The scheme SHOULD have an entry in the IANA URI Schemes
-Registry {{!RFC7595}}.  The scheme SHOULD have a defined specification for use
+Registry {{Attrleaf}}.  The scheme MUST have an entry in the IANA URI Schemes
+Registry {{!RFC7595}}, and MUST have a defined specification for use
 with SVCB.
 
 
