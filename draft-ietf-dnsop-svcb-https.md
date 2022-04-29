@@ -483,6 +483,8 @@ without the use of SVCB.
 
 For ServiceMode SVCB RRs, if TargetName has the value ".", then the
 owner name of this record MUST be used as the effective TargetName.
+If the record has a wildcard owner name in the zone file, the recipient
+SHALL use the response's synthesized owner name as the effective TargetName.
 
 For example, in the following example "svc2.example.net"
 is the effective TargetName:
