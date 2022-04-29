@@ -666,6 +666,19 @@ to implement to mitigate loops.
 
 See {{incomplete-response}} for possible optimizations of this procedure.
 
+### DNS64
+
+DNS64 resolvers synthesize responses to AAAA queries for names that only
+have an A record ({{Section 5.1.7 of !RFC6147}}).  SVCB-aware DNS64
+resolvers SHOULD apply the same synthesis logic when resolving AAAA
+records for the TargetName (Step 2 in {{recursive-behavior}}), and MAY
+omit the Additional A records.
+
+DNS64 resolvers MUST NOT extrapolate the AAAA synthesis logic to the IP
+hints in the SvcParams ({{svcparamkeys-iphints}}).  Modifying the IP hints
+would break DNSSEC validation and would not improve performance when the
+above recommendation is implemented.
+
 ## General requirements
 
 Recursive resolvers MUST be able to convey SVCB records with unrecognized
@@ -979,10 +992,9 @@ An empty list of addresses is invalid.
 
 When selecting between IPv4 and IPv6 addresses to use, clients may use an
 approach such as Happy Eyeballs {{!HappyEyeballsV2}}.
-When only "ipv4hint" is present, IPv6-only clients may synthesize
+When only "ipv4hint" is present, NAT64 clients may synthesize
 IPv6 addresses as specified in {{!RFC7050}} or ignore the "ipv4hint" key and
-wait for AAAA resolution ({{client-behavior}}).  Recursive resolvers MUST NOT
-perform DNS64 ({{?RFC6147}}) on parameters within a SVCB record.
+wait for AAAA resolution ({{client-behavior}}).
 For best performance, server operators SHOULD include an "ipv6hint" parameter
 whenever they include an "ipv4hint" parameter.
 
