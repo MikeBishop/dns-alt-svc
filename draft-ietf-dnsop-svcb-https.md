@@ -678,7 +678,7 @@ records for the TargetName for inclusion as Additionals (Step 2 in
 
 DNS64 resolvers MUST NOT extrapolate the AAAA synthesis logic to the IP
 hints in the SvcParams ({{svcparamkeys-iphints}}).  Modifying the IP hints
-would break DNSSEC validation for the SVCB record and would not improve 
+would break DNSSEC validation for the SVCB record and would not improve
 performance when the above recommendation is implemented.
 
 ## General requirements
@@ -983,7 +983,7 @@ geo-aware features and thereby degrade client performance.
 
 The presentation `value` SHALL be a comma-separated list ({{value-list}})
 of one or more IP addresses of the appropriate
-family in standard textual format {{!RFC5952}}, {{!RFC4001}}.  To enable simpler parsing,
+family in standard textual format {{!RFC5952}}{{!RFC4001}}.  To enable simpler parsing,
 this SvcParamValue MUST NOT contain escape sequences.
 
 The wire format for each parameter is a sequence of IP addresses in network
@@ -1288,7 +1288,7 @@ be defined to take precedence over HTTPS RRs.
 The SVCB "ech" parameter is defined for
 conveying the ECH configuration of an alternative endpoint.
 In wire format, the value of the parameter is an ECHConfigList
-{{Section 4 of !ECH}}, including the redundant length prefix.  In presentation format,
+({{Section 4 of !ECH}}), including the redundant length prefix.  In presentation format,
 the value is the ECHConfigList in Base 64 Encoding ({{Section 4 of !RFC4648}}).
 Base 64 is used here to simplify integration with TLS server software.
 To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
@@ -1360,7 +1360,7 @@ ServiceMode record, or to "." if it is reached via an alias.
     $ORIGIN example.net. ; Service provider zone
     foosvc               3600 IN SVCB 1 . key65333=...
     foosvc                300 IN AAAA 2001:db8::1
-{: title="foo://foo.example.com:8080 is delegated to foosvc.example.net, but bar://bar.example.com:9090 is served locally.}
+{: title="foo://foo.example.com:8080 is delegated to foosvc.example.net, but bar://bar.example.com:9090 is served locally."}
 
 Domain owners SHOULD avoid using a TargetName that is below a DNAME, as
 this is likely unnecessary and makes responses slower and larger.
