@@ -671,13 +671,13 @@ See {{incomplete-response}} for possible optimizations of this procedure.
 DNS64 resolvers synthesize responses to AAAA queries for names that only
 have an A record ({{Section 5.1.7 of !RFC6147}}).  SVCB-aware DNS64
 resolvers SHOULD apply the same synthesis logic when resolving AAAA
-records for the TargetName (Step 2 in {{recursive-behavior}}), and MAY
-omit the Additional A records.
+records for the TargetName for inclusion as Additionals (Step 2 in
+{{recursive-behavior}}), and MAY omit the Additional A records.
 
 DNS64 resolvers MUST NOT extrapolate the AAAA synthesis logic to the IP
 hints in the SvcParams ({{svcparamkeys-iphints}}).  Modifying the IP hints
-would break DNSSEC validation and would not improve performance when the
-above recommendation is implemented.
+would break DNSSEC validation for the SVCB record and would not improve 
+performance when the above recommendation is implemented.
 
 ## General requirements
 
