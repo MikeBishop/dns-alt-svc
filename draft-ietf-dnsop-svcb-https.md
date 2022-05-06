@@ -2106,6 +2106,21 @@ the mandatory list"}
 
 (This section to be removed by the RFC editor.)
 
+* draft-ietf-dnsop-svcb-https-09
+    * Extensive adjustments based on IESG reviews, including:
+      * IANA registry changed to Expert Review policy
+      * Adjustments to the use of normative language
+      * Revised and expanded description of HSTS behavior
+      * Expanded discussion of CNAME handling
+      * Discussion of SvcParams in AliasMode records
+      * Restructured ABNF for comma-separated lists
+      * Additional references and many other minor clarifications
+    * Other changes include:
+      * New section on interaction with DNS64
+      * New text on the interpretation of wildcard owner names
+      * Adjusted guidance on default ALPN enforcement
+      * Removed mention of IPv4-mapped IPv6
+
 * draft-ietf-dnsop-svcb-https-08
     * Extensive structural and editorial adjustments based on area reviews,
       including:
