@@ -2109,6 +2109,9 @@ the mandatory list"}
 
 (This section to be removed by the RFC editor.)
 
+* draft-ietf-dnsop-svcb-https-10
+    * Clarify rationale for two recommendations
+
 * draft-ietf-dnsop-svcb-https-09
     * Extensive adjustments based on IESG reviews, including:
       * IANA registry changed to Expert Review policy
