@@ -465,9 +465,10 @@ not recognize.
 
 Some SvcParams impose requirements on other SvcParams in the RR.  A
 ServiceMode RR is called "self-consistent" if its SvcParams all comply with
-each other's requirements.  Zone-file implementations SHOULD enforce
-self-consistency.  Clients MUST reject any RR whose recognized SvcParams
-are not self-consistent, and MAY reject the entire RRSet.
+each other's requirements.  Clients MUST reject any RR whose recognized
+SvcParams are not self-consistent, and MAY reject the entire RRSet.  To
+help zone operators avoid this condition, zone-file implementations SHOULD
+enforce self-consistency as well.
 
 ## Special handling of "." in TargetName {#dot}
 
@@ -570,7 +571,9 @@ selectively dropping SVCB queries or responses, based on their size or
 other observable patterns.
 
 If the client enforces DNSSEC validation on A/AAAA responses, it SHOULD
-apply the same validation policy to SVCB.
+apply the same validation policy to SVCB.  Otherwise, an attacker could
+defeat the A/AAAA protection by forging SVCB responses that direct the
+client to other IP addresses.
 
 If DNS responses are not cryptographically protected, clients MAY treat
 SVCB resolution failure as fatal or nonfatal.
