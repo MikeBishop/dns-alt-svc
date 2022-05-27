@@ -309,7 +309,7 @@ Clients MUST consider an RR malformed if:
 
 * the end of the RDATA occurs within a SvcParam.
 * SvcParamKeys are not in strictly increasing numeric order.
-* the SvcParamValue for an SvcParamKey does not have the expected format.
+* the SvcParamValue for a SvcParamKey does not have the expected format.
 
 Note that the second condition implies that there are no duplicate
 SvcParamKeys.
@@ -814,7 +814,7 @@ processing to all SVCB-compatible RR types.
 
 All other behaviors described as applying to the SVCB RR also apply
 to all SVCB-compatible RR types unless explicitly stated otherwise.
-When following an AliasMode record ({{alias-mode}}) of RR type $T , the
+When following an AliasMode record ({{alias-mode}}) of RR type $T, the
 followup query to the TargetName MUST also be for type $T.
 
 This document defines one SVCB-compatible RR type (other than SVCB itself):
@@ -1711,7 +1711,7 @@ Global Scoped Entry Registry:
 
 # Acknowledgments and Related Proposals
 
-There have been a wide range of proposed solutions over the years to
+There has been a wide range of proposed solutions over the years to
 the "CNAME at the Zone Apex" challenge proposed.  These include
 {{?I-D.bellis-dnsop-http-record}},
 {{?I-D.ietf-dnsop-aname}}, and others.
