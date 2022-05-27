@@ -17,7 +17,7 @@ See also [here for a list of prototype implementations](httpssvc-implementations
 draft-schwartz-httpbis-dns-alt-svc
 
 * [Editor's Copy](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc-latest.html)
-* [Individual Draft](https://tools.ietf.org/html/draft-schwartz-httpbis-dns-alt-svc-latest)
+* [Individual Draft](https://datatracker.ietf.org/doc/draft-schwartz-httpbis-dns-alt-svc/)
 * [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-schwartz-httpbis-dns-alt-svc-latest.diff)
 
 ## Building the Draft
