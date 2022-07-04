@@ -900,7 +900,7 @@ implied by the protocols in SVCB-ALPN-Intersection.
 containing the Identification Sequences of all the client's supported ALPN
 protocols for that transport, without regard to the SVCB ALPN set.
 
-For example, if the SVCB ALPN set is \["http/1.1", "h3"\], and the client
+For example, if the SVCB ALPN set is \["h2", "h3"\], and the client
 supports HTTP/1.1, HTTP/2, and HTTP/3, the client could attempt to connect using
 TLS over TCP with a ProtocolNameList of \["http/1.1", "h2"\], and could also
 attempt a connection using QUIC, with a ProtocolNameList of \["h3"\].
