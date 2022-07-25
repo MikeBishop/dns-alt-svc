@@ -1745,7 +1745,9 @@ Here we summarize the allowed input to that algorithm, using ABNF:
                   "2" ( ( %x30-34 DIGIT ) / ( "5" %x30-35 ) )
     escaped     = "\" ( non-digit / dec-octet )
     contiguous  = 1*( non-special / escaped )
-    quoted      = DQUOTE *( contiguous / ( ["\"] WSP ) ) DQUOTE
+    ; VCHAR minus DQUOTE and "\"
+    quoted-char = WSP / "!" / %x23-5B / %x5D-7E
+    quoted      = DQUOTE *( quoted-char / escaped ) DQUOTE
     char-string = contiguous / quoted
 
 The decoding algorithm allows `char-string` to represent any `*OCTET`,
