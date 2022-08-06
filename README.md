@@ -10,7 +10,7 @@ draft-ietf-dnsop-svcb-httpssvc
 * [Individual Draft](https://datatracker.ietf.org/doc/draft-ietf-dnsop-svcb-httpssvc/)
 * [Compare Editor's Copy to Individual Draft](https://MikeBishop.github.io/dns-alt-svc/#go.draft-ietf-dnsop-svcb-httpssvc-latest.diff)
 
-See also [here for a list of prototype implementations](httpssvc-implementations.md).
+See also [here for a list of implementations](svcb-implementations.md).
 
 ## Finding HTTP Alternative Services via the Domain Name Service
 
