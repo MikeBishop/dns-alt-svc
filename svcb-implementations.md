@@ -59,6 +59,10 @@ Akamai CacheServe (recursive resolver) supports HTTPS records.  [As of February 
 
 The Google Public DNS JSON API supports [typed serialization](https://dns.google/query?name=blog.cloudflare.com&rr_type=HTTPS&ecs=) of SVCB and HTTPS records (March 2021).
 
+## NS1 ##
+
+NS1 authoritative DNS supports [SVCB and HTTPS](https://ns1.com/blog/ns1-announces-support-for-svcb-and-https-records) records (July 2022).
+
 # Pre-release and public testing implementations #
 
 ## Firefox ##
