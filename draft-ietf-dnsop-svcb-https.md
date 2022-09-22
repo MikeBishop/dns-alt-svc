@@ -37,6 +37,10 @@ informative:
     title: "Fetch Living Standard"
     date: May 2020
     target: "https://fetch.spec.whatwg.org/"
+  CHECK-NAMES:
+    title: "BIND 9 Configuration Reference: check-names"
+    date: September 2022
+    target: "https://bind9.readthedocs.io/en/v9_18_6/reference.html#namedconf-statement-check-names"
 --- abstract
 
 This document specifies the "SVCB" and "HTTPS" DNS resource record (RR)
@@ -193,7 +197,7 @@ hostname as the `host`.
 * The "service name" is the `host` portion of the authority.
 * The "authority endpoint" is the authority's hostname and a port number implied
   by the scheme or specified in the URI.
-* An "alternative endpoint" is a hostname, port number, and other associated
+* An "alternative endpoint" is a domain name, port number, and other associated
   instructions to the client on how to reach an instance of service.
 
 Additional DNS terminology intends to be consistent
@@ -498,6 +502,12 @@ is the effective TargetName:
     svc2.example.net. 300   IN A     192.0.2.2
     svc2.example.net. 300   IN AAAA  2001:db8::2
 
+Some authoritative DNS implementations restrict the owner names of A and AAAA
+records.  For example, BIND 9.18 requires these owner names to be hostnames
+when the `check-names` option is enabled {{CHECK-NAMES}}.  The ServiceMode
+TargetName is required to point at A or AAAA records, so any such restrictions
+may impact the choice of TargetName, and may preclude use of the value "." if
+the ServiceMode record's owner name is not permitted for A and AAAA records.
 
 
 # Client behavior {#client-behavior}
