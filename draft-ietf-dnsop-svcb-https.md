@@ -535,6 +535,7 @@ be needed for connection establishment if the SVCB record is absent, in order to
 in that case and enable the optimizations discussed in {{optimizations}}.
 
 Once SVCB resolution has concluded, whether successful or not,
+if at least one AliasMode record was processed,
 SVCB-optional clients SHALL append to the priority list an
 endpoint consisting of the final value of $QNAME, the authority
 endpoint's port number, and no SvcParams.  (This endpoint will be
