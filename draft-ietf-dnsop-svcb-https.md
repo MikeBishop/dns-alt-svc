@@ -193,7 +193,7 @@ hostname as the `host`.
 * The "service name" is the `host` portion of the authority.
 * The "authority endpoint" is the authority's hostname and a port number implied
   by the scheme or specified in the URI.
-* An "alternative endpoint" is a hostname, port number, and other associated
+* An "alternative endpoint" is a domain name, port number, and other associated
   instructions to the client on how to reach an instance of service.
 
 Additional DNS terminology intends to be consistent
