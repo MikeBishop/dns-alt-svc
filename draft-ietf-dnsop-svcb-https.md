@@ -498,6 +498,8 @@ is the effective TargetName:
     svc2.example.net. 300   IN A     192.0.2.2
     svc2.example.net. 300   IN AAAA  2001:db8::2
 
+
+
 # Client behavior {#client-behavior}
 
 "SVCB resolution" is the process of enumerating the priority-ordered endpoints
@@ -1371,7 +1373,7 @@ Also, zone structures that require following more than 8 aliases
 
 ## Operational considerations
 
-Note that some implementations may not allow A or AAAA records on names 
+Note that some implementations may not allow A or AAAA records on names
 starting with an underscore due to various interpretations of RFCs.
 This could be an operational issue when the TargetName contains an attrleaf label,
 as well as using an TargetName of "." when the owner name contains an attrleaf label.
