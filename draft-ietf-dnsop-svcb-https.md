@@ -2117,6 +2117,13 @@ the mandatory list"}
 
 (This section to be removed by the RFC editor.)
 
+* draft-ietf-dnsop-svcb-https-11
+    * Narrow set of post-IESG clarifications:
+      * Clarify that that the fallback addition of the
+        QNAME was for the AliasMode case
+      * Note that some implementations may not allow A/AAAA
+        records on names starting with an underscore
+
 * draft-ietf-dnsop-svcb-https-10
     * Clarify rationale for two recommendations
 
