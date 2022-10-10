@@ -1371,6 +1371,13 @@ this is likely unnecessary and makes responses slower and larger.
 Also, zone structures that require following more than 8 aliases
 (counting both AliasMode and CNAME records) are NOT RECOMMENDED.
 
+## Operational considerations
+
+Note that some implementations may not allow A or AAAA records on names
+starting with an underscore due to various interpretations of RFCs.
+This could be an operational issue when the TargetName contains an attrleaf label,
+as well as using an TargetName of "." when the owner name contains an attrleaf label.
+
 ## Examples
 
 ### Protocol enhancements
