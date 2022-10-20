@@ -492,9 +492,9 @@ SHALL use the response's synthesized owner name as the effective TargetName.
 For example, in the following example "svc2.example.net"
 is the effective TargetName:
 
-    example.com.      7200  IN HTTPS 0 svc.example.net.
+    example.com.      7200  IN SVCB  0 svc.example.net.
     svc.example.net.  7200  IN CNAME svc2.example.net.
-    svc2.example.net. 7200  IN HTTPS 1 . port=8002 ech="..."
+    svc2.example.net. 7200  IN SVCB  1 . port=8002 ech="..."
     svc2.example.net. 300   IN A     192.0.2.2
     svc2.example.net. 300   IN AAAA  2001:db8::2
 
