@@ -18,7 +18,7 @@ author:
     ins: B. Schwartz
     name: Ben Schwartz
     organization: Google
-    email: bemasc@google.com
+    email: ietf@bemasc.net
  -
     ins: M. Bishop
     name: Mike Bishop
