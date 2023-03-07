@@ -44,7 +44,8 @@ types to facilitate the lookup of information needed to make connections
 to network services, such as for HTTP origins.  SVCB records
 allow a service to be provided from multiple alternative endpoints,
 each with associated parameters (such as transport protocol
-configuration and future uses such as keys for encrypting the TLS ClientHello).  They also
+configuration), and are extensible to support future uses
+(such as keys for encrypting the TLS ClientHello).  They also
 enable aliasing of apex domains, which is not possible with CNAME.
 The HTTPS RR is a variation of SVCB for use with HTTP {{!HTTP=I-D.ietf-httpbis-semantics}}.
 By providing more information to the client before it attempts to
