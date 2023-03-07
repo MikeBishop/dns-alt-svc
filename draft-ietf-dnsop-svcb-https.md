@@ -69,7 +69,7 @@ public keys.
 For example, HTTP clients currently resolve only A and/or AAAA records for
 the origin hostname, learning only its IP addresses.  If an HTTP client learns
 more about the origin before connecting, it may be able to upgrade "http" URLs
-to "https", enable HTTP/3 or Encrypted ClientHello {{!ECH=I-D.ietf-tls-esni}},
+to "https", enable HTTP/3 or Encrypted ClientHello {{?ECH=I-D.ietf-tls-esni}},
 or switch to an
 operationally preferable endpoint.  It is highly desirable to minimize the
 number of round-trips and lookups required to
@@ -121,14 +121,14 @@ Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 
 * Connect directly to HTTP/3 (QUIC transport)
   alternative endpoints {{?HTTP3=I-D.ietf-quic-http}}
-* Obtain the Encrypted ClientHello {{!ECH}} keys associated with an
-  alternative endpoint
 * Support non-default TCP and UDP ports
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP,
   where SRV {{?SRV=RFC2782}} has not been widely adopted
 * Provide an HSTS-like indication {{?HSTS=RFC6797}} signaling that the "https"
   scheme should be used instead of "http" for all HTTP requests to this host and port (see
   {{hsts}}).
+* Enable the conveyance of Encrypted ClientHello {{ECH}} keys associated
+  with an alternative endpoint.
 
 ## Overview of the SVCB RR
 
@@ -174,12 +174,6 @@ before learning of the preferred alternative,
 and without necessarily revealing the user's
 intended destination to all entities along the network path.
 
-
-
-## Parameter for Encrypted ClientHello
-
-This document also defines a parameter for Encrypted ClientHello {{!ECH}}
-keys. See {{ech-param}}.
 
 ## Terminology
 
@@ -353,7 +347,7 @@ to indicate that "foo://api.example.com:8443" is aliased to "svc4.example.net".
 The owner of example.net, in turn, could publish this record:
 
     svc4.example.net.  7200  IN SVCB 3 svc4.example.net. (
-        alpn="bar" port="8004" ech="..." )
+        alpn="bar" port="8004" )
 
 to indicate that these services are served on port number 8004,
 which supports the protocol "bar" and its associated transport in
@@ -494,7 +488,7 @@ is the effective TargetName:
 
     example.com.      7200  IN HTTPS 0 svc.example.net.
     svc.example.net.  7200  IN CNAME svc2.example.net.
-    svc2.example.net. 7200  IN HTTPS 1 . port=8002 ech="..."
+    svc2.example.net. 7200  IN HTTPS 1 . port=8002
     svc2.example.net. 300   IN A     192.0.2.2
     svc2.example.net. 300   IN AAAA  2001:db8::2
 
@@ -528,7 +522,7 @@ comply with this specification or have any awareness of SVCB.
 A client is called "SVCB-optional" if it can connect without the use of
 ServiceMode records, and "SVCB-reliant" otherwise.  Clients for pre-existing
 protocols (e.g. HTTP) SHALL implement SVCB-optional behavior (except as
-noted in {{client-failures}} and {{ech-client-behavior}}).
+noted in {{client-failures}} or when modified by future specifications).
 
 SVCB-optional clients SHOULD issue in parallel any other DNS queries that might
 be needed for connection establishment if the SVCB record is absent, in order to minimize delay
@@ -595,7 +589,7 @@ destinations with a proxy that does not provide SVCB query capability
 SVCB resolution separately, likely disclosing the destinations to additional parties than just the proxy.
 Clients in this configuration SHOULD arrange for a separate SVCB resolution
 procedure with appropriate privacy properties.  If this is not possible,
-SVCB-optional clients MUST disable SVCB resolution entirely, and SVCB-required
+SVCB-optional clients MUST disable SVCB resolution entirely, and SVCB-reliant
 clients MUST treat the configuration as invalid.
 
 If the client does use SVCB and named destinations, the client SHOULD follow
@@ -609,8 +603,7 @@ This arrangement has several benefits:
 * Compared to disabling SVCB:
   - It allows the client to use the SvcParams, if present, which are
     only usable with a specific TargetName.  The SvcParams may
-    include information that enhances performance (e.g. alpn) and privacy
-    (e.g. ech).
+    include information that enhances performance (e.g. alpn) and privacy.
   - It allows the service to delegate the apex domain.
 
 * Compared to providing the proxy with an IP address:
@@ -754,8 +747,10 @@ in parallel, and MAY prefetch A and AAAA records for multiple TargetNames.
 If an address response arrives before the corresponding SVCB response, the
 client MAY initiate a connection as if the SVCB query returned NODATA, but
 MUST NOT transmit any information that could be altered by the SVCB response
-until it arrives.  For example, a TLS ClientHello can be altered by the
-"ech" value of a SVCB response ({{svcparamkeys-ech}}).  Clients
+until it arrives.  For example, future SvcParamKeys could be defined that
+alter the TLS ClientHello.
+
+Clients
 implementing this optimization SHOULD wait for 50 milliseconds before
 starting optimistic pre-connection, as per the guidance in
 {{HappyEyeballsV2}}.
@@ -768,12 +763,12 @@ For example, suppose the client receives this SVCB RRSet for a protocol
 that uses TLS over TCP:
 
     _1234._bar.example.com. 300 IN SVCB 1 svc1.example.net. (
-        ech="111..." ipv6hint=2001:db8::1 port=1234 )
+        ipv6hint=2001:db8::1 port=1234 )
                                    SVCB 2 svc2.example.net. (
-        ech="222..." ipv6hint=2001:db8::2 port=1234 )
+        ipv6hint=2001:db8::2 port=1234 )
 
 If the client has an in-progress TCP connection to `[2001:db8::2]:1234`,
-it MAY proceed with TLS on that connection using `ech="222..."`, even
+it MAY proceed with TLS on that connection, even
 though the other record in the RRSet has higher priority.
 
 If none of the SVCB records are consistent
@@ -953,25 +948,6 @@ endpoint, changing the port number might cause that client to lose access to
 the service, so operators should exercise caution when using this SvcParamKey
 to specify a non-default port.
 
-## "ech" {#svcparamkeys-ech}
-
-The SvcParamKey to enable Encrypted ClientHello (ECH) is "ech".  Its
-value is defined in {{ech-param}}.  It is applicable to most TLS-based
-protocols.
-
-When publishing a record containing an "ech" parameter, the publisher
-MUST ensure that all IP addresses of TargetName correspond to servers
-that have access to the corresponding private key or are authoritative
-for the public name. (See {{Section 7.2.2 of !ECH}} for more
-details about the public name.) This yields an anonymity set of cardinality
-equal to the number of ECH-enabled server domains supported by a given
-client-facing server. Thus, even with an encrypted ClientHello, an attacker
-who can enumerate the set of ECH-enabled domains supported by a
-client-facing server can guess the
-correct SNI with probability at least 1/K, where K is the size of this
-ECH-enabled server anonymity set. This probability may be increased via
-traffic analysis or other mechanisms.
-
 ## "ipv4hint" and "ipv6hint" {#svcparamkeys-iphints}
 
 The "ipv4hint" and "ipv6hint" keys convey IP addresses that clients MAY use to
@@ -1042,7 +1018,7 @@ SvcParamValue MUST NOT contain escape sequences.
 
 For example, the following is a valid list of SvcParams:
 
-    ech=... key65333=ex1 key65444=ex2 mandatory=key65444,ech
+    ipv6hint=... key65333=ex1 key65444=ex2 mandatory=key65444,ipv6hint
 
 In wire format, the keys are represented by their numeric values in
 network byte order, concatenated in strictly increasing numeric order.
@@ -1179,10 +1155,10 @@ Alt-Svc: h2="alt.example:443", h2="alt2.example:443", h3=":8443"
 
 The client would retrieve the following HTTPS records:
 
-    alt.example.              IN HTTPS 1 . alpn=h2,h3 ech=...
-    alt2.example.             IN HTTPS 1 alt2b.example. alpn=h3 ech=...
+    alt.example.              IN HTTPS 1 . alpn=h2,h3 foo=...
+    alt2.example.             IN HTTPS 1 alt2b.example. alpn=h3 foo=...
     _8443._https.example.com. IN HTTPS 1 alt3.example. (
-        port=9443 alpn=h2,h3 ech=... )
+        port=9443 alpn=h2,h3 foo=... )
 
 Based on these inputs, the following connection attempts would always be
 allowed:
@@ -1191,8 +1167,6 @@ allowed:
 * HTTP/3 to `alt3.example:9443`
 * Fallback to the client's non-Alt-Svc connection behavior
 
-ECH-capable clients would use ECH when establishing any of these connections.
-
 The following connection attempts would not be allowed:
 
 * HTTP/3 to `alt.example:443` (not consistent with Alt-Svc)
@@ -1200,26 +1174,20 @@ The following connection attempts would not be allowed:
   record and Alt-Svc)
 * HTTPS over TCP to any port on `alt3.example` (not consistent with Alt-Svc)
 
+Suppose that "foo" is a SvcParamKey that renders the client SVCB-reliant.
 The following Alt-Svc-only connection attempts would be allowed only if
-the client does not support ECH, as they rely on SVCB-optional fallback
-behavior that the client will disable if it implements support for ECH and
-the "ech" SvcParam is present ({{ech-client-behavior}}):
+the client does not support "foo", as they rely on SVCB-optional fallback
+behavior:
 
 * HTTP/2 to `alt2.example:443`
 * HTTP/3 to `example.com:8443`
 
-Origins that publish an "ech" SvcParam in their HTTPS record SHOULD
-also publish an HTTPS record with the "ech" SvcParam for every
-alt-authority offered in its Alt-Svc Field Values.  Otherwise,
-clients might reveal the name of the server in an unencrypted ClientHello.
-Similar consistency considerations could apply to future SvcParamKeys, so
-alt-authorities SHOULD carry the same SvcParams as the origin unless
+Alt-authorities SHOULD carry the same SvcParams as the origin unless
 a deviation is specifically known to be safe.
-
 As noted in {{Section 2.4 of AltSvc}}, clients MAY disallow any Alt-Svc
 connection according to their own criteria, e.g. disallowing Alt-Svc
-connections that lack ECH support when there is an active ECH-protected
-connection for this origin.
+connections that lack support for privacy features that are available on
+the origin endpoint.
 
 ## Requiring Server Name Indication
 
@@ -1286,46 +1254,6 @@ SHOULD implement a security upgrade behavior equivalent to the one specified in
 
 Such protocols MAY define their own SVCB mappings, which MAY
 be defined to take precedence over HTTPS RRs.
-
-# SVCB/HTTPS RR parameter for ECH configuration {#ech-param}
-
-The SVCB "ech" parameter is defined for
-conveying the ECH configuration of an alternative endpoint.
-In wire format, the value of the parameter is an ECHConfigList
-({{Section 4 of !ECH}}), including the redundant length prefix.  In presentation format,
-the value is the ECHConfigList in Base 64 Encoding ({{Section 4 of !RFC4648}}).
-Base 64 is used here to simplify integration with TLS server software.
-To enable simpler parsing, this SvcParam MUST NOT contain escape sequences.
-
-When ECH is in use, the TLS ClientHello is divided into an unencrypted "outer"
-and an encrypted "inner" ClientHello.  The outer ClientHello is an implementation
-detail of ECH, and its contents are controlled by the ECHConfig in accordance
-with {{ECH}}.  The inner ClientHello is used for establishing a connection to the
-service, so its contents may be influenced by other SVCB parameters.  For example,
-the requirements on the ALPN protocol identifiers in {{alpn-key}} apply only to the inner
-ClientHello.  Similarly, it is the inner ClientHello whose Server Name Indication
-identifies the desired service.
-
-## Client behavior {#ech-client-behavior}
-
-The SVCB-optional client behavior specified in {{client-behavior}} permits clients
-to fall back to a direct connection if all SVCB options fail.  This behavior is
-not suitable for ECH, because fallback would negate the privacy benefits of
-ECH.  Accordingly, ECH-capable SVCB-optional clients MUST switch to
-SVCB-reliant connection establishment if SVCB resolution succeeded (following
-{{client-behavior}}) and all alternative endpoints have an "ech" key.
-
-As a latency optimization, clients MAY prefetch DNS records that will only be used
-in SVCB-optional mode.
-
-## Deployment considerations
-
-An HTTPS RRSet containing some RRs with "ech" and some without is
-vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED.
-Zone owners who do use such a mixed configuration SHOULD mark the RRs with
-"ech" as more preferred (i.e. lower SvcPriority value) than those
-without, in order to maximize the likelihood that ECH will be used in the
-absence of an active adversary.
 
 # Zone Structures
 
@@ -1394,8 +1322,8 @@ The domain owner could add this record:
 
 to indicate that https://simple.example supports QUIC
 in addition to HTTP/1.1 over TLS over TCP (the implicit default).
-The record could also include other information (e.g. non-standard port,
-ECH configuration).  For https://simple.example:8443, the record would be:
+The record could also include other information (e.g. non-standard port).
+For https://simple.example:8443, the record would be:
 
     _8443._https 7200 IN HTTPS 1 . alpn=h3
 
@@ -1434,8 +1362,8 @@ Suppose that svc.example's primary server pool supports HTTP/3, but its
 backup server pool does not.  This can be expressed in the following form:
 
     $ORIGIN svc.example. ; A hosting provider.
-    pool  7200 IN HTTPS 1 . alpn=h2,h3 ech="123..."
-                  HTTPS 2 backup alpn=h2 ech="abc..."
+    pool  7200 IN HTTPS 1 . alpn=h2,h3
+                  HTTPS 2 backup alpn=h2 port=8443
     pool   300 IN A        192.0.2.2
                   AAAA     2001:db8::2
     backup 300 IN A        192.0.2.3
@@ -1445,7 +1373,7 @@ This configuration is entirely compatible with the "Apex aliasing" example,
 whether the client supports HTTPS RRs or not.  If the client does support
 HTTPS RRs, all connections will be upgraded to HTTPS, and clients will
 use HTTP/3 if they can.  Parameters are "bound" to each server pool, so
-each server pool can have its own protocol, ECH configuration, etc.
+each server pool can have its own protocol, port number, etc.
 
 ### Multi-CDN {#multicdn}
 
@@ -1488,8 +1416,8 @@ or due to logic within the authoritative DNS server:
      ; path use these records.
      ; This CDN uses a different alternative service for HTTP/3.
      $ORIGIN svc1.example.  ; domain for CDN 1
-     cdn1     1800 IN HTTPS 1 h3pool alpn=h3 ech="123..."
-                      HTTPS 2 . alpn=h2 ech="123..."
+     cdn1     1800 IN HTTPS 1 h3pool alpn=h3
+                      HTTPS 2 . alpn=h2
                       A    192.0.2.2
                       AAAA 2001:db8:192::4
      h3pool 300 IN A 192.0.2.3
@@ -1499,7 +1427,7 @@ or due to logic within the authoritative DNS server:
      ; path use these records.
      ; Note that this CDN only supports HTTP/2.
      $ORIGIN svc2.example. ; domain operated by CDN 2
-     customer 300 IN HTTPS 1 . alpn=h2 ech="xyz..."
+     customer 300 IN HTTPS 1 . alpn=h2
                60 IN A    198.51.100.2
                      A    198.51.100.3
                      A    198.51.100.4
@@ -1508,20 +1436,20 @@ or due to logic within the authoritative DNS server:
 
      ; Resolutions following the cdn3.svc3.example
      ; path use these records.
-     ; Note that this CDN has no HTTPS records
-     ; and thus no ECH support.
+     ; Note that this CDN has no HTTPS records.
      $ORIGIN svc3.example. ; domain operated by CDN 3
      cdn3      60 IN A    203.0.113.8
                      AAAA 2001:db8:113::8
 
 Note that in the above example, the different CDNs have different
-ECH configurations and different capabilities, but clients will use HTTPS RRs
+configurations and different capabilities, but clients will use HTTPS RRs
 as a bound-together unit.
 
 Domain owners should be cautious when using a multi-CDN configuration, as it
 introduces a number of complexities highlighted by this example:
 
-* If CDN 1 supports ECH, and CDN 2 does not, the client is vulnerable to ECH
+* If CDN 1 supports a desired protocol or feature, and CDN 2 does not, the
+  client is vulnerable to
   downgrade by a network adversary who forces clients to get CDN 2 records.
 
 * Aliasing the apex to its subdomain simplifies the zone file but likely
@@ -1539,9 +1467,9 @@ introduces a number of complexities highlighted by this example:
 
 * If not all CDNs publish HTTPS records, clients will sometimes
   receive NODATA for HTTPS queries (as with cdn3.svc3.example above),
-  and thus no "ech" SvcParam, but could receive A/AAAA records from
-  a different CDN which does support ECH.  Clients will be unable
-  to use ECH in this case.
+  but could receive A/AAAA records from a different CDN.  Clients will
+  attempt to connect to this CDN without the benefit of its HTTPS
+  records.
 
 ### Non-HTTP uses
 
@@ -1597,8 +1525,8 @@ security benefits.  A hostile recursive resolver can always deny service to
 SVCB queries, but network intermediaries can often prevent resolution as well,
 even when the client and recursive resolver validate DNSSEC and use a secure
 transport.  These downgrade attacks can prevent the "https" upgrade provided by
-the HTTPS RR ({{hsts}}), and disable the encryption enabled by the "ech"
-SvcParamKey ({{ech-param}}).  To prevent downgrades, {{client-failures}}
+the HTTPS RR ({{hsts}}), and disable any other protections coordinated via
+SvcParams.  To prevent downgrades, {{client-failures}}
 recommends that clients abandon the connection attempt when such an attack is
 detected.
 
@@ -1702,7 +1630,7 @@ be populated with the registrations below:
 | 2           | no-default-alpn | No support for default protocol | (This document) {{alpn-key}}             | IETF              |
 | 3           | port            | Port for alternative endpoint   | (This document) {{svcparamkeys-port}}    | IETF              |
 | 4           | ipv4hint        | IPv4 address hints              | (This document) {{svcparamkeys-iphints}} | IETF              |
-| 5           | ech             | Encrypted ClientHello info      | (This document) {{svcparamkeys-ech}}     | IETF              |
+| 5           | ech             | RESERVED (will be used for ECH) | N/A                                      | IETF              |
 | 6           | ipv6hint        | IPv6 address hints              | (This document) {{svcparamkeys-iphints}} | IETF              |
 | 65280-65534 | N/A             | Private Use                     | (This document)                          | IETF              |
 | 65535       | N/A             | Reserved ("Invalid key")        | (This document)                          | IETF              |
