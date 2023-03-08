@@ -44,7 +44,8 @@ types to facilitate the lookup of information needed to make connections
 to network services, such as for HTTP origins.  SVCB records
 allow a service to be provided from multiple alternative endpoints,
 each with associated parameters (such as transport protocol
-configuration and keys for encrypting the TLS ClientHello).  They also
+configuration), and are extensible to support future uses
+(such as keys for encrypting the TLS ClientHello).  They also
 enable aliasing of apex domains, which is not possible with CNAME.
 The HTTPS RR is a variation of SVCB for use with HTTP {{!HTTP=I-D.ietf-httpbis-semantics}}.
 By providing more information to the client before it attempts to
@@ -1193,7 +1194,8 @@ the origin endpoint.
 
 Clients MUST NOT use an HTTPS RR response unless the
 client supports TLS Server Name Indication (SNI) and
-indicates the origin name in the TLS ClientHello (which might be encrypted).
+indicates the origin name in the TLS ClientHello (which might be
+encrypted via a future specification such as ECH).
 This supports the conservation of IP addresses.
 
 Note that the TLS SNI (and also the HTTP "Host" or ":authority") will indicate
@@ -2044,6 +2046,10 @@ the mandatory list"}
 # Change history
 
 (This section to be removed by the RFC editor.)
+
+* draft-ietf-dnsop-svcb-https-12
+    * Split out Encrypted Client Hello (ECH) to a separate draft
+      and convert all remaining references to informative.
 
 * draft-ietf-dnsop-svcb-https-11
     * Narrow set of post-IESG clarifications:
