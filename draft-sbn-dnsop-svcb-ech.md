@@ -1,5 +1,5 @@
 ---
-title: Bootstrapping Encrypted ClientHello with DNS Service Bindings
+title: Bootstrapping TLS Encrypted ClientHello with DNS Service Bindings
 abbrev: ECH in SVCB
 docname: draft-sbn-dnsop-svcb-ech-latest
 date: {DATE}
@@ -32,7 +32,7 @@ author:
 
 --- abstract
 
-To use Encrypted ClientHello the client needs to learn a public key for the server before it attempts a connection.  This specification provides a suitable mechanism for conveying this public key and related information via DNS, using a SVCB or HTTPS record.
+To use TLS Encrypted ClientHello (ECH) the client needs to learn the ECH configuration for a server before it attempts a connection to the server.  This specification provides a mechanism for conveying the ECH configuration information via DNS, using a SVCB or HTTPS record.
 
 --- middle
 
@@ -40,7 +40,7 @@ To use Encrypted ClientHello the client needs to learn a public key for the serv
 
 The Service Bindings framework {{!SVCB=I-D.ietf-dnsop-svcb-https}} allows server operators to publish a detailed description of their service in the Domain Name System {{!RFC1034}} using SVCB or HTTPS records.  Each SVCB record describes a single "alternative endpoint", and contains a collection of "SvcParams" that can be extended with new kinds of information that may be of interest to a client.  Clients can use the SvcParams to improve the privacy, security, and performance of their connection to this endpoint.
 
-This specification defines a new SvcParam to enable the use of Encrypted ClientHello {{!ECH=I-D.ietf-tls-esni}} in TLS-based protocols.  This SvcParam can be used in SVCB, HTTPS or any future SVCB-compatible DNS records, and is intended to serve as the primary bootstrap mechanism for ECH.
+This specification defines a new SvcParam to enable the use of TLS Encrypted ClientHello {{!ECH=I-D.ietf-tls-esni}} in TLS-based protocols.  This SvcParam can be used in SVCB, HTTPS or any future SVCB-compatible DNS records, and is intended to serve as the primary bootstrap mechanism for ECH.
 
 # SvcParam for ECH configuration {#ech-param}
 
@@ -53,6 +53,8 @@ In wire format, the value of the parameter is an ECHConfigList ({{Section 4 of !
 When publishing a record containing an "ech" parameter, the publisher MUST ensure that all IP addresses of TargetName correspond to servers that have access to the corresponding private key or are authoritative for the public name. (See {{Section 7.2.2 of !ECH}} for more details about the public name.)  Otherwise, connections will fail entirely.
 
 # Client behavior {#ech-client-behavior}
+
+This section describes client behavior in using ECH configurations provided in SVCB or HTTPS records.
 
 ## Disabling fallback
 
