@@ -1,13 +1,13 @@
 ---
 title: Bootstrapping TLS Encrypted ClientHello with DNS Service Bindings
 abbrev: ECH in SVCB
-docname: draft-sbn-dnsop-svcb-ech-latest
+docname: draft-sbn-tls-svcb-ech-latest
 date: {DATE}
 category: std
 
 ipr: trust200902
-area: General
-workgroup: DNSOP Working Group
+area: Security
+workgroup: TLS Working Group
 keyword: Internet-Draft
 
 stand_alone: yes
@@ -80,8 +80,7 @@ If all HTTPS records for an alt-authority contain "ech" SvcParams, the client MU
 
 ## Security Considerations
 
-A SVCB RRSet containing some RRs with "ech" and some without is vulnerable to a downgrade attack.  This configuration is NOT RECOMMENDED. Zone owners who do use such a mixed configuration SHOULD mark the RRs with "ech" as more preferred (i.e. lower SvcPriority value) than those without, in order to maximize the likelihood that ECH will be used in the
-absence of an active adversary.
+A SVCB RRSet containing some RRs with "ech" and some without is vulnerable to a downgrade attack: a network intermediary can block connections to the endpoints that support ECH, causing the client to fall back to a non-ECH endpoint.  This configuration is NOT RECOMMENDED. Zone owners who do use such a mixed configuration SHOULD mark the RRs with "ech" as more preferred (i.e. lower SvcPriority value) than those without, in order to maximize the likelihood that ECH will be used in the absence of an active adversary.
 
 Use of ECH yields an anonymity set of cardinality equal to the number of ECH-enabled server domains supported by a given client-facing server. Thus, even with an encrypted ClientHello, an attacker who can enumerate the set of ECH-enabled domains supported by a client-facing server can guess the correct SNI with probability at least 1/K, where K is the size of this ECH-enabled server anonymity set. This probability may be increased via traffic analysis or other mechanisms.
 
