@@ -121,7 +121,7 @@ additional DNS RR in a way that:
 Additional goals specific to HTTPS RRs and the HTTP use-cases include:
 
 * Connect directly to HTTP/3 (QUIC transport)
-  alternative endpoints {{?HTTP3=I-D.ietf-quic-http}}
+  alternative endpoints {{?RFC9114}}
 * Support non-default TCP and UDP ports
 * Enable SRV-like benefits (e.g. apex delegation, as mentioned above) for HTTP,
   where SRV {{?SRV=RFC2782}} has not been widely adopted
@@ -581,7 +581,7 @@ origin's SVCB record did not exist.
 ## Clients using a Proxy
 
 Clients using a domain-oriented transport proxy like HTTP CONNECT
-({{!RFC7231, Section 4.3.6}}) or SOCKS5 ({{!RFC1928}}) have the option to
+({{!RFC9110, Section 9.3.6}}) or SOCKS5 ({{!RFC1928}}) have the option to
 use named destinations, in which case the client does not perform
 any A or AAAA queries for destination domains.  If the client is configured
 to use named
