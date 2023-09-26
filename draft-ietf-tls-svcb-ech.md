@@ -1,7 +1,7 @@
 ---
 title: Bootstrapping TLS Encrypted ClientHello with DNS Service Bindings
 abbrev: ECH in SVCB
-docname: draft-sbn-tls-svcb-ech-latest
+docname: draft-ietf-tls-svcb-ech-latest
 date: {DATE}
 category: std
 
