@@ -5,8 +5,8 @@
 HTTP Working Group                                           B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 12 September 2023                           Akamai Technologies
-                                                           11 March 2023
+Expires: 29 March 2024                               Akamai Technologies
+                                                       26 September 2023
 
 
      Finding HTTP Alternative Services via the Domain Name Service
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 September 2023.
+   This Internet-Draft will expire on 29 March 2024.
 
 Copyright Notice
 

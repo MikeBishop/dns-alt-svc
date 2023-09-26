@@ -5,13 +5,13 @@
 TLS Working Group                                            B. Schwartz
 Internet-Draft                                                    Google
 Intended status: Standards Track                               M. Bishop
-Expires: 12 September 2023                                     E. Nygren
+Expires: 29 March 2024                                         E. Nygren
                                                      Akamai Technologies
-                                                           11 March 2023
+                                                       26 September 2023
 
 
    Bootstrapping TLS Encrypted ClientHello with DNS Service Bindings
-                     draft-sbn-tls-svcb-ech-latest
+                     draft-ietf-tls-svcb-ech-latest
 
 Abstract
 
@@ -35,7 +35,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 September 2023.
+   This Internet-Draft will expire on 29 March 2024.
 
 Copyright Notice
 
@@ -192,13 +192,13 @@ Table of Contents
 6.  IANA Considerations
 
    IANA is instructed to modify the Service Binding (SVCB) Parameter
-   Registry entry for "ech" as follows:
+   Keys Registry entry for "ech" as follows:
 
       +========+======+====================+===========+============+
       | Number | Name | Meaning            | Format    | Change     |
       |        |      |                    | Reference | Controller |
       +========+======+====================+===========+============+
-      | 5      | ech  | Encrypted          | (This     | IETF       |
+      | 5      | ech  | TLS Encrypted      | (This     | IETF       |
       |        |      | ClientHello Config | document) |            |
       +--------+------+--------------------+-----------+------------+
 
@@ -210,9 +210,9 @@ Table of Contents
 
    [ECH]      Rescorla, E., Oku, K., Sullivan, N., and C. A. Wood, "TLS
               Encrypted Client Hello", Work in Progress, Internet-Draft,
-              draft-ietf-tls-esni-15, 3 October 2022,
+              draft-ietf-tls-esni-16, 6 April 2023,
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
-              esni-15>.
+              esni-16>.
 
    [RFC1034]  Mockapetris, P., "Domain names - concepts and facilities",
               STD 13, RFC 1034, DOI 10.17487/RFC1034, November 1987,
@@ -225,9 +225,9 @@ Table of Contents
    [SVCB]     Schwartz, B. M., Bishop, M., and E. Nygren, "Service
               binding and parameter specification via the DNS (DNS SVCB
               and HTTPS RRs)", Work in Progress, Internet-Draft, draft-
-              ietf-dnsop-svcb-https-11, 11 October 2022,
+              ietf-dnsop-svcb-https-12, 11 March 2023,
               <https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-
-              svcb-https-11>.
+              svcb-https-12>.
 
 7.2.  Informative References
 
