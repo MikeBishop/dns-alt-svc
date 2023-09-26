@@ -1,7 +1,7 @@
 ---
 title: Bootstrapping TLS Encrypted ClientHello with DNS Service Bindings
 abbrev: ECH in SVCB
-docname: draft-sbn-tls-svcb-ech-latest
+docname: draft-ietf-tls-svcb-ech-latest
 date: {DATE}
 category: std
 
@@ -86,8 +86,8 @@ Use of ECH yields an anonymity set of cardinality equal to the number of ECH-ena
 
 # IANA Considerations
 
-IANA is instructed to modify the Service Binding (SVCB) Parameter Registry entry for "ech" as follows:
+IANA is instructed to modify the Service Binding (SVCB) Parameter Keys Registry entry for "ech" as follows:
 
-| Number      | Name            | Meaning                         | Format Reference                         | Change Controller |
-| ----------- | ------          | ----------------------          | ---------------------------------------- | ----------------- |
-| 5           | ech             | Encrypted ClientHello Config    | (This document)                          | IETF              |
+| Number      | Name            | Meaning                             | Format Reference                         | Change Controller |
+| ----------- | ------          | ----------------------              | ---------------------------------------- | ----------------- |
+| 5           | ech             | TLS Encrypted ClientHello Config    | (This document)                          | IETF              |
